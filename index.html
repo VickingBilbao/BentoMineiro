@@ -43,7 +43,6 @@
     .content-wrapper {
       margin-top: 120px;
     }
-    /* Removemos qualquer faixa extra de cabeçalho; usamos apenas a navbar */
     /* Animação para transição entre etapas */
     .step {
       display: none;
@@ -110,6 +109,12 @@
       padding: 10px;
       border: 1px solid #ccc;
     }
+    /* Ajuste para colapsar o menu automaticamente */
+    @media (max-width: 992px) {
+      .navbar-nav .nav-link {
+        cursor: pointer;
+      }
+    }
     /* Responsividade */
     @media (max-width: 576px) {
       .navbar-brand .title {
@@ -134,7 +139,7 @@
   <!-- Navbar fixa -->
   <nav class="navbar navbar-expand-lg fixed-top">
     <div class="container">
-      <a class="navbar-brand" href="#" onclick="goToStep(1)">
+      <a class="navbar-brand" href="#" onclick="collapseNavbar(); goToStep(1)">
         <span class="title">Bento Mineiro</span>
         <span class="tagline">A cozinha mineira na sua casa!</span>
       </a>
@@ -144,20 +149,20 @@
       <div class="collapse navbar-collapse justify-content-end" id="navbarNavDropdown">
          <ul class="navbar-nav">
            <li class="nav-item">
-             <a class="nav-link" href="#" onclick="goToStep(1)">Pedido</a>
+             <a class="nav-link" onclick="collapseNavbar(); goToStep(1)">Pedido</a>
            </li>
            <li class="nav-item dropdown">
-             <a class="nav-link dropdown-toggle" href="#" id="categoryDropdown" role="button" data-bs-toggle="dropdown">
+             <a class="nav-link dropdown-toggle" id="categoryDropdown" role="button" data-bs-toggle="dropdown">
                 Categorias
              </a>
              <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="categoryDropdown">
-                <li><a class="dropdown-item" href="#" onclick="selectCategory('prontaEntrega')">Pronta Entrega</a></li>
-                <li><a class="dropdown-item" href="#" onclick="selectCategory('encomendas')">Encomendas</a></li>
-                <li><a class="dropdown-item" href="#" onclick="selectCategory('produtosEspeciais')">Produtos Especiais</a></li>
+                <li><a class="dropdown-item" onclick="collapseNavbar(); selectCategory('prontaEntrega')">Pronta Entrega</a></li>
+                <li><a class="dropdown-item" onclick="collapseNavbar(); selectCategory('encomendas')">Encomendas</a></li>
+                <li><a class="dropdown-item" onclick="collapseNavbar(); selectCategory('produtosEspeciais')">Produtos Especiais</a></li>
              </ul>
            </li>
            <li class="nav-item">
-             <a class="nav-link auth" href="#" onclick="openAuthModal()">Minha Conta</a>
+             <a class="nav-link auth" onclick="collapseNavbar(); openAuthModal()">Minha Conta</a>
            </li>
          </ul>
       </div>
@@ -167,10 +172,10 @@
   <!-- Conteúdo principal -->
   <div class="content-wrapper">
     <div class="container my-4">
-      <!-- ETAPA 1: Informações do Cliente -->
+      <!-- ETAPA 1: Informações do Cliente (Login obrigatório) -->
       <div id="step1" class="step active">
         <h2 class="text-center my-4">Informe seus Dados</h2>
-        <form id="formStep1">
+        <form id="formStep1" onsubmit="return validarDados();">
           <div class="mb-3">
             <label for="nome" class="form-label">Nome:</label>
             <input type="text" class="form-control" id="nome" placeholder="Digite seu nome" required>
@@ -246,14 +251,26 @@
         <h2 class="text-center my-4">Minha Conta</h2>
         <div class="mb-3">
           <h4>Meus Dados</h4>
-          <form id="dadosForm">
+          <form id="dadosForm" onsubmit="return false;">
             <div class="mb-3">
               <label for="nomeAtual" class="form-label">Nome:</label>
               <input type="text" class="form-control" id="nomeAtual" required>
             </div>
             <div class="mb-3">
+              <label for="cepConta" class="form-label">CEP:</label>
+              <input type="text" class="form-control" id="cepConta" placeholder="00000-000" required>
+            </div>
+            <div class="mb-3">
               <label for="enderecoPadrao" class="form-label">Endereço Padrão:</label>
               <input type="text" class="form-control" id="enderecoPadrao" required>
+            </div>
+            <div class="mb-3">
+              <label for="numeroConta" class="form-label">Número:</label>
+              <input type="text" class="form-control" id="numeroConta" required>
+            </div>
+            <div class="mb-3">
+              <label for="complementoConta" class="form-label">Complemento:</label>
+              <input type="text" class="form-control" id="complementoConta">
             </div>
             <button type="button" class="btn btn-primary" onclick="atualizarDados()">Atualizar Dados</button>
           </form>
@@ -263,6 +280,7 @@
           <div id="orderHistory"></div>
         </div>
         <div class="text-center my-4">
+          <button type="button" class="btn btn-danger" onclick="sair()">Sair</button>
           <button type="button" class="btn btn-secondary" onclick="voltarDashboard()">Voltar</button>
         </div>
       </div>
@@ -327,12 +345,28 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
     
-    // Atualiza o estado da autenticação e atualiza o botão no navbar
+    // Função para recolher o menu (colapsar) ao clicar em um link
+    function collapseNavbar() {
+      const navbarCollapse = document.querySelector('.navbar-collapse');
+      if (navbarCollapse.classList.contains('show')) {
+        new bootstrap.Collapse(navbarCollapse, {toggle: true});
+      }
+    }
+    
+    // Exigir login para avançar (opcional)
+    function validarDados() {
+      if (!auth.currentUser) {
+        openAuthModal();
+        return false;
+      }
+      return true;
+    }
+    
+    // Atualiza o estado da autenticação e modifica o texto do link "Minha Conta"
     onAuthStateChanged(auth, user => {
       const authLink = document.querySelector('.nav-link.auth');
       authLink.innerText = user ? "Minha Conta" : "Login";
       if (user) {
-        // Se usuário logado, carrega os dados no dashboard automaticamente
         carregarDadosUsuario();
         carregarPedidos();
       }
@@ -344,7 +378,7 @@
       Inputmask({"mask": "99999-999"}).mask(document.getElementById("cep"));
     });
     
-    // Auto-completar endereço via ViaCEP (na Etapa 3)
+    // Auto-completar endereço via ViaCEP (na Etapa 3 e no Dashboard)
     document.getElementById("cep").addEventListener("blur", async function() {
       const cep = this.value.replace(/\D/g, '');
       if (cep.length === 8) {
@@ -379,10 +413,10 @@
       numero: "",
       complemento: ""
     };
-    // Variável para categoria atual
+    // Variável para a categoria atual
     let categoriaAtual = "";
     
-    // Dados dos produtos (substitua os links de placeholder pelos reais)
+    // Dados dos produtos (substitua os caminhos pelos reais; se usar hospedagem externa, insira a URL completa)
     const produtosData = {
       prontaEntrega: [
         { nome: "Pão de Queijo 1kg", preco: 40.00, imagem: "images/pao-de-queijo.jpg" },
@@ -409,12 +443,20 @@
       ]
     };
     
-    // Ao selecionar uma categoria, salvar dados do cliente e exibir produtos da categoria
+    // Ao selecionar uma categoria, salva os dados do cliente e exibe os produtos da categoria
     window.selectCategory = (categoria) => {
       pedido.nome = document.getElementById("nome").value;
       pedido.telefone = document.getElementById("telefone").value;
+      if(!pedido.nome || !pedido.telefone) {
+        alert("Nome e Telefone são obrigatórios.");
+        return;
+      }
+      // Exigir login: se não estiver logado, forçar o login
+      if (!auth.currentUser) {
+        openAuthModal();
+        return;
+      }
       categoriaAtual = categoria;
-      // Inicializa a quantidade se necessário
       if (!pedido.produtos[categoria] || pedido.produtos[categoria].length !== produtosData[categoria].length) {
         pedido.produtos[categoria] = new Array(produtosData[categoria].length).fill(0);
       }
@@ -484,7 +526,7 @@
       }
     };
     
-    // Monta o resumo final formatado para WhatsApp com subtotais e total geral
+    // Monta o resumo final formatado para WhatsApp
     window.montarResumo = () => {
       let resumo = "";
       resumo += "*Dados do Cliente:*\n";
@@ -551,7 +593,7 @@
       window.open(url, "_blank");
     };
     
-    // Funções de autenticação e Dashboard
+    // Funções de autenticação e gerenciamento de conta
     window.openAuthModal = () => {
       if (auth.currentUser) {
         openDashboard();
@@ -598,7 +640,7 @@
       authLink.innerText = user ? "Minha Conta" : "Login";
     });
     
-    // Dashboard: Exibe Meus Dados e Meus Pedidos
+    // Dashboard: Carrega Meus Dados e Meus Pedidos
     window.openDashboard = async () => {
       if (!auth.currentUser) {
         alert("Você precisa fazer login para acessar sua conta.");
@@ -609,16 +651,21 @@
       document.getElementById("dashboard").classList.add("active");
       // Preenche os dados do usuário no formulário de "Meus Dados"
       document.getElementById("nomeAtual").value = auth.currentUser.displayName || "";
-      // Caso você deseje, pode armazenar e carregar o endereço padrão do usuário do Firestore (aqui simplificamos)
-      // Carrega o histórico de pedidos
+      // Se houver dados armazenados no Firestore para o usuário, carregue-os (aqui simplificamos)
       carregarPedidos();
     };
     
-    // Atualiza os dados do usuário (apenas o displayName neste exemplo)
+    // Atualiza os dados do usuário e salva no Firestore na coleção "usuarios"
     window.atualizarDados = async () => {
       const novoNome = document.getElementById("nomeAtual").value;
+      const cep = document.getElementById("cepConta").value;
+      const enderecoPadrao = document.getElementById("enderecoPadrao").value;
+      const numero = document.getElementById("numeroConta").value;
+      const complemento = document.getElementById("complementoConta").value;
+      
       try {
         await updateProfile(auth.currentUser, { displayName: novoNome });
+        // Aqui, se desejar, salve os dados do endereço no Firestore na coleção "usuarios"
         alert("Dados atualizados com sucesso.");
       } catch (error) {
         alert("Erro ao atualizar dados: " + error.message);
@@ -676,7 +723,7 @@
       }
     };
     
-    // Função para repetir um pedido: carrega os dados do pedido selecionado na Etapa 3 para edição
+    // Função para repetir um pedido: carrega os dados do pedido na Etapa 3 para edição
     window.repetirPedido = async (pedidoId) => {
       const q = query(collection(db, "pedidos"), where("userId", "==", auth.currentUser.uid));
       try {
@@ -688,12 +735,10 @@
           }
         });
         if (pedidoRepetido) {
-          // Carrega os dados do pedido nos campos da Etapa 3
           document.getElementById("enderecoFinal").value = pedidoRepetido.endereco || "";
           document.getElementById("numero").value = pedidoRepetido.numero || "";
           document.getElementById("complemento").value = pedidoRepetido.complemento || "";
           document.getElementById("observacoes").value = pedidoRepetido.observacoes || "";
-          // Para os produtos, carregue cada categoria (se existir)
           pedido.produtos = pedidoRepetido.produtos;
           for (const categoria in pedido.produtos) {
             if (pedido.produtos.hasOwnProperty(categoria)) {
