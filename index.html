@@ -16,10 +16,13 @@
       margin: 0;
       padding: 0;
     }
-    /* Navbar fixa personalizada */
+    /* Navbar fixa com fundo marrom e textos brancos */
     .navbar {
       background-color: #8B4513 !important;
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .navbar .nav-link {
+      color: #fff !important;
     }
     .navbar-brand {
       margin: 0 auto;
@@ -35,11 +38,11 @@
     .navbar-brand .tagline {
       font-size: 1.2rem;
     }
-    /* Espaço para o conteúdo (devido ao navbar fixed) */
+    /* Espaço para o conteúdo (evitar que a navbar cubra) */
     .content-wrapper {
-      margin-top: 80px;
+      margin-top: 120px;
     }
-    /* Removido o header extra para evitar duplicidade */
+    /* Removemos qualquer faixa extra de cabeçalho */
     /* Animação para transição entre etapas */
     .step {
       display: none;
@@ -127,7 +130,7 @@
   </style>
 </head>
 <body>
-  <!-- Navbar fixa com cabeçalho centralizado -->
+  <!-- Navbar fixa -->
   <nav class="navbar navbar-expand-lg fixed-top">
     <div class="container">
       <a class="navbar-brand" href="#" onclick="goToStep(1)">
@@ -153,7 +156,7 @@
              </ul>
            </li>
            <li class="nav-item">
-             <a class="nav-link auth" href="#" onclick="openAuthModal()">Login</a>
+             <a class="nav-link auth" href="#" onclick="openAuthModal()">Minha Conta</a>
            </li>
          </ul>
       </div>
@@ -236,6 +239,16 @@
           <button type="button" class="btn btn-secondary" onclick="goToStep(3)">Voltar</button>
         </div>
       </div>
+      
+      <!-- Dashboard: Minha Conta e Histórico de Pedidos -->
+      <div id="dashboard" class="step">
+        <h2 class="text-center my-4">Bem-vindo, <span id="userName"></span></h2>
+        <div id="orderHistory"></div>
+        <div class="text-center my-4">
+          <button type="button" class="btn btn-primary" onclick="goToStep(1)">Fazer Novo Pedido</button>
+        </div>
+      </div>
+      
     </div>
   </div>
 
@@ -278,7 +291,7 @@
     // Importar módulos do Firebase
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
     import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, signOut } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
-    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, query, where, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
     
     // Configuração do Firebase (substitua com suas credenciais)
     const firebaseConfig = {
@@ -299,7 +312,13 @@
     // Atualizar o estado da autenticação e modificar o botão no navbar
     onAuthStateChanged(auth, user => {
       const authLink = document.querySelector('.nav-link.auth');
-      authLink.innerText = user ? "Logout" : "Login";
+      if (user) {
+        authLink.innerText = "Minha Conta";
+        // Se usuário logado, atualizar nome no dashboard
+        document.getElementById("userName").innerText = user.displayName || user.email;
+      } else {
+        authLink.innerText = "Login";
+      }
     });
     
     // Aplicar máscaras aos campos de telefone e CEP
@@ -308,7 +327,7 @@
       Inputmask({"mask": "99999-999"}).mask(document.getElementById("cep"));
     });
     
-    // Auto-completar endereço via ViaCEP (na Etapa 3)
+    // Auto-completar endereço via ViaCEP na etapa 3
     document.getElementById("cep").addEventListener("blur", async function() {
       const cep = this.value.replace(/\D/g, '');
       if (cep.length === 8) {
@@ -316,7 +335,6 @@
           const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
           const data = await response.json();
           if (!data.erro) {
-            // Preenche o campo de endereço se estiver vazio
             if (!document.getElementById("enderecoFinal").value)
               document.getElementById("enderecoFinal").value = `${data.logradouro}, ${data.bairro}, ${data.localidade} - ${data.uf}`;
           } else {
@@ -379,7 +397,7 @@
       pedido.nome = document.getElementById("nome").value;
       pedido.telefone = document.getElementById("telefone").value;
       categoriaAtual = categoria;
-      // Se não existir um array para essa categoria ou se o tamanho estiver diferente, inicializa com zeros
+      // Se não existir um array para a categoria ou tamanho diferente, inicializa com zeros
       if (!pedido.produtos[categoria] || pedido.produtos[categoria].length !== produtosData[categoria].length) {
         pedido.produtos[categoria] = new Array(produtosData[categoria].length).fill(0);
       }
@@ -392,7 +410,7 @@
       goToStep(2);
     };
     
-    // Carrega os produtos da categoria selecionada, mantendo quantidades já selecionadas
+    // Carrega os produtos da categoria selecionada, mantendo as quantidades já definidas
     window.carregarProdutos = (categoria) => {
       const lista = document.getElementById("productList");
       lista.innerHTML = "";
@@ -450,7 +468,7 @@
       }
     };
     
-    // Monta o resumo final com formatação para WhatsApp
+    // Monta o resumo final com subtotais por categoria e total geral, formatado para WhatsApp
     window.montarResumo = () => {
       let resumo = "";
       resumo += "*Dados do Cliente:*\n";
@@ -458,7 +476,7 @@
       resumo += "*Telefone:* " + pedido.telefone + "\n\n";
       
       let totalGeral = 0;
-      // Percorre todas as categorias
+      // Percorre cada categoria
       for (const categoria in pedido.produtos) {
         const quantidades = pedido.produtos[categoria];
         if (quantidades && quantidades.some(q => q > 0)) {
@@ -466,7 +484,7 @@
           if (categoria === "prontaEntrega") catText = "Pronta Entrega";
           else if (categoria === "encomendas") catText = "Encomendas";
           else if (categoria === "produtosEspeciais") catText = "Produtos Especiais";
-          resumo += "*" + catText + ":*\n";
+          resumo += `*${catText}:*\n`;
           let subtotalCat = 0;
           produtosData[categoria].forEach((produto, index) => {
             const qty = quantidades[index];
@@ -480,12 +498,11 @@
           totalGeral += subtotalCat;
         }
       }
-      
-      resumo += "*Total Geral:* R$ " + totalGeral.toFixed(2) + "\n\n";
-      resumo += "*Observações:* " + document.getElementById("observacoes").value + "\n";
-      resumo += "*Endereço:* " + document.getElementById("enderecoFinal").value;
-      resumo += ", *Número:* " + document.getElementById("numero").value;
-      resumo += ", *Complemento:* " + document.getElementById("complemento").value + "\n";
+      resumo += `*Total Geral:* R$ ${totalGeral.toFixed(2)}\n\n`;
+      resumo += `*Observações:* ${document.getElementById("observacoes").value}\n`;
+      resumo += `*Endereço:* ${document.getElementById("enderecoFinal").value}\n`;
+      resumo += `*Número:* ${document.getElementById("numero").value}\n`;
+      resumo += `*Complemento:* ${document.getElementById("complemento").value}\n`;
       
       document.getElementById("resumoPedido").innerText = resumo;
     };
@@ -519,12 +536,11 @@
       window.open(url, "_blank");
     };
     
-    // Funções de autenticação: abrir modal, login, registro e logout
+    // Funções de autenticação e gerenciamento de conta
     window.openAuthModal = () => {
       if (auth.currentUser) {
-        signOut(auth).then(() => {
-          document.querySelector('.nav-link.auth').innerText = "Login";
-        });
+        // Se já estiver logado, abre o dashboard
+        openDashboard();
       } else {
         const modal = new bootstrap.Modal(document.getElementById("authModal"));
         modal.show();
@@ -538,6 +554,7 @@
         .then(() => {
           const modal = bootstrap.Modal.getInstance(document.getElementById("authModal"));
           modal.hide();
+          openDashboard();
         })
         .catch(error => {
           alert("Erro no login: " + error.message);
@@ -555,6 +572,7 @@
         .then(() => {
           const modal = bootstrap.Modal.getInstance(document.getElementById("authModal"));
           modal.hide();
+          openDashboard();
         })
         .catch(error => {
           alert("Erro no registro: " + error.message);
@@ -563,8 +581,100 @@
     
     onAuthStateChanged(auth, user => {
       const authLink = document.querySelector('.nav-link.auth');
-      authLink.innerText = user ? "Logout" : "Login";
+      authLink.innerText = user ? "Minha Conta" : "Login";
     });
+    
+    // Dashboard: Exibe o histórico de pedidos do usuário
+    window.openDashboard = async () => {
+      // Força a autenticação obrigatória
+      if (!auth.currentUser) {
+        alert("Você precisa fazer login para acessar sua conta.");
+        return;
+      }
+      // Exibe o dashboard e oculta as demais seções
+      document.querySelectorAll(".step").forEach(step => step.classList.remove("active"));
+      document.getElementById("dashboard").classList.add("active");
+      // Atualiza o nome do usuário
+      document.getElementById("userName").innerText = auth.currentUser.displayName || auth.currentUser.email;
+      // Carrega o histórico de pedidos
+      const orderHistoryDiv = document.getElementById("orderHistory");
+      orderHistoryDiv.innerHTML = "<p>Carregando pedidos...</p>";
+      const q = query(collection(db, "pedidos"), where("userId", "==", auth.currentUser.uid));
+      try {
+        const querySnapshot = await getDocs(q);
+        if (querySnapshot.empty) {
+          orderHistoryDiv.innerHTML = "<p>Nenhum pedido encontrado.</p>";
+        } else {
+          orderHistoryDiv.innerHTML = "";
+          querySnapshot.forEach(docSnap => {
+            const pedidoData = docSnap.data();
+            const divPedido = document.createElement("div");
+            divPedido.className = "card mb-3";
+            divPedido.innerHTML = `
+              <div class="card-body">
+                <h5 class="card-title">Pedido de ${new Date(pedidoData.data.seconds * 1000).toLocaleString()}</h5>
+                <p class="card-text"><pre>${pedidoData.resumo}</pre></p>
+                <button class="btn btn-sm btn-primary" onclick="repetirPedido('${docSnap.id}')">Repetir Pedido</button>
+                <button class="btn btn-sm btn-danger" onclick="excluirPedido('${docSnap.id}')">Excluir</button>
+              </div>
+            `;
+            orderHistoryDiv.appendChild(divPedido);
+          });
+        }
+      } catch (error) {
+        console.error("Erro ao carregar pedidos:", error);
+        orderHistoryDiv.innerHTML = "<p>Erro ao carregar pedidos.</p>";
+      }
+    };
+    
+    // Função para excluir um pedido
+    window.excluirPedido = async (pedidoId) => {
+      if (confirm("Deseja realmente excluir este pedido?")) {
+        try {
+          await deleteDoc(doc(db, "pedidos", pedidoId));
+          openDashboard();
+        } catch (error) {
+          console.error("Erro ao excluir pedido:", error);
+          alert("Erro ao excluir pedido.");
+        }
+      }
+    };
+    
+    // Função para repetir um pedido: carrega os dados do pedido selecionado na etapa 3 para edição
+    window.repetirPedido = async (pedidoId) => {
+      // Recupera o pedido e carrega os dados nas etapas para que o usuário possa ajustá-lo
+      const q = query(collection(db, "pedidos"), where("userId", "==", auth.currentUser.uid));
+      try {
+        const querySnapshot = await getDocs(q);
+        let pedidoRepetido;
+        querySnapshot.forEach(docSnap => {
+          if (docSnap.id === pedidoId) {
+            pedidoRepetido = docSnap.data();
+          }
+        });
+        if (pedidoRepetido) {
+          // Carrega os dados do pedido nos campos da Etapa 3
+          document.getElementById("enderecoFinal").value = pedidoRepetido.endereco || "";
+          document.getElementById("numero").value = pedidoRepetido.numero || "";
+          document.getElementById("complemento").value = pedidoRepetido.complemento || "";
+          document.getElementById("observacoes").value = pedidoRepetido.observacoes || "";
+          // Para os produtos, carregue cada categoria
+          pedido.produtos = pedidoRepetido.produtos;
+          // Se o pedido continha produtos de uma categoria, recarregue-os
+          for (const categoria in pedido.produtos) {
+            if (pedido.produtos.hasOwnProperty(categoria)) {
+              carregarProdutos(categoria);
+            }
+          }
+          // Redireciona para a Etapa 3
+          goToStep(3);
+        } else {
+          alert("Pedido não encontrado.");
+        }
+      } catch (error) {
+        console.error("Erro ao recuperar pedido:", error);
+      }
+    };
     
   </script>
 </body>
