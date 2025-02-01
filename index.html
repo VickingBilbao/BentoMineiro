@@ -16,7 +16,7 @@
       margin: 0;
       padding: 0;
     }
-    /* Navbar fixa personalizada com fundo marrom e textos brancos */
+    /* Navbar fixa com fundo marrom e textos brancos */
     .navbar {
       background-color: #8B4513 !important;
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
@@ -39,9 +39,9 @@
     .navbar-brand .tagline {
       font-size: 1.2rem;
     }
-    /* Espaço para o conteúdo (evitar que a navbar fixa encubra) */
+    /* Espaço para o conteúdo (evitar que a navbar fixe encubra) */
     .content-wrapper {
-      margin-top: 120px;
+      margin-top: 150px;
     }
     /* Animação para transição entre etapas */
     .step {
@@ -184,7 +184,7 @@
         </form>
       </div>
       
-      <!-- ETAPA 2: Seleção de Produtos (Categoria Atual) -->
+      <!-- ETAPA 2: Seleção de Produtos -->
       <div id="step2" class="step">
         <h2 id="categoriaTitulo" class="text-center my-4"></h2>
         <form id="formStep2">
@@ -257,7 +257,7 @@
       Inputmask({"mask": "99999-999"}).mask(document.getElementById("cep"));
     });
     
-    // Auto-completar endereço via ViaCEP na Etapa 3
+    // Auto-completar endereço via ViaCEP (na Etapa 3)
     document.getElementById("cep").addEventListener("blur", async function() {
       const cep = this.value.replace(/\D/g, '');
       if (cep.length === 8) {
@@ -281,7 +281,6 @@
     let pedido = {
       nome: "",
       telefone: "",
-      // Armazenar produtos para cada categoria
       produtos: {
         prontaEntrega: [],
         encomendas: [],
@@ -292,10 +291,9 @@
       numero: "",
       complemento: ""
     };
-    // Variável para a categoria atual
     let categoriaAtual = "";
     
-    // Dados dos produtos (substitua os caminhos de imagem pelos corretos)
+    // Dados dos produtos (substitua os caminhos pelas URLs ou caminhos relativos corretos)
     const produtosData = {
       prontaEntrega: [
         { nome: "Pão de Queijo 1kg", preco: 40.00, imagem: "images/pao-de-queijo.jpg" },
