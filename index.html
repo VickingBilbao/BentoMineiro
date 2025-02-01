@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pedido Online - Culinária Mineira</title>
+  <!-- Link para o Bootstrap (para responsividade) -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f7f7f7;
+      font-family: Arial, sans-serif;
+    }
+    header {
+      background-color: #a56347;
+      color: #fff;
+      padding: 20px;
+      text-align: center;
+    }
+    .container {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Pedido Online - Culinária Mineira</h1>
+  </header>
+  <div class="container">
+    <form id="orderForm">
+      <div class="mb-3">
+        <label for="inputNome" class="form-label">Seu Nome:</label>
+        <input type="text" class="form-control" id="inputNome" placeholder="Digite seu nome" required>
+      </div>
+      <!-- Adicione mais campos conforme necessário, por exemplo: Telefone, Endereço, Produtos etc. -->
+      <button type="button" class="btn btn-primary" onclick="gerarResumo()">Gerar Pedido</button>
+    </form>
+    <div id="resumoContainer" class="mt-4" style="display:none;">
+      <h2>Resumo do Pedido</h2>
+      <pre id="txtResumo" class="bg-light p-3"></pre>
+      <button type="button" class="btn btn-success" onclick="enviarWhatsApp()">Enviar Pedido via WhatsApp</button>
+    </div>
+  </div>
+  
+  <script>
+    function gerarResumo() {
+      var nome = document.getElementById("inputNome").value;
+      // Aqui você pode coletar os demais dados e realizar os cálculos dos produtos.
+      var resumo = "Nome: " + nome + "\n";
+      // Exemplo: adicionar detalhes de um produto
+      // var qtdProduto = Number(document.getElementById("inputProduto").value) || 0;
+      // var precoProduto = 40.00;
+      // resumo += "Produto X: " + qtdProduto + " x R$ " + precoProduto.toFixed(2) + " = R$ " + (qtdProduto * precoProduto).toFixed(2) + "\n";
+      
+      document.getElementById("txtResumo").innerText = resumo;
+      document.getElementById("orderForm").style.display = "none";
+      document.getElementById("resumoContainer").style.display = "block";
+    }
+    
+    function enviarWhatsApp() {
+      var resumo = document.getElementById("txtResumo").innerText;
+      var mensagem = encodeURIComponent(resumo);
+      var url = "https://wa.me/5511984193457?text=" + mensagem;
+      window.open(url, "_blank");
+    }
+  </script>
+</body>
+</html>
