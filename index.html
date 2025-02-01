@@ -20,29 +20,25 @@
     .navbar {
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
-    /* Espaço para o conteúdo (devido ao navbar fixed) */
+    /* Espaço para o conteúdo (devido à navbar fixed) */
     .content-wrapper {
       margin-top: 80px;
     }
-    /* Cabeçalho fixo */
+    /* Cabeçalho com fundo marrom, maior e centralizado */
     header {
-      background-color: #a56347;
+      background-color: #8B4513;
       color: #fff;
       text-align: center;
-      padding: 20px;
-      /* Para usar uma imagem de cabeçalho, descomente as linhas abaixo e ajuste o caminho */
-      /* background-image: url('caminho/para/cabecalho.jpg');
-         background-size: cover;
-         background-position: center; */
+      padding: 40px 20px;
     }
     header h1 {
       margin: 0;
-      font-size: 2.5rem;
+      font-size: 3rem;
       font-weight: 600;
     }
     header p {
-      margin: 5px 0 0;
-      font-size: 1.2rem;
+      margin: 10px 0 0;
+      font-size: 1.5rem;
     }
     /* Animação para transição entre etapas */
     .step {
@@ -65,7 +61,7 @@
       transition: background-color 0.3s;
     }
     .btn-category:hover {
-      background-color: #8a4b3a;
+      background-color: #6E2C00;
     }
     /* Produtos */
     .product-item {
@@ -93,7 +89,7 @@
       margin-bottom: 5px;
     }
     .product-price {
-      color: #a56347;
+      color: #8B4513;
       font-weight: 500;
     }
     /* Resumo do pedido */
@@ -113,7 +109,7 @@
     /* Responsividade */
     @media (max-width: 576px) {
       header h1 {
-        font-size: 2rem;
+        font-size: 2.5rem;
       }
       .product-item {
         flex-direction: column;
@@ -131,7 +127,7 @@
   <!-- Navbar fixa -->
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
     <div class="container-fluid">
-      <a class="navbar-brand" href="#">Bento Mineiro</a>
+      <a class="navbar-brand" href="#" onclick="goToStep(1)">Bento Mineiro</a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown">
         <span class="navbar-toggler-icon"></span>
       </button>
@@ -161,14 +157,13 @@
   <!-- Conteúdo principal -->
   <div class="content-wrapper">
     <header>
-      <!-- Insira seu logo se desejar:
-           <img src="logo.png" alt="Logo Bento Mineiro" style="max-width:150px; margin-bottom:10px;">
-      -->
+      <!-- Insira seu logo se desejar (substitua o caminho abaixo) -->
+      <!-- <img src="logo.png" alt="Logo Bento Mineiro" style="max-width:150px; margin-bottom:10px;"> -->
       <h1>Bento Mineiro</h1>
       <p>A cozinha mineira na sua casa!</p>
     </header>
     <div class="container my-4">
-      <!-- ETAPA 1: Informações do Cliente e Seleção de Categoria -->
+      <!-- ETAPA 1: Informações do Cliente -->
       <div id="step1" class="step active">
         <h2 class="text-center my-4">Faça seu pedido</h2>
         <form id="formStep1">
@@ -184,15 +179,12 @@
             <label for="cep" class="form-label">CEP:</label>
             <input type="text" class="form-control" id="cep" placeholder="00000-000" required>
           </div>
-          <div class="mb-3">
-            <label for="endereco" class="form-label">Endereço de entrega:</label>
-            <input type="text" class="form-control" id="endereco" placeholder="Seu endereço será completado automaticamente" required>
-          </div>
+          <!-- Agora a etapa 1 NÃO inclui endereço completo -->
           <div class="text-center my-4">
             <p>Escolha a categoria de produtos:</p>
-            <button type="button" class="btn btn-outline-secondary btn-category" onclick="selectCategory('prontaEntrega')">Pronta Entrega</button>
-            <button type="button" class="btn btn-outline-secondary btn-category" onclick="selectCategory('encomendas')">Encomendas</button>
-            <button type="button" class="btn btn-outline-secondary btn-category" onclick="selectCategory('produtosEspeciais')">Produtos Especiais</button>
+            <button type="button" class="btn btn-outline-light btn-category" onclick="selectCategory('prontaEntrega')">Pronta Entrega</button>
+            <button type="button" class="btn btn-outline-light btn-category" onclick="selectCategory('encomendas')">Encomendas</button>
+            <button type="button" class="btn btn-outline-light btn-category" onclick="selectCategory('produtosEspeciais')">Produtos Especiais</button>
           </div>
         </form>
       </div>
@@ -217,9 +209,18 @@
             <label for="observacoes" class="form-label">Observações:</label>
             <textarea class="form-control" id="observacoes" rows="3" placeholder="Digite observações, se houver"></textarea>
           </div>
+          <!-- Agora, na etapa final, solicitamos endereço, número e complemento -->
           <div class="mb-3">
-            <label for="enderecoFinal" class="form-label">Endereço de entrega:</label>
-            <input type="text" class="form-control" id="enderecoFinal" placeholder="Confirme seu endereço" required>
+            <label for="enderecoFinal" class="form-label">Endereço:</label>
+            <input type="text" class="form-control" id="enderecoFinal" placeholder="Digite seu endereço" required>
+          </div>
+          <div class="mb-3">
+            <label for="numero" class="form-label">Número:</label>
+            <input type="text" class="form-control" id="numero" placeholder="Número" required>
+          </div>
+          <div class="mb-3">
+            <label for="complemento" class="form-label">Complemento:</label>
+            <input type="text" class="form-control" id="complemento" placeholder="Complemento">
           </div>
           <div class="text-center my-4">
             <button type="button" class="btn btn-success" onclick="enviarPedido()">Enviar pedido via WhatsApp</button>
@@ -268,14 +269,14 @@
   <!-- Scripts externos: Inputmask e Bootstrap JS -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/inputmask/5.0.8/inputmask.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <!-- Nosso código principal, utilizando módulos ES6 e Firebase v11.2.0 -->
+  <!-- Nosso código principal utilizando módulos ES6 e Firebase v11.2.0 -->
   <script type="module">
     // Importar módulos do Firebase
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
     import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, signOut } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
     import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
     
-    // Configuração do Firebase (substitua pelas suas credenciais)
+    // Configuração do Firebase (substitua com suas credenciais)
     const firebaseConfig = {
       apiKey: "AIzaSyDTlM2n4Cg-x1vv-LNNMY-6Pl5UCHLpUko",
       authDomain: "bento-mineiro.firebaseapp.com",
@@ -294,20 +295,16 @@
     // Atualizar o estado da autenticação e modificar o botão no navbar
     onAuthStateChanged(auth, user => {
       const authLink = document.querySelector('.nav-link.auth');
-      if (user) {
-        authLink.innerText = "Logout";
-      } else {
-        authLink.innerText = "Login";
-      }
+      authLink.innerText = user ? "Logout" : "Login";
     });
     
-    // Aplicar máscaras aos campos de telefone e CEP
+    // Aplicar máscaras nos campos de telefone e CEP
     window.addEventListener("load", () => {
       Inputmask({"mask": "(99) 99999-9999"}).mask(document.getElementById("telefone"));
       Inputmask({"mask": "99999-999"}).mask(document.getElementById("cep"));
     });
     
-    // Auto-completar endereço usando a API ViaCEP
+    // Auto-completar endereço via ViaCEP
     document.getElementById("cep").addEventListener("blur", async function() {
       const cep = this.value.replace(/\D/g, '');
       if (cep.length === 8) {
@@ -327,18 +324,27 @@
       }
     });
     
-    // Dados dos produtos e objeto para armazenar o pedido
+    // Objeto para armazenar os dados do pedido
     let pedido = {
       nome: "",
       telefone: "",
-      categoria: "",
+      // Armazenaremos os produtos para cada categoria separadamente
+      produtos: {
+        prontaEntrega: [],
+        encomendas: [],
+        produtosEspeciais: []
+      },
       observacoes: "",
-      endereco: ""
+      endereco: "",
+      numero: "",
+      complemento: ""
     };
-    let categoriaSelecionada = "";
     
-    // Definição dos produtos (substitua os links de placeholder pelas imagens reais)
-    const produtos = {
+    // Variável para saber qual categoria está sendo exibida atualmente
+    let categoriaAtual = "";
+    
+    // Definição dos produtos (substitua os links de placeholder pelos reais)
+    const produtosData = {
       prontaEntrega: [
         { nome: "Pão de Queijo 1kg", preco: 40.00, imagem: "https://via.placeholder.com/150?text=Pão+de+Queijo" },
         { nome: "Queijo Meia Cura 500g", preco: 50.00, imagem: "https://via.placeholder.com/150?text=Queijo+Meia+Cura" },
@@ -364,31 +370,42 @@
       ]
     };
     
-    // Função para selecionar categoria e ir para a Etapa 2
+    // Quando o usuário selecionar uma categoria, salvamos as informações de contato e exibimos os produtos daquela categoria
     window.selectCategory = (categoria) => {
+      // Salva os dados do cliente da etapa 1
       pedido.nome = document.getElementById("nome").value;
       pedido.telefone = document.getElementById("telefone").value;
-      pedido.categoria = categoria;
+      categoriaAtual = categoria;
+      
+      // Se não existir um array para essa categoria, inicialize com zeros
+      if (!pedido.produtos[categoria] || pedido.produtos[categoria].length !== produtosData[categoria].length) {
+        pedido.produtos[categoria] = new Array(produtosData[categoria].length).fill(0);
+      }
+      
+      // Atualiza o título da categoria
       let titulo = "";
       if (categoria === "prontaEntrega") titulo = "Pronta Entrega";
       else if (categoria === "encomendas") titulo = "Encomendas";
       else if (categoria === "produtosEspeciais") titulo = "Produtos Especiais";
       document.getElementById("categoriaTitulo").innerText = titulo;
+      
       carregarProdutos(categoria);
       goToStep(2);
     };
     
-    // Função para carregar os produtos da categoria selecionada
+    // Carrega os produtos da categoria selecionada e preserva as quantidades já selecionadas
     window.carregarProdutos = (categoria) => {
       const lista = document.getElementById("productList");
       lista.innerHTML = "";
-      produtos[categoria].forEach((produto, index) => {
+      produtosData[categoria].forEach((produto, index) => {
         const div = document.createElement("div");
         div.className = "product-item";
+        
         const img = document.createElement("img");
         img.src = produto.imagem;
         img.alt = produto.nome;
         div.appendChild(img);
+        
         const infoDiv = document.createElement("div");
         infoDiv.className = "product-info";
         const nomeProduto = document.createElement("div");
@@ -400,23 +417,31 @@
         infoDiv.appendChild(nomeProduto);
         infoDiv.appendChild(precoProduto);
         div.appendChild(infoDiv);
+        
         // Dropdown para quantidade (0 a 10)
         const selectQty = document.createElement("select");
         selectQty.className = "form-select";
         selectQty.style.width = "100px";
-        selectQty.id = "produto_" + index;
+        selectQty.id = `${categoria}_produto_${index}`;
         for (let i = 0; i <= 10; i++) {
           const option = document.createElement("option");
           option.value = i;
           option.innerText = i;
           selectQty.appendChild(option);
         }
+        // Define o valor previamente selecionado, se existir
+        selectQty.value = pedido.produtos[categoria][index];
+        // Atualiza o valor na estrutura global sempre que houver mudança
+        selectQty.addEventListener("change", (e) => {
+          pedido.produtos[categoria][index] = Number(e.target.value);
+        });
         div.appendChild(selectQty);
+        
         lista.appendChild(div);
       });
     };
     
-    // Função para alternar entre as etapas
+    // Função para alternar entre as etapas do formulário
     window.goToStep = (stepNumber) => {
       document.querySelectorAll(".step").forEach(step => {
         step.classList.remove("active");
@@ -427,35 +452,46 @@
       }
     };
     
-    // Função para montar o resumo final do pedido
+    // Monta o resumo final, incluindo produtos de todas as categorias
     window.montarResumo = () => {
       let resumo = "";
       resumo += "Nome: " + pedido.nome + "\n";
-      resumo += "Telefone: " + pedido.telefone + "\n";
-      let catText = "";
-      if (pedido.categoria === "prontaEntrega") catText = "Pronta Entrega";
-      else if (pedido.categoria === "encomendas") catText = "Encomendas";
-      else if (pedido.categoria === "produtosEspeciais") catText = "Produtos Especiais";
-      resumo += "Categoria: " + catText + "\n\nProdutos:\n";
-      let totalGeral = 0;
-      const listaProdutos = produtos[pedido.categoria];
-      listaProdutos.forEach((produto, index) => {
-        let qty = Number(document.getElementById("produto_" + index).value) || 0;
-        if (qty > 0) {
-          let totalProduto = qty * produto.preco;
-          resumo += produto.nome + ": " + qty + " x R$ " + produto.preco.toFixed(2) + " = R$ " + totalProduto.toFixed(2) + "\n";
-          totalGeral += totalProduto;
+      resumo += "Telefone: " + pedido.telefone + "\n\n";
+      
+      // Percorre todas as categorias e inclui os produtos com quantidade > 0
+      for (const categoria in pedido.produtos) {
+        const catArray = pedido.produtos[categoria];
+        if (catArray && catArray.some(q => q > 0)) {
+          let catText = "";
+          if (categoria === "prontaEntrega") catText = "Pronta Entrega";
+          else if (categoria === "encomendas") catText = "Encomendas";
+          else if (categoria === "produtosEspeciais") catText = "Produtos Especiais";
+          resumo += "Categoria: " + catText + "\n";
+          let totalCat = 0;
+          produtosData[categoria].forEach((produto, index) => {
+            let qty = catArray[index];
+            if (qty > 0) {
+              let totalProduto = qty * produto.preco;
+              resumo += `  ${produto.nome}: ${qty} x R$ ${produto.preco.toFixed(2)} = R$ ${totalProduto.toFixed(2)}\n`;
+              totalCat += totalProduto;
+            }
+          });
+          resumo += `  Subtotal: R$ ${totalCat.toFixed(2)}\n\n`;
         }
-      });
-      resumo += "\nTotal: R$ " + totalGeral.toFixed(2) + "\n\n";
+      }
+      
+      // Dados finais do cliente
       pedido.observacoes = document.getElementById("observacoes").value;
       pedido.endereco = document.getElementById("enderecoFinal").value;
+      pedido.numero = document.getElementById("numero").value;
+      pedido.complemento = document.getElementById("complemento").value;
       resumo += "Observações: " + pedido.observacoes + "\n";
-      resumo += "Endereço de entrega: " + pedido.endereco + "\n";
+      resumo += "Endereço: " + pedido.endereco + ", Número: " + pedido.numero + ", Complemento: " + pedido.complemento + "\n";
+      
       document.getElementById("resumoPedido").innerText = resumo;
     };
     
-    // Função para enviar o pedido via WhatsApp e salvar no Firestore se o usuário estiver logado
+    // Envia o pedido via WhatsApp e salva no Firestore se o usuário estiver logado
     window.enviarPedido = async () => {
       montarResumo();
       let resumo = document.getElementById("resumoPedido").innerText;
@@ -469,8 +505,11 @@
             email: auth.currentUser.email,
             nome: pedido.nome,
             telefone: pedido.telefone,
-            categoria: pedido.categoria,
-            resumo: resumo,
+            produtos: pedido.produtos,
+            observacoes: pedido.observacoes,
+            endereco: pedido.endereco,
+            numero: pedido.numero,
+            complemento: pedido.complemento,
             data: new Date()
           });
           console.log("Pedido salvo no Firestore.");
@@ -528,11 +567,7 @@
     // Monitorar o estado de autenticação e atualizar o botão no navbar
     onAuthStateChanged(auth, user => {
       const authLink = document.querySelector('.nav-link.auth');
-      if (user) {
-        authLink.innerText = "Logout";
-      } else {
-        authLink.innerText = "Login";
-      }
+      authLink.innerText = user ? "Logout" : "Login";
     });
     
   </script>
