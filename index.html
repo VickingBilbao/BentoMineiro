@@ -16,12 +16,13 @@
       margin: 0;
       padding: 0;
     }
-    /* Navbar fixa com fundo marrom e textos brancos */
+    /* Navbar fixa personalizada */
     .navbar {
       background-color: #8B4513 !important;
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
-    .navbar .nav-link {
+    .navbar .nav-link,
+    .navbar .navbar-brand {
       color: #fff !important;
     }
     .navbar-brand {
@@ -38,11 +39,11 @@
     .navbar-brand .tagline {
       font-size: 1.2rem;
     }
-    /* Espaço para o conteúdo (evitar que a navbar cubra) */
+    /* Espaço para o conteúdo (evitar sobreposição da navbar) */
     .content-wrapper {
       margin-top: 120px;
     }
-    /* Removemos qualquer faixa extra de cabeçalho */
+    /* Removemos qualquer faixa extra de cabeçalho; usamos apenas a navbar */
     /* Animação para transição entre etapas */
     .step {
       display: none;
@@ -187,7 +188,7 @@
         </form>
       </div>
       
-      <!-- ETAPA 2: Seleção de Produtos (da Categoria Atual) -->
+      <!-- ETAPA 2: Seleção de Produtos (Categoria Atual) -->
       <div id="step2" class="step">
         <h2 id="categoriaTitulo" class="text-center my-4"></h2>
         <form id="formStep2">
@@ -240,12 +241,29 @@
         </div>
       </div>
       
-      <!-- Dashboard: Minha Conta e Histórico de Pedidos -->
+      <!-- DASHBOARD: Minha Conta -->
       <div id="dashboard" class="step">
-        <h2 class="text-center my-4">Bem-vindo, <span id="userName"></span></h2>
-        <div id="orderHistory"></div>
+        <h2 class="text-center my-4">Minha Conta</h2>
+        <div class="mb-3">
+          <h4>Meus Dados</h4>
+          <form id="dadosForm">
+            <div class="mb-3">
+              <label for="nomeAtual" class="form-label">Nome:</label>
+              <input type="text" class="form-control" id="nomeAtual" required>
+            </div>
+            <div class="mb-3">
+              <label for="enderecoPadrao" class="form-label">Endereço Padrão:</label>
+              <input type="text" class="form-control" id="enderecoPadrao" required>
+            </div>
+            <button type="button" class="btn btn-primary" onclick="atualizarDados()">Atualizar Dados</button>
+          </form>
+        </div>
+        <div class="mb-3">
+          <h4>Meus Pedidos</h4>
+          <div id="orderHistory"></div>
+        </div>
         <div class="text-center my-4">
-          <button type="button" class="btn btn-primary" onclick="goToStep(1)">Fazer Novo Pedido</button>
+          <button type="button" class="btn btn-secondary" onclick="voltarDashboard()">Voltar</button>
         </div>
       </div>
       
@@ -291,7 +309,7 @@
     // Importar módulos do Firebase
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
     import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, signOut } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
-    import { getFirestore, collection, addDoc, query, where, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, query, where, getDocs, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
     
     // Configuração do Firebase (substitua com suas credenciais)
     const firebaseConfig = {
@@ -309,15 +327,14 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
     
-    // Atualizar o estado da autenticação e modificar o botão no navbar
+    // Atualiza o estado da autenticação e atualiza o botão no navbar
     onAuthStateChanged(auth, user => {
       const authLink = document.querySelector('.nav-link.auth');
+      authLink.innerText = user ? "Minha Conta" : "Login";
       if (user) {
-        authLink.innerText = "Minha Conta";
-        // Se usuário logado, atualizar nome no dashboard
-        document.getElementById("userName").innerText = user.displayName || user.email;
-      } else {
-        authLink.innerText = "Login";
+        // Se usuário logado, carrega os dados no dashboard automaticamente
+        carregarDadosUsuario();
+        carregarPedidos();
       }
     });
     
@@ -327,7 +344,7 @@
       Inputmask({"mask": "99999-999"}).mask(document.getElementById("cep"));
     });
     
-    // Auto-completar endereço via ViaCEP na etapa 3
+    // Auto-completar endereço via ViaCEP (na Etapa 3)
     document.getElementById("cep").addEventListener("blur", async function() {
       const cep = this.value.replace(/\D/g, '');
       if (cep.length === 8) {
@@ -368,27 +385,27 @@
     // Dados dos produtos (substitua os links de placeholder pelos reais)
     const produtosData = {
       prontaEntrega: [
-        { nome: "Pão de Queijo 1kg", preco: 40.00, imagem: "https://via.placeholder.com/150?text=Pão+de+Queijo" },
-        { nome: "Queijo Meia Cura 500g", preco: 50.00, imagem: "https://via.placeholder.com/150?text=Queijo+Meia+Cura" },
-        { nome: "Queijo Nozinho 500g", preco: 40.00, imagem: "https://via.placeholder.com/150?text=Queijo+Nozinho" },
-        { nome: "Goiabada Cremosa", preco: 40.00, imagem: "https://via.placeholder.com/150?text=Goiabada+Cremosa" },
-        { nome: "Doce de Leite", preco: 40.00, imagem: "https://via.placeholder.com/150?text=Doce+de+Leite" }
+        { nome: "Pão de Queijo 1kg", preco: 40.00, imagem: "images/pao-de-queijo.jpg" },
+        { nome: "Queijo Meia Cura 500g", preco: 50.00, imagem: "images/queijo-meia-cura.jpg" },
+        { nome: "Queijo Nozinho 500g", preco: 40.00, imagem: "images/queijo-nozinho.jpg" },
+        { nome: "Goiabada Cremosa", preco: 40.00, imagem: "images/goiabada-cremosa.jpg" },
+        { nome: "Doce de Leite", preco: 40.00, imagem: "images/doce-de-leite.jpg" }
       ],
       encomendas: [
-        { nome: "Queijo Fresco 500g", preco: 50.00, imagem: "https://via.placeholder.com/150?text=Queijo+Fresco" },
-        { nome: "Requeijão Cremoso 700g", preco: 50.00, imagem: "https://via.placeholder.com/150?text=Requeij%C3%A3o+Cremoso" },
-        { nome: "Café 500g (moído ou grão)", preco: 50.00, imagem: "https://via.placeholder.com/150?text=Caf%C3%A9" },
-        { nome: "Mel 500g", preco: 45.00, imagem: "https://via.placeholder.com/150?text=Mel" },
-        { nome: "Farofa 300g (sabores)", preco: 20.00, imagem: "https://via.placeholder.com/150?text=Farofa" },
-        { nome: "Pimenta Conserva 450g", preco: 50.00, imagem: "https://via.placeholder.com/150?text=Pimenta+Conserva" },
-        { nome: "Doces Diversos", preco: 50.00, imagem: "https://via.placeholder.com/150?text=Doces+Diversos" }
+        { nome: "Queijo Fresco 500g", preco: 50.00, imagem: "images/queijo-fresco.jpg" },
+        { nome: "Requeijão Cremoso 700g", preco: 50.00, imagem: "images/requeijao-cremoso.jpg" },
+        { nome: "Café 500g (moído ou grão)", preco: 50.00, imagem: "images/cafe.jpg" },
+        { nome: "Mel 500g", preco: 45.00, imagem: "images/mel.jpg" },
+        { nome: "Farofa 300g (sabores)", preco: 20.00, imagem: "images/farofa.jpg" },
+        { nome: "Pimenta Conserva 450g", preco: 50.00, imagem: "images/pimenta-conserva.jpg" },
+        { nome: "Doces Diversos", preco: 50.00, imagem: "images/doces-diversos.jpg" }
       ],
       produtosEspeciais: [
-        { nome: "Queijo Rocambole Recheado Goiabada", preco: 50.00, imagem: "https://via.placeholder.com/150?text=Rocambole+Goiabada" },
-        { nome: "Queijo Rocambole Recheado Doce de Leite", preco: 50.00, imagem: "https://via.placeholder.com/150?text=Rocambole+Doce+de+Leite" },
-        { nome: "Queijo Minas Padrão", preco: 50.00, imagem: "https://via.placeholder.com/150?text=Minas+Padr%C3%A3o" },
-        { nome: "Queijo Minas Padrão Temperado", preco: 50.00, imagem: "https://via.placeholder.com/150?text=Minas+Temperado" },
-        { nome: "Queijo Minas Frescal", preco: 50.00, imagem: "https://via.placeholder.com/150?text=Minas+Frescal" }
+        { nome: "Queijo Rocambole Recheado Goiabada", preco: 50.00, imagem: "images/rocambole-goiabada.jpg" },
+        { nome: "Queijo Rocambole Recheado Doce de Leite", preco: 50.00, imagem: "images/rocambole-doce-de-leite.jpg" },
+        { nome: "Queijo Minas Padrão", preco: 50.00, imagem: "images/queijo-minas-padrao.jpg" },
+        { nome: "Queijo Minas Padrão Temperado", preco: 50.00, imagem: "images/queijo-minas-temperado.jpg" },
+        { nome: "Queijo Minas Frescal", preco: 50.00, imagem: "images/queijo-minas-frescal.jpg" }
       ]
     };
     
@@ -397,7 +414,7 @@
       pedido.nome = document.getElementById("nome").value;
       pedido.telefone = document.getElementById("telefone").value;
       categoriaAtual = categoria;
-      // Se não existir um array para a categoria ou tamanho diferente, inicializa com zeros
+      // Inicializa a quantidade se necessário
       if (!pedido.produtos[categoria] || pedido.produtos[categoria].length !== produtosData[categoria].length) {
         pedido.produtos[categoria] = new Array(produtosData[categoria].length).fill(0);
       }
@@ -446,7 +463,6 @@
           option.innerText = i;
           selectQty.appendChild(option);
         }
-        // Define o valor previamente selecionado
         selectQty.value = pedido.produtos[categoria][index];
         selectQty.addEventListener("change", (e) => {
           pedido.produtos[categoria][index] = Number(e.target.value);
@@ -457,7 +473,7 @@
       });
     };
     
-    // Alterna entre as etapas
+    // Alterna entre as etapas do fluxo
     window.goToStep = (stepNumber) => {
       document.querySelectorAll(".step").forEach(step => {
         step.classList.remove("active");
@@ -468,7 +484,7 @@
       }
     };
     
-    // Monta o resumo final com subtotais por categoria e total geral, formatado para WhatsApp
+    // Monta o resumo final formatado para WhatsApp com subtotais e total geral
     window.montarResumo = () => {
       let resumo = "";
       resumo += "*Dados do Cliente:*\n";
@@ -476,7 +492,6 @@
       resumo += "*Telefone:* " + pedido.telefone + "\n\n";
       
       let totalGeral = 0;
-      // Percorre cada categoria
       for (const categoria in pedido.produtos) {
         const quantidades = pedido.produtos[categoria];
         if (quantidades && quantidades.some(q => q > 0)) {
@@ -536,10 +551,9 @@
       window.open(url, "_blank");
     };
     
-    // Funções de autenticação e gerenciamento de conta
+    // Funções de autenticação e Dashboard
     window.openAuthModal = () => {
       if (auth.currentUser) {
-        // Se já estiver logado, abre o dashboard
         openDashboard();
       } else {
         const modal = new bootstrap.Modal(document.getElementById("authModal"));
@@ -584,19 +598,35 @@
       authLink.innerText = user ? "Minha Conta" : "Login";
     });
     
-    // Dashboard: Exibe o histórico de pedidos do usuário
+    // Dashboard: Exibe Meus Dados e Meus Pedidos
     window.openDashboard = async () => {
-      // Força a autenticação obrigatória
       if (!auth.currentUser) {
         alert("Você precisa fazer login para acessar sua conta.");
         return;
       }
-      // Exibe o dashboard e oculta as demais seções
+      // Exibe o dashboard e oculta as outras seções
       document.querySelectorAll(".step").forEach(step => step.classList.remove("active"));
       document.getElementById("dashboard").classList.add("active");
-      // Atualiza o nome do usuário
-      document.getElementById("userName").innerText = auth.currentUser.displayName || auth.currentUser.email;
+      // Preenche os dados do usuário no formulário de "Meus Dados"
+      document.getElementById("nomeAtual").value = auth.currentUser.displayName || "";
+      // Caso você deseje, pode armazenar e carregar o endereço padrão do usuário do Firestore (aqui simplificamos)
       // Carrega o histórico de pedidos
+      carregarPedidos();
+    };
+    
+    // Atualiza os dados do usuário (apenas o displayName neste exemplo)
+    window.atualizarDados = async () => {
+      const novoNome = document.getElementById("nomeAtual").value;
+      try {
+        await updateProfile(auth.currentUser, { displayName: novoNome });
+        alert("Dados atualizados com sucesso.");
+      } catch (error) {
+        alert("Erro ao atualizar dados: " + error.message);
+      }
+    };
+    
+    // Carrega os pedidos do usuário do Firestore
+    window.carregarPedidos = async () => {
       const orderHistoryDiv = document.getElementById("orderHistory");
       orderHistoryDiv.innerHTML = "<p>Carregando pedidos...</p>";
       const q = query(collection(db, "pedidos"), where("userId", "==", auth.currentUser.uid));
@@ -612,8 +642,8 @@
             divPedido.className = "card mb-3";
             divPedido.innerHTML = `
               <div class="card-body">
-                <h5 class="card-title">Pedido de ${new Date(pedidoData.data.seconds * 1000).toLocaleString()}</h5>
-                <p class="card-text"><pre>${pedidoData.resumo}</pre></p>
+                <h5 class="card-title">Pedido em ${new Date(pedidoData.data.seconds * 1000).toLocaleString()}</h5>
+                <p class="card-text"><pre>${pedidoData.resumo || "Sem resumo disponível."}</pre></p>
                 <button class="btn btn-sm btn-primary" onclick="repetirPedido('${docSnap.id}')">Repetir Pedido</button>
                 <button class="btn btn-sm btn-danger" onclick="excluirPedido('${docSnap.id}')">Excluir</button>
               </div>
@@ -625,6 +655,12 @@
         console.error("Erro ao carregar pedidos:", error);
         orderHistoryDiv.innerHTML = "<p>Erro ao carregar pedidos.</p>";
       }
+    };
+    
+    // Volta do dashboard para o fluxo de pedidos (Etapa 1)
+    window.voltarDashboard = () => {
+      document.querySelectorAll(".step").forEach(step => step.classList.remove("active"));
+      document.getElementById("step1").classList.add("active");
     };
     
     // Função para excluir um pedido
@@ -640,9 +676,8 @@
       }
     };
     
-    // Função para repetir um pedido: carrega os dados do pedido selecionado na etapa 3 para edição
+    // Função para repetir um pedido: carrega os dados do pedido selecionado na Etapa 3 para edição
     window.repetirPedido = async (pedidoId) => {
-      // Recupera o pedido e carrega os dados nas etapas para que o usuário possa ajustá-lo
       const q = query(collection(db, "pedidos"), where("userId", "==", auth.currentUser.uid));
       try {
         const querySnapshot = await getDocs(q);
@@ -658,15 +693,13 @@
           document.getElementById("numero").value = pedidoRepetido.numero || "";
           document.getElementById("complemento").value = pedidoRepetido.complemento || "";
           document.getElementById("observacoes").value = pedidoRepetido.observacoes || "";
-          // Para os produtos, carregue cada categoria
+          // Para os produtos, carregue cada categoria (se existir)
           pedido.produtos = pedidoRepetido.produtos;
-          // Se o pedido continha produtos de uma categoria, recarregue-os
           for (const categoria in pedido.produtos) {
             if (pedido.produtos.hasOwnProperty(categoria)) {
               carregarProdutos(categoria);
             }
           }
-          // Redireciona para a Etapa 3
           goToStep(3);
         } else {
           alert("Pedido não encontrado.");
