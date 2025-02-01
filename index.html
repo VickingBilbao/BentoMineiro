@@ -39,7 +39,7 @@
     .navbar-brand .tagline {
       font-size: 1.2rem;
     }
-    /* Espaço para o conteúdo (evitar que a navbar fixe encubra) */
+    /* Espaço para o conteúdo (evitar que a navbar fixa encubra) */
     .content-wrapper {
       margin-top: 120px;
     }
@@ -155,9 +155,6 @@
                 <li><a class="dropdown-item" href="#" onclick="collapseNavbar(); selectCategory('produtosEspeciais')">Produtos Especiais</a></li>
              </ul>
            </li>
-           <li class="nav-item">
-             <a class="nav-link auth" href="#" onclick="collapseNavbar(); openAuthModal()">Minha Conta</a>
-           </li>
          </ul>
       </div>
     </div>
@@ -166,7 +163,7 @@
   <!-- Conteúdo principal -->
   <div class="content-wrapper">
     <div class="container my-4">
-      <!-- ETAPA 1: Dados do Cliente (Login obrigatório) -->
+      <!-- ETAPA 1: Dados do Cliente -->
       <div id="step1" class="step active">
         <h2 class="text-center my-4">Informe seus Dados</h2>
         <form id="formStep1" onsubmit="return validarDados();">
@@ -187,7 +184,7 @@
         </form>
       </div>
       
-      <!-- ETAPA 2: Seleção de Produtos -->
+      <!-- ETAPA 2: Seleção de Produtos (Categoria Atual) -->
       <div id="step2" class="step">
         <h2 id="categoriaTitulo" class="text-center my-4"></h2>
         <form id="formStep2">
@@ -239,126 +236,28 @@
           <button type="button" class="btn btn-secondary" onclick="goToStep(3)">Voltar</button>
         </div>
       </div>
-      
-      <!-- DASHBOARD: Minha Conta -->
-      <div id="dashboard" class="step">
-        <h2 class="text-center my-4">Minha Conta</h2>
-        <div class="mb-3">
-          <h4>Meus Dados</h4>
-          <form id="dadosForm" onsubmit="return false;">
-            <div class="mb-3">
-              <label for="nomeAtual" class="form-label">Nome:</label>
-              <input type="text" class="form-control" id="nomeAtual" required>
-            </div>
-            <div class="mb-3">
-              <label for="cepConta" class="form-label">CEP:</label>
-              <input type="text" class="form-control" id="cepConta" placeholder="00000-000" required>
-            </div>
-            <div class="mb-3">
-              <label for="enderecoPadrao" class="form-label">Endereço Padrão:</label>
-              <input type="text" class="form-control" id="enderecoPadrao" required>
-            </div>
-            <div class="mb-3">
-              <label for="numeroConta" class="form-label">Número:</label>
-              <input type="text" class="form-control" id="numeroConta" required>
-            </div>
-            <div class="mb-3">
-              <label for="complementoConta" class="form-label">Complemento:</label>
-              <input type="text" class="form-control" id="complementoConta">
-            </div>
-            <button type="button" class="btn btn-primary" onclick="atualizarDados()">Atualizar Dados</button>
-          </form>
-        </div>
-        <div class="mb-3">
-          <h4>Meus Pedidos</h4>
-          <div id="orderHistory"></div>
-        </div>
-        <div class="text-center my-4">
-          <button type="button" class="btn btn-danger" onclick="sair()">Sair</button>
-          <button type="button" class="btn btn-secondary" onclick="voltarDashboard()">Voltar</button>
-        </div>
-      </div>
-      
-    </div>
-  </div>
-
-  <!-- Modal de Autenticação (Login / Registro) -->
-  <div class="modal fade" id="authModal" tabindex="-1">
-    <div class="modal-dialog">
-      <div class="modal-content">
-         <div class="modal-header">
-           <h5 class="modal-title" id="authModalLabel">Login / Registro</h5>
-           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-         </div>
-         <div class="modal-body">
-           <form id="authForm">
-             <div class="mb-3">
-               <label for="email" class="form-label">Email:</label>
-               <input type="email" class="form-control" id="email" required>
-             </div>
-             <div class="mb-3">
-               <label for="password" class="form-label">Senha:</label>
-               <input type="password" class="form-control" id="password" required>
-             </div>
-             <!-- Campo para nome, usado apenas no registro -->
-             <div class="mb-3" id="displayNameDiv" style="display: none;">
-               <label for="displayName" class="form-label">Nome:</label>
-               <input type="text" class="form-control" id="displayName">
-             </div>
-             <button type="button" class="btn btn-primary" onclick="login()">Login</button>
-             <button type="button" class="btn btn-secondary" onclick="register()">Registrar</button>
-           </form>
-         </div>
-      </div>
     </div>
   </div>
 
   <!-- Scripts: Inputmask e Bootstrap JS -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/inputmask/5.0.8/inputmask.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <!-- Nosso código principal utilizando módulos ES6 e Firebase v11.2.0 -->
-  <script type="module">
-    // Importar módulos do Firebase
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, signOut } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
-    import { getFirestore, collection, addDoc, query, where, getDocs, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
-    
-    // Configuração do Firebase (substitua com suas credenciais)
-    const firebaseConfig = {
-      apiKey: "AIzaSyDTlM2n4Cg-x1vv-LNNMY-6Pl5UCHLpUko",
-      authDomain: "bento-mineiro.firebaseapp.com",
-      projectId: "bento-mineiro",
-      storageBucket: "bento-mineiro.firebasestorage.app",
-      messagingSenderId: "806545810961",
-      appId: "1:806545810961:web:9a7356991a13581d7f33b0",
-      measurementId: "G-5GGXJS06RW"
-    };
-    
-    // Inicializar o Firebase
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-    
-    // Função para recolher o menu (colapsar) ao clicar em um link (mobile)
+  <script>
+    // Função para recolher o menu (colapsar) ao clicar em um link
     function collapseNavbar() {
-      const navbarCollapse = document.getElementById('navbarNavDropdown');
+      const navbarCollapse = document.querySelector('.navbar-collapse');
       if (navbarCollapse.classList.contains('show')) {
         new bootstrap.Collapse(navbarCollapse, {toggle: true}).hide();
       }
     }
     
-    // Forçar login: se o usuário não estiver logado, exibir o modal ao carregar a página
+    // Aplicar máscaras aos campos de telefone e CEP
     window.addEventListener("load", () => {
-      if (!auth.currentUser) {
-        const modal = new bootstrap.Modal(document.getElementById("authModal"));
-        modal.show();
-      }
       Inputmask({"mask": "(99) 99999-9999"}).mask(document.getElementById("telefone"));
       Inputmask({"mask": "99999-999"}).mask(document.getElementById("cep"));
-      Inputmask({"mask": "99999-999"}).mask(document.getElementById("cepConta"));
     });
     
-    // Auto-completar endereço via ViaCEP (na Etapa 3 e no Dashboard)
+    // Auto-completar endereço via ViaCEP na Etapa 3
     document.getElementById("cep").addEventListener("blur", async function() {
       const cep = this.value.replace(/\D/g, '');
       if (cep.length === 8) {
@@ -368,24 +267,6 @@
           if (!data.erro) {
             if (!document.getElementById("enderecoFinal").value)
               document.getElementById("enderecoFinal").value = `${data.logradouro}, ${data.bairro}, ${data.localidade} - ${data.uf}`;
-          } else {
-            alert("CEP não encontrado.");
-          }
-        } catch (error) {
-          console.error("Erro ao buscar CEP:", error);
-          alert("Erro ao buscar o CEP.");
-        }
-      }
-    });
-    document.getElementById("cepConta").addEventListener("blur", async function() {
-      const cep = this.value.replace(/\D/g, '');
-      if (cep.length === 8) {
-        try {
-          const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
-          const data = await response.json();
-          if (!data.erro) {
-            if (!document.getElementById("enderecoPadrao").value)
-              document.getElementById("enderecoPadrao").value = `${data.logradouro}, ${data.bairro}, ${data.localidade} - ${data.uf}`;
           } else {
             alert("CEP não encontrado.");
           }
@@ -414,7 +295,7 @@
     // Variável para a categoria atual
     let categoriaAtual = "";
     
-    // Dados dos produtos (substitua os caminhos pelos reais ou URLs externos)
+    // Dados dos produtos (substitua os caminhos de imagem pelos corretos)
     const produtosData = {
       prontaEntrega: [
         { nome: "Pão de Queijo 1kg", preco: 40.00, imagem: "images/pao-de-queijo.jpg" },
@@ -442,16 +323,11 @@
     };
     
     // Ao selecionar uma categoria, salva os dados do cliente e exibe os produtos da categoria
-    window.selectCategory = (categoria) => {
+    function selectCategory(categoria) {
       pedido.nome = document.getElementById("nome").value;
       pedido.telefone = document.getElementById("telefone").value;
       if (!pedido.nome || !pedido.telefone) {
         alert("Nome e Telefone são obrigatórios.");
-        return;
-      }
-      // Exigir login para continuar
-      if (!auth.currentUser) {
-        openAuthModal();
         return;
       }
       categoriaAtual = categoria;
@@ -465,10 +341,10 @@
       document.getElementById("categoriaTitulo").innerText = titulo;
       carregarProdutos(categoria);
       goToStep(2);
-    };
+    }
     
     // Carrega os produtos da categoria selecionada, mantendo as quantidades já definidas
-    window.carregarProdutos = (categoria) => {
+    function carregarProdutos(categoria) {
       const lista = document.getElementById("productList");
       lista.innerHTML = "";
       produtosData[categoria].forEach((produto, index) => {
@@ -511,19 +387,19 @@
         
         lista.appendChild(div);
       });
-    };
+    }
     
     // Alterna entre as etapas do fluxo
-    window.goToStep = (stepNumber) => {
+    function goToStep(stepNumber) {
       document.querySelectorAll(".step").forEach(step => step.classList.remove("active"));
       document.getElementById("step" + stepNumber).classList.add("active");
       if (stepNumber === 4) {
         montarResumo();
       }
-    };
+    }
     
     // Monta o resumo final formatado para WhatsApp com subtotais e total geral
-    window.montarResumo = () => {
+    function montarResumo() {
       let resumo = "";
       resumo += "*Dados do Cliente:*\n";
       resumo += "*Nome:* " + pedido.nome + "\n";
@@ -558,225 +434,16 @@
       resumo += `*Complemento:* ${document.getElementById("complemento").value}\n`;
       
       document.getElementById("resumoPedido").innerText = resumo;
-    };
+    }
     
-    // Envia o pedido via WhatsApp e salva no Firestore se o usuário estiver logado
-    window.enviarPedido = async () => {
+    // Envia o pedido via WhatsApp
+    function enviarPedido() {
       montarResumo();
       const resumo = document.getElementById("resumoPedido").innerText;
       const mensagem = encodeURIComponent(resumo);
       const url = "https://wa.me/5511984193457?text=" + mensagem;
-      
-      if (auth.currentUser) {
-        try {
-          await addDoc(collection(db, "pedidos"), {
-            userId: auth.currentUser.uid,
-            email: auth.currentUser.email,
-            nome: pedido.nome,
-            telefone: pedido.telefone,
-            produtos: pedido.produtos,
-            observacoes: document.getElementById("observacoes").value,
-            endereco: document.getElementById("enderecoFinal").value,
-            numero: document.getElementById("numero").value,
-            complemento: document.getElementById("complemento").value,
-            data: new Date(),
-            resumo: document.getElementById("resumoPedido").innerText
-          });
-          console.log("Pedido salvo no Firestore.");
-        } catch (e) {
-          console.error("Erro ao salvar pedido:", e);
-        }
-      }
       window.open(url, "_blank");
-    };
-    
-    // Função para recolher o menu (colapsar) quando um link é clicado
-    function collapseNavbar() {
-      const navbarCollapse = document.getElementById('navbarNavDropdown');
-      if (navbarCollapse && navbarCollapse.classList.contains('show')) {
-        new bootstrap.Collapse(navbarCollapse, {toggle: true}).hide();
-      }
     }
-    
-    // Função para validar dados obrigatórios e exigir login
-    function validarDados() {
-      if (!document.getElementById("nome").value || !document.getElementById("telefone").value) {
-        alert("Nome e Telefone são obrigatórios.");
-        return false;
-      }
-      if (!auth.currentUser) {
-        openAuthModal();
-        return false;
-      }
-      return true;
-    }
-    
-    // Funções de autenticação e gerenciamento de conta
-    window.openAuthModal = () => {
-      if (auth.currentUser) {
-        openDashboard();
-      } else {
-        const modal = new bootstrap.Modal(document.getElementById("authModal"));
-        modal.show();
-      }
-    };
-    
-    window.login = () => {
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
-      signInWithEmailAndPassword(auth, email, password)
-        .then(() => {
-          const modal = bootstrap.Modal.getInstance(document.getElementById("authModal"));
-          modal.hide();
-          openDashboard();
-        })
-        .catch(error => {
-          alert("Erro no login: " + error.message);
-        });
-    };
-    
-    window.register = () => {
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
-      const displayName = document.getElementById("displayName").value;
-      createUserWithEmailAndPassword(auth, email, password)
-        .then((userCredential) => {
-          return updateProfile(userCredential.user, { displayName: displayName });
-        })
-        .then(() => {
-          const modal = bootstrap.Modal.getInstance(document.getElementById("authModal"));
-          modal.hide();
-          openDashboard();
-        })
-        .catch(error => {
-          alert("Erro no registro: " + error.message);
-        });
-    };
-    
-    onAuthStateChanged(auth, user => {
-      const authLink = document.querySelector('.nav-link.auth');
-      authLink.innerText = user ? "Minha Conta" : "Login";
-      if (user) {
-        carregarDadosUsuario();
-        carregarPedidos();
-      }
-    });
-    
-    // Dashboard: Carrega os dados do usuário e os pedidos
-    window.openDashboard = async () => {
-      if (!auth.currentUser) {
-        alert("Você precisa fazer login para acessar sua conta.");
-        return;
-      }
-      document.querySelectorAll(".step").forEach(step => step.classList.remove("active"));
-      document.getElementById("dashboard").classList.add("active");
-      document.getElementById("nomeAtual").value = auth.currentUser.displayName || "";
-      // Carregar CEP, Endereço, Número e Complemento do usuário (caso armazenados) pode ser implementado aqui
-      carregarPedidos();
-    };
-    
-    // Atualiza os dados do usuário (exemplo simples: apenas o displayName)
-    window.atualizarDados = async () => {
-      const novoNome = document.getElementById("nomeAtual").value;
-      try {
-        await updateProfile(auth.currentUser, { displayName: novoNome });
-        alert("Dados atualizados com sucesso.");
-      } catch (error) {
-        alert("Erro ao atualizar dados: " + error.message);
-      }
-    };
-    
-    // Carrega os pedidos do usuário do Firestore
-    window.carregarPedidos = async () => {
-      const orderHistoryDiv = document.getElementById("orderHistory");
-      orderHistoryDiv.innerHTML = "<p>Carregando pedidos...</p>";
-      const q = query(collection(db, "pedidos"), where("userId", "==", auth.currentUser.uid));
-      try {
-        const querySnapshot = await getDocs(q);
-        if (querySnapshot.empty) {
-          orderHistoryDiv.innerHTML = "<p>Nenhum pedido encontrado.</p>";
-        } else {
-          orderHistoryDiv.innerHTML = "";
-          querySnapshot.forEach(docSnap => {
-            const pedidoData = docSnap.data();
-            const divPedido = document.createElement("div");
-            divPedido.className = "card mb-3";
-            divPedido.innerHTML = `
-              <div class="card-body">
-                <h5 class="card-title">Pedido em ${new Date(pedidoData.data.seconds * 1000).toLocaleString()}</h5>
-                <p class="card-text"><pre>${pedidoData.resumo || "Sem resumo disponível."}</pre></p>
-                <button class="btn btn-sm btn-primary" onclick="repetirPedido('${docSnap.id}')">Repetir Pedido</button>
-                <button class="btn btn-sm btn-danger" onclick="excluirPedido('${docSnap.id}')">Excluir</button>
-              </div>
-            `;
-            orderHistoryDiv.appendChild(divPedido);
-          });
-        }
-      } catch (error) {
-        console.error("Erro ao carregar pedidos:", error);
-        orderHistoryDiv.innerHTML = "<p>Erro ao carregar pedidos.</p>";
-      }
-    };
-    
-    // Volta do dashboard para a tela de pedidos (Etapa 1)
-    window.voltarDashboard = () => {
-      document.querySelectorAll(".step").forEach(step => step.classList.remove("active"));
-      document.getElementById("step1").classList.add("active");
-    };
-    
-    // Função para sair (logoff)
-    window.sair = () => {
-      signOut(auth).then(() => {
-        alert("Você saiu com sucesso.");
-        voltarDashboard();
-      }).catch(error => {
-        alert("Erro ao sair: " + error.message);
-      });
-    };
-    
-    // Função para excluir um pedido
-    window.excluirPedido = async (pedidoId) => {
-      if (confirm("Deseja realmente excluir este pedido?")) {
-        try {
-          await deleteDoc(doc(db, "pedidos", pedidoId));
-          openDashboard();
-        } catch (error) {
-          console.error("Erro ao excluir pedido:", error);
-          alert("Erro ao excluir pedido.");
-        }
-      }
-    };
-    
-    // Função para repetir um pedido: carrega os dados do pedido na Etapa 3 para edição
-    window.repetirPedido = async (pedidoId) => {
-      const q = query(collection(db, "pedidos"), where("userId", "==", auth.currentUser.uid));
-      try {
-        const querySnapshot = await getDocs(q);
-        let pedidoRepetido;
-        querySnapshot.forEach(docSnap => {
-          if (docSnap.id === pedidoId) {
-            pedidoRepetido = docSnap.data();
-          }
-        });
-        if (pedidoRepetido) {
-          document.getElementById("enderecoFinal").value = pedidoRepetido.endereco || "";
-          document.getElementById("numero").value = pedidoRepetido.numero || "";
-          document.getElementById("complemento").value = pedidoRepetido.complemento || "";
-          document.getElementById("observacoes").value = pedidoRepetido.observacoes || "";
-          pedido.produtos = pedidoRepetido.produtos;
-          for (const categoria in pedido.produtos) {
-            if (pedido.produtos.hasOwnProperty(categoria)) {
-              carregarProdutos(categoria);
-            }
-          }
-          goToStep(3);
-        } else {
-          alert("Pedido não encontrado.");
-        }
-      } catch (error) {
-        console.error("Erro ao recuperar pedido:", error);
-      }
-    };
     
   </script>
 </body>
