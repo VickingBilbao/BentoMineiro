@@ -16,31 +16,30 @@
       margin: 0;
       padding: 0;
     }
-    /* Navbar fixa */
+    /* Navbar fixa personalizada */
     .navbar {
+      background-color: #8B4513 !important;
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .navbar-brand {
+      margin: 0 auto;
+      text-align: center;
+    }
+    .navbar-brand span {
+      display: block;
+    }
+    .navbar-brand .title {
+      font-size: 2rem;
+      font-weight: 600;
+    }
+    .navbar-brand .tagline {
+      font-size: 1.2rem;
     }
     /* Espaço para o conteúdo (devido ao navbar fixed) */
     .content-wrapper {
       margin-top: 80px;
     }
-    /* Cabeçalho fixo e compacto */
-    header {
-      background-color: #8B4513;
-      color: #fff;
-      text-align: center;
-      padding: 20px;
-      position: relative;
-    }
-    header h1 {
-      margin: 0;
-      font-size: 2.5rem;
-      font-weight: 600;
-    }
-    header p {
-      margin: 5px 0 0;
-      font-size: 1.2rem;
-    }
+    /* Removido o header extra para evitar duplicidade */
     /* Animação para transição entre etapas */
     .step {
       display: none;
@@ -109,8 +108,11 @@
     }
     /* Responsividade */
     @media (max-width: 576px) {
-      header h1 {
-        font-size: 2rem;
+      .navbar-brand .title {
+        font-size: 1.8rem;
+      }
+      .navbar-brand .tagline {
+        font-size: 1rem;
       }
       .product-item {
         flex-direction: column;
@@ -125,10 +127,13 @@
   </style>
 </head>
 <body>
-  <!-- Navbar fixa -->
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
-    <div class="container-fluid">
-      <a class="navbar-brand" href="#" onclick="goToStep(1)">Bento Mineiro</a>
+  <!-- Navbar fixa com cabeçalho centralizado -->
+  <nav class="navbar navbar-expand-lg fixed-top">
+    <div class="container">
+      <a class="navbar-brand" href="#" onclick="goToStep(1)">
+        <span class="title">Bento Mineiro</span>
+        <span class="tagline">A cozinha mineira na sua casa!</span>
+      </a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown">
         <span class="navbar-toggler-icon"></span>
       </button>
@@ -157,16 +162,10 @@
 
   <!-- Conteúdo principal -->
   <div class="content-wrapper">
-    <header>
-      <!-- Insira seu logo se desejar (descomente a linha abaixo e ajuste o caminho) -->
-      <!-- <img src="logo.png" alt="Logo Bento Mineiro" style="max-width:150px; margin-bottom:10px;"> -->
-      <h1>Bento Mineiro</h1>
-      <p>A cozinha mineira na sua casa!</p>
-    </header>
     <div class="container my-4">
       <!-- ETAPA 1: Informações do Cliente -->
       <div id="step1" class="step active">
-        <h2 class="text-center my-4">Informe seus dados</h2>
+        <h2 class="text-center my-4">Informe seus Dados</h2>
         <form id="formStep1">
           <div class="mb-3">
             <label for="nome" class="form-label">Nome:</label>
@@ -177,15 +176,15 @@
             <input type="text" class="form-control" id="telefone" placeholder="(00) 00000-0000" required>
           </div>
           <div class="text-center my-4">
-            <p>Selecione a categoria de produtos para começar:</p>
-            <button type="button" class="btn btn-outline-light btn-category" onclick="selectCategory('prontaEntrega')">Pronta Entrega</button>
-            <button type="button" class="btn btn-outline-light btn-category" onclick="selectCategory('encomendas')">Encomendas</button>
-            <button type="button" class="btn btn-outline-light btn-category" onclick="selectCategory('produtosEspeciais')">Produtos Especiais</button>
+            <p>Selecione a Categoria de Produtos:</p>
+            <button type="button" class="btn btn-primary btn-category" onclick="selectCategory('prontaEntrega')">Pronta Entrega</button>
+            <button type="button" class="btn btn-primary btn-category" onclick="selectCategory('encomendas')">Encomendas</button>
+            <button type="button" class="btn btn-primary btn-category" onclick="selectCategory('produtosEspeciais')">Produtos Especiais</button>
           </div>
         </form>
       </div>
       
-      <!-- ETAPA 2: Seleção de Produtos (categoria atual) -->
+      <!-- ETAPA 2: Seleção de Produtos (da Categoria Atual) -->
       <div id="step2" class="step">
         <h2 id="categoriaTitulo" class="text-center my-4"></h2>
         <form id="formStep2">
@@ -197,7 +196,7 @@
         </form>
       </div>
       
-      <!-- ETAPA 3: Dados Finais (CEP, Endereço, Número, Complemento e Observações) -->
+      <!-- ETAPA 3: Dados Finais -->
       <div id="step3" class="step">
         <h2 class="text-center my-4">Dados Finais</h2>
         <form id="formStep3">
@@ -233,7 +232,7 @@
         <h2 class="text-center my-4">Resumo do Pedido</h2>
         <div id="resumoPedido" class="summary"></div>
         <div class="text-center my-4">
-          <button type="button" class="btn btn-success" onclick="enviarPedido()">Enviar pedido via WhatsApp</button>
+          <button type="button" class="btn btn-success" onclick="enviarPedido()">Enviar Pedido via WhatsApp</button>
           <button type="button" class="btn btn-secondary" onclick="goToStep(3)">Voltar</button>
         </div>
       </div>
@@ -309,7 +308,7 @@
       Inputmask({"mask": "99999-999"}).mask(document.getElementById("cep"));
     });
     
-    // Auto-completar endereço via ViaCEP na etapa 3
+    // Auto-completar endereço via ViaCEP (na Etapa 3)
     document.getElementById("cep").addEventListener("blur", async function() {
       const cep = this.value.replace(/\D/g, '');
       if (cep.length === 8) {
@@ -317,8 +316,8 @@
           const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
           const data = await response.json();
           if (!data.erro) {
-            // Preenche automaticamente o campo de endereço final, se estiver vazio
-            if(!document.getElementById("enderecoFinal").value)
+            // Preenche o campo de endereço se estiver vazio
+            if (!document.getElementById("enderecoFinal").value)
               document.getElementById("enderecoFinal").value = `${data.logradouro}, ${data.bairro}, ${data.localidade} - ${data.uf}`;
           } else {
             alert("CEP não encontrado.");
@@ -375,12 +374,12 @@
       ]
     };
     
-    // Quando o usuário selecionar uma categoria, salva os dados da etapa 1 e exibe os produtos dessa categoria
+    // Ao selecionar uma categoria, salvar dados do cliente e exibir produtos da categoria
     window.selectCategory = (categoria) => {
       pedido.nome = document.getElementById("nome").value;
       pedido.telefone = document.getElementById("telefone").value;
       categoriaAtual = categoria;
-      // Se não existir um array para a categoria ou tamanho diferente, inicializa com zeros
+      // Se não existir um array para essa categoria ou se o tamanho estiver diferente, inicializa com zeros
       if (!pedido.produtos[categoria] || pedido.produtos[categoria].length !== produtosData[categoria].length) {
         pedido.produtos[categoria] = new Array(produtosData[categoria].length).fill(0);
       }
@@ -393,7 +392,7 @@
       goToStep(2);
     };
     
-    // Carrega os produtos da categoria selecionada e preserva as quantidades já selecionadas
+    // Carrega os produtos da categoria selecionada, mantendo quantidades já selecionadas
     window.carregarProdutos = (categoria) => {
       const lista = document.getElementById("productList");
       lista.innerHTML = "";
@@ -429,7 +428,7 @@
           option.innerText = i;
           selectQty.appendChild(option);
         }
-        // Define o valor previamente selecionado, se houver
+        // Define o valor previamente selecionado
         selectQty.value = pedido.produtos[categoria][index];
         selectQty.addEventListener("change", (e) => {
           pedido.produtos[categoria][index] = Number(e.target.value);
@@ -451,13 +450,15 @@
       }
     };
     
-    // Monta o resumo final, com subtotais por categoria e total geral
+    // Monta o resumo final com formatação para WhatsApp
     window.montarResumo = () => {
       let resumo = "";
-      resumo += "Nome: " + pedido.nome + "\n";
-      resumo += "Telefone: " + pedido.telefone + "\n\n";
+      resumo += "*Dados do Cliente:*\n";
+      resumo += "*Nome:* " + pedido.nome + "\n";
+      resumo += "*Telefone:* " + pedido.telefone + "\n\n";
+      
       let totalGeral = 0;
-      // Para cada categoria em que houver itens selecionados
+      // Percorre todas as categorias
       for (const categoria in pedido.produtos) {
         const quantidades = pedido.produtos[categoria];
         if (quantidades && quantidades.some(q => q > 0)) {
@@ -465,23 +466,27 @@
           if (categoria === "prontaEntrega") catText = "Pronta Entrega";
           else if (categoria === "encomendas") catText = "Encomendas";
           else if (categoria === "produtosEspeciais") catText = "Produtos Especiais";
-          resumo += "Categoria: " + catText + "\n";
+          resumo += "*" + catText + ":*\n";
           let subtotalCat = 0;
           produtosData[categoria].forEach((produto, index) => {
             const qty = quantidades[index];
             if (qty > 0) {
               const totalProduto = qty * produto.preco;
-              resumo += `  ${produto.nome}: ${qty} x R$ ${produto.preco.toFixed(2)} = R$ ${totalProduto.toFixed(2)}\n`;
+              resumo += `  - *${produto.nome}*: ${qty} x R$ ${produto.preco.toFixed(2)} = R$ ${totalProduto.toFixed(2)}\n`;
               subtotalCat += totalProduto;
             }
           });
-          resumo += `  Subtotal: R$ ${subtotalCat.toFixed(2)}\n\n`;
+          resumo += `  *Subtotal ${catText}:* R$ ${subtotalCat.toFixed(2)}\n\n`;
           totalGeral += subtotalCat;
         }
       }
-      resumo += "Total Geral: R$ " + totalGeral.toFixed(2) + "\n\n";
-      resumo += "Observações: " + document.getElementById("observacoes").value + "\n";
-      resumo += "Endereço: " + document.getElementById("enderecoFinal").value + ", Número: " + document.getElementById("numero").value + ", Complemento: " + document.getElementById("complemento").value + "\n";
+      
+      resumo += "*Total Geral:* R$ " + totalGeral.toFixed(2) + "\n\n";
+      resumo += "*Observações:* " + document.getElementById("observacoes").value + "\n";
+      resumo += "*Endereço:* " + document.getElementById("enderecoFinal").value;
+      resumo += ", *Número:* " + document.getElementById("numero").value;
+      resumo += ", *Complemento:* " + document.getElementById("complemento").value + "\n";
+      
       document.getElementById("resumoPedido").innerText = resumo;
     };
     
