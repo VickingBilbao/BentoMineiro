@@ -3,10 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Pedido Online - Culinária Mineira</title>
-  <!-- Link para o Bootstrap (para responsividade) -->
+  <title>Bento Mineiro - Faça seu Pedido</title>
+  <!-- Bootstrap CSS para responsividade -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
+    /* Estilos personalizados */
     body {
       background-color: #f7f7f7;
       font-family: Arial, sans-serif;
@@ -14,53 +15,266 @@
     header {
       background-color: #a56347;
       color: #fff;
-      padding: 20px;
+      padding: 20px 0;
       text-align: center;
+      position: relative;
+      /* Se desejar adicionar uma imagem de cabeçalho, descomente as linhas abaixo e insira o caminho da imagem:
+         background-image: url('caminho/para/cabecalho.jpg');
+         background-size: cover;
+         background-position: center;
+      */
     }
-    .container {
-      margin-top: 20px;
+    .logo {
+      /* Caso queira usar um logo, insira a imagem abaixo e ajuste conforme necessário */
+      max-width: 150px;
+      margin-bottom: 10px;
+    }
+    .step {
+      display: none;
+    }
+    .step.active {
+      display: block;
+    }
+    .btn-category {
+      margin: 5px;
+    }
+    .product-item {
+      border: 1px solid #ddd;
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 5px;
+      background-color: #fff;
+    }
+    .product-item img {
+      max-width: 80px;
+      margin-right: 10px;
+    }
+    .product-name {
+      font-weight: bold;
+    }
+    .summary {
+      white-space: pre-wrap;
+      background: #e9e9e9;
+      padding: 15px;
+      border-radius: 5px;
     }
   </style>
 </head>
 <body>
   <header>
-    <h1>Pedido Online - Culinária Mineira</h1>
+    <!-- Inserir logo (se disponível):
+         <img src="logo.png" alt="Logo Bento Mineiro" class="logo">
+    -->
+    <h1>Bento Mineiro</h1>
+    <p>A cozinha mineira na sua casa!</p>
   </header>
-  <div class="container">
-    <form id="orderForm">
-      <div class="mb-3">
-        <label for="inputNome" class="form-label">Seu Nome:</label>
-        <input type="text" class="form-control" id="inputNome" placeholder="Digite seu nome" required>
+  <div class="container my-4">
+    <!-- ETAPA 1: Página Inicial – Informações do Cliente e Escolha da Categoria -->
+    <div id="step1" class="step active">
+      <h2 class="text-center">Faça seu pedido</h2>
+      <form id="formStep1">
+        <div class="mb-3">
+          <label for="nome" class="form-label">Nome:</label>
+          <input type="text" class="form-control" id="nome" placeholder="Digite seu nome" required>
+        </div>
+        <div class="mb-3">
+          <label for="telefone" class="form-label">Telefone:</label>
+          <input type="text" class="form-control" id="telefone" placeholder="Digite seu telefone" required>
+        </div>
+        <div class="mb-3 text-center">
+          <p>Escolha a categoria de produtos:</p>
+          <button type="button" class="btn btn-secondary btn-category" onclick="selectCategory('prontaEntrega')">Pronta Entrega</button>
+          <button type="button" class="btn btn-secondary btn-category" onclick="selectCategory('encomendas')">Encomendas</button>
+          <button type="button" class="btn btn-secondary btn-category" onclick="selectCategory('produtosEspeciais')">Produtos Especiais</button>
+        </div>
+      </form>
+    </div>
+    
+    <!-- ETAPA 2: Lista de Produtos da Categoria Selecionada -->
+    <div id="step2" class="step">
+      <h2 id="categoriaTitulo" class="text-center"></h2>
+      <form id="formStep2">
+        <div id="productList"></div>
+        <div class="text-center mt-3">
+          <button type="button" class="btn btn-primary" onclick="goToStep(3)">Próximo</button>
+          <button type="button" class="btn btn-secondary" onclick="goToStep(1)">Voltar</button>
+        </div>
+      </form>
+    </div>
+    
+    <!-- ETAPA 3: Dados Finais -->
+    <div id="step3" class="step">
+      <h2 class="text-center">Dados Finais</h2>
+      <form id="formStep3">
+        <div class="mb-3">
+          <label for="observacoes" class="form-label">Observações:</label>
+          <textarea class="form-control" id="observacoes" rows="3" placeholder="Digite observações, se houver"></textarea>
+        </div>
+        <div class="mb-3">
+          <label for="endereco" class="form-label">Endereço de entrega:</label>
+          <input type="text" class="form-control" id="endereco" placeholder="Digite seu endereço" required>
+        </div>
+        <div class="text-center">
+          <button type="button" class="btn btn-success" onclick="enviarPedido()">Enviar pedido via WhatsApp</button>
+          <button type="button" class="btn btn-secondary" onclick="goToStep(2)">Voltar</button>
+        </div>
+      </form>
+      <div class="mt-4">
+        <h3>Resumo do Pedido</h3>
+        <div id="resumoPedido" class="summary"></div>
       </div>
-      <!-- Adicione mais campos conforme necessário, por exemplo: Telefone, Endereço, Produtos etc. -->
-      <button type="button" class="btn btn-primary" onclick="gerarResumo()">Gerar Pedido</button>
-    </form>
-    <div id="resumoContainer" class="mt-4" style="display:none;">
-      <h2>Resumo do Pedido</h2>
-      <pre id="txtResumo" class="bg-light p-3"></pre>
-      <button type="button" class="btn btn-success" onclick="enviarWhatsApp()">Enviar Pedido via WhatsApp</button>
     </div>
   </div>
   
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    function gerarResumo() {
-      var nome = document.getElementById("inputNome").value;
-      // Aqui você pode coletar os demais dados e realizar os cálculos dos produtos.
-      var resumo = "Nome: " + nome + "\n";
-      // Exemplo: adicionar detalhes de um produto
-      // var qtdProduto = Number(document.getElementById("inputProduto").value) || 0;
-      // var precoProduto = 40.00;
-      // resumo += "Produto X: " + qtdProduto + " x R$ " + precoProduto.toFixed(2) + " = R$ " + (qtdProduto * precoProduto).toFixed(2) + "\n";
+    // Dados dos produtos para cada categoria
+    const produtos = {
+      prontaEntrega: [
+        { nome: "Pão de Queijo 1kg", preco: 40.00 },
+        { nome: "Queijo Meia Cura 500g", preco: 50.00 },
+        { nome: "Queijo Nozinho 500g", preco: 40.00 },
+        { nome: "Goiabada Cremosa", preco: 40.00 },
+        { nome: "Doce de Leite", preco: 40.00 }
+      ],
+      encomendas: [
+        { nome: "Queijo Fresco 500g", preco: 50.00 },
+        { nome: "Requeijão Cremoso 700g", preco: 50.00 },
+        { nome: "Café 500g (moído ou grão)", preco: 50.00 },
+        { nome: "Mel 500g", preco: 45.00 },
+        { nome: "Farofa 300g (sabores)", preco: 20.00 },
+        { nome: "Pimenta Conserva 450g", preco: 50.00 },
+        { nome: "Doces Diversos", preco: 50.00 }
+      ],
+      produtosEspeciais: [
+        { nome: "Queijo Rocambole Recheado Goiabada", preco: 50.00 },
+        { nome: "Queijo Rocambole Recheado Doce de Leite", preco: 50.00 },
+        { nome: "Queijo Minas Padrão", preco: 50.00 },
+        { nome: "Queijo Minas Padrão Temperado", preco: 50.00 },
+        { nome: "Queijo Minas Frescal", preco: 50.00 }
+      ]
+    };
+
+    // Variáveis para armazenar dados do pedido
+    let categoriaSelecionada = "";
+    let pedido = {
+      nome: "",
+      telefone: "",
+      categoria: "",
+      produtos: [],
+      observacoes: "",
+      endereco: ""
+    };
+
+    // Seleciona a categoria e salva os dados da etapa 1
+    function selectCategory(categoria) {
+      categoriaSelecionada = categoria;
+      pedido.nome = document.getElementById("nome").value;
+      pedido.telefone = document.getElementById("telefone").value;
+      pedido.categoria = categoria;
       
-      document.getElementById("txtResumo").innerText = resumo;
-      document.getElementById("orderForm").style.display = "none";
-      document.getElementById("resumoContainer").style.display = "block";
+      let titulo = "";
+      if(categoria === "prontaEntrega") titulo = "Pronta Entrega";
+      else if(categoria === "encomendas") titulo = "Encomendas";
+      else if(categoria === "produtosEspeciais") titulo = "Produtos Especiais";
+      document.getElementById("categoriaTitulo").innerText = titulo;
+      
+      carregarProdutos(categoria);
+      goToStep(2);
     }
-    
-    function enviarWhatsApp() {
-      var resumo = document.getElementById("txtResumo").innerText;
-      var mensagem = encodeURIComponent(resumo);
-      var url = "https://wa.me/5511984193457?text=" + mensagem;
+
+    // Carrega os produtos da categoria selecionada na Etapa 2
+    function carregarProdutos(categoria) {
+      const lista = document.getElementById("productList");
+      lista.innerHTML = "";
+      produtos[categoria].forEach((produto, index) => {
+        const div = document.createElement("div");
+        div.className = "product-item d-flex align-items-center";
+        
+        // Placeholder para imagem do produto:
+        // Se tiver imagens dos produtos, substitua o conteúdo abaixo pela tag <img src="caminho/imagem.jpg" alt="Produto">
+        const imgPlaceholder = document.createElement("div");
+        imgPlaceholder.style.width = "80px";
+        imgPlaceholder.style.height = "80px";
+        imgPlaceholder.style.backgroundColor = "#ccc";
+        imgPlaceholder.style.marginRight = "10px";
+        imgPlaceholder.innerText = "Imagem";
+        imgPlaceholder.className = "d-flex justify-content-center align-items-center";
+        div.appendChild(imgPlaceholder);
+        
+        const infoDiv = document.createElement("div");
+        infoDiv.className = "flex-grow-1";
+        const nomeProduto = document.createElement("div");
+        nomeProduto.className = "product-name";
+        nomeProduto.innerText = produto.nome;
+        const precoProduto = document.createElement("div");
+        precoProduto.innerText = "R$ " + produto.preco.toFixed(2);
+        infoDiv.appendChild(nomeProduto);
+        infoDiv.appendChild(precoProduto);
+        div.appendChild(infoDiv);
+        
+        const inputQty = document.createElement("input");
+        inputQty.type = "number";
+        inputQty.min = "0";
+        inputQty.value = "0";
+        inputQty.className = "form-control";
+        inputQty.style.width = "100px";
+        inputQty.id = "produto_" + index;
+        div.appendChild(inputQty);
+        
+        lista.appendChild(div);
+      });
+    }
+
+    // Função para alternar entre as etapas
+    function goToStep(stepNumber) {
+      document.querySelectorAll(".step").forEach(step => {
+        step.classList.remove("active");
+      });
+      document.getElementById("step" + stepNumber).classList.add("active");
+      if(stepNumber === 3) {
+        montarResumo();
+      }
+    }
+
+    // Monta o resumo final do pedido
+    function montarResumo() {
+      let resumo = "";
+      resumo += "Nome: " + pedido.nome + "\n";
+      resumo += "Telefone: " + pedido.telefone + "\n";
+      
+      let catText = "";
+      if(pedido.categoria === "prontaEntrega") catText = "Pronta Entrega";
+      else if(pedido.categoria === "encomendas") catText = "Encomendas";
+      else if(pedido.categoria === "produtosEspeciais") catText = "Produtos Especiais";
+      resumo += "Categoria: " + catText + "\n\nProdutos:\n";
+      
+      let totalGeral = 0;
+      const listaProdutos = produtos[pedido.categoria];
+      listaProdutos.forEach((produto, index) => {
+        let qty = Number(document.getElementById("produto_" + index).value) || 0;
+        if(qty > 0) {
+          let totalProduto = qty * produto.preco;
+          resumo += produto.nome + ": " + qty + " x R$ " + produto.preco.toFixed(2) + " = R$ " + totalProduto.toFixed(2) + "\n";
+          totalGeral += totalProduto;
+        }
+      });
+      resumo += "\nTotal: R$ " + totalGeral.toFixed(2) + "\n\n";
+      pedido.observacoes = document.getElementById("observacoes").value;
+      pedido.endereco = document.getElementById("endereco").value;
+      resumo += "Observações: " + pedido.observacoes + "\n";
+      resumo += "Endereço de entrega: " + pedido.endereco + "\n";
+      
+      document.getElementById("resumoPedido").innerText = resumo;
+    }
+
+    // Envia o pedido via WhatsApp utilizando a API de link do WhatsApp
+    function enviarPedido() {
+      montarResumo();
+      let resumo = document.getElementById("resumoPedido").innerText;
+      let mensagem = encodeURIComponent(resumo);
+      let url = "https://wa.me/5511984193457?text=" + mensagem;
       window.open(url, "_blank");
     }
   </script>
