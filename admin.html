@@ -8,7 +8,7 @@
   <meta name="robots" content="noindex">
   <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <!-- Inputmask para formatação de moeda -->
+  <!-- Inputmask para formatação -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/inputmask/5.0.8/inputmask.min.js"></script>
   <style>
     body {
@@ -17,7 +17,7 @@
       margin: 0;
       padding: 20px;
     }
-    /* Centralização do conteúdo */
+    /* Centralização das seções */
     #loginSection, #adminSection {
       max-width: 900px;
       margin: 0 auto;
@@ -31,14 +31,9 @@
     .btn {
       margin-top: 5px;
     }
-    /* Prévia da imagem do produto */
-    #produtoPreview, #editarProdutoPreview {
-      max-width: 600px;
-      aspect-ratio: 4 / 1;
-      object-fit: cover;
-      border: 1px solid #ccc;
-      margin-top: 10px;
-      display: none;
+    /* Estilo básico para formulários */
+    input, textarea, select {
+      margin-bottom: 10px;
     }
   </style>
 </head>
@@ -100,11 +95,11 @@
             <input type="url" id="produtoImagem" class="form-control" placeholder="Link da imagem" required oninput="atualizarPreviewProduto()">
           </div>
           <img id="produtoPreview" src="" alt="Prévia da Imagem">
-          <div class="mb-3 mt-3">
+          <div class="mb-3">
             <label for="produtoCategoria" class="form-label">Categoria:</label>
             <select id="produtoCategoria" class="form-select" required>
               <option value="">Selecione...</option>
-              <!-- Preenchido dinamicamente -->
+              <!-- Será preenchido dinamicamente -->
             </select>
           </div>
           <button type="submit" class="btn btn-success">Cadastrar Produto</button>
@@ -139,7 +134,7 @@
             <label for="editarProdutoSelect" class="form-label">Selecione o Produto:</label>
             <select id="editarProdutoSelect" class="form-select" required>
               <option value="">Selecione...</option>
-              <!-- Preenchido dinamicamente -->
+              <!-- Será preenchido dinamicamente -->
             </select>
           </div>
           <div class="mb-3">
@@ -159,7 +154,7 @@
             <label for="editarProdutoCategoria" class="form-label">Categoria:</label>
             <select id="editarProdutoCategoria" class="form-select" required>
               <option value="">Selecione...</option>
-              <!-- Preenchido dinamicamente -->
+              <!-- Será preenchido dinamicamente -->
             </select>
           </div>
           <button type="submit" class="btn btn-primary">Salvar Alterações</button>
@@ -173,24 +168,45 @@
       </div>
     </div>
   </div>
-
+  
   <!-- Bootstrap JS (Bundle com Popper) -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <script>
-    // Credenciais fixas para acesso
+  
+  <!-- Firebase SDK (versão modular) -->
+  <script type="module">
+    // Importa as funções necessárias do Firebase
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
+    import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
+    
+    // Sua configuração do Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyDTlM2n4Cg-x1vv-LNNMY-6Pl5UCHLpUko",
+      authDomain: "bento-mineiro.firebaseapp.com",
+      projectId: "bento-mineiro",
+      storageBucket: "bento-mineiro.firebasestorage.app",
+      messagingSenderId: "806545810961",
+      appId: "1:806545810961:web:9a7356991a13581d7f33b0",
+      measurementId: "G-5GGXJS06RW"
+    };
+    
+    // Inicializa o Firebase e o Firestore
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    
+    // Credenciais fixas para o admin (login simples)
     const ADMIN_LOGIN = "BentoMineiro";
     const ADMIN_SENHA = "SantoBento2025";
     
+    // Função de login
     function validarAdmin() {
       const login = document.getElementById("loginInput").value;
       const senha = document.getElementById("senhaInput").value;
       if (login === ADMIN_LOGIN && senha === ADMIN_SENHA) {
         document.getElementById("loginSection").style.display = "none";
         document.getElementById("adminSection").style.display = "block";
-        inicializarDados();
-        carregarListaCategorias();
         carregarCategoriasNoSelect();
         carregarListaProdutos();
+        carregarListaCategorias();
         carregarProdutosMigracao();
         carregarProdutosEditar();
       } else {
@@ -204,262 +220,310 @@
       }
     }
     
-    // Persistência via localStorage (simulação)
-    function inicializarDados() {
-      if (!localStorage.getItem("admin_produtos")) {
-        localStorage.setItem("admin_produtos", JSON.stringify([]));
+    // FUNÇÕES DE FIRESTORE PARA PRODUTOS
+    
+    // Carrega a lista de produtos da coleção "produtos"
+    async function carregarListaProdutos() {
+      const container = document.getElementById("listaProdutos");
+      container.innerHTML = "";
+      try {
+        const querySnapshot = await getDocs(collection(db, "produtos"));
+        if (querySnapshot.empty) {
+          container.innerHTML = "<p>Nenhum produto cadastrado.</p>";
+          return;
+        }
+        querySnapshot.forEach((docSnap) => {
+          const produto = docSnap.data();
+          produto.id = docSnap.id;
+          const div = document.createElement("div");
+          div.className = "card mb-2";
+          div.innerHTML = `
+            <div class="card-body">
+              <h5 class="card-title">${produto.nome}</h5>
+              <p class="card-text">Valor: R$ ${produto.valor.toFixed(2)}<br>
+              Categoria: ${produto.categoria}</p>
+              <p class="card-text">Imagem: <a href="${produto.imagem}" target="_blank">Ver Imagem</a></p>
+              <button class="btn btn-sm btn-secondary" onclick="iniciarEdicaoProduto('${produto.id}')">Editar</button>
+              <button class="btn btn-sm btn-danger" onclick="excluirProduto('${produto.id}')">Excluir</button>
+            </div>
+          `;
+          container.appendChild(div);
+        });
+      } catch (error) {
+        console.error("Erro ao carregar produtos:", error);
+        container.innerHTML = "<p>Erro ao carregar produtos.</p>";
       }
-      if (!localStorage.getItem("admin_categorias")) {
-        localStorage.setItem("admin_categorias", JSON.stringify([]));
-      }
-    }
-    function getProdutos() {
-      return JSON.parse(localStorage.getItem("admin_produtos"));
-    }
-    function setProdutos(produtos) {
-      localStorage.setItem("admin_produtos", JSON.stringify(produtos));
-    }
-    function getCategorias() {
-      return JSON.parse(localStorage.getItem("admin_categorias"));
-    }
-    function setCategorias(categorias) {
-      localStorage.setItem("admin_categorias", JSON.stringify(categorias));
     }
     
-    // Cadastro de novo produto
-    document.getElementById("formProduto").addEventListener("submit", function(e) {
+    // Cadastra um novo produto na coleção "produtos"
+    document.getElementById("formProduto").addEventListener("submit", async function(e) {
       e.preventDefault();
       const produto = {
-        id: Date.now(),
         nome: document.getElementById("produtoNome").value,
         valor: parseFloat(document.getElementById("produtoValor").value),
         imagem: document.getElementById("produtoImagem").value,
         categoria: document.getElementById("produtoCategoria").value
       };
-      const produtos = getProdutos();
-      produtos.push(produto);
-      setProdutos(produtos);
-      alert("Produto cadastrado com sucesso!");
-      this.reset();
-      document.getElementById("produtoPreview").style.display = "none";
-      carregarListaProdutos();
-      carregarProdutosMigracao();
-      carregarProdutosEditar();
-    });
-    
-    function atualizarPreviewProduto() {
-      const url = document.getElementById("produtoImagem").value;
-      const preview = document.getElementById("produtoPreview");
-      if (url) {
-        preview.src = url;
-        preview.style.display = "block";
-      } else {
-        preview.style.display = "none";
-      }
-    }
-    
-    // Cadastro de nova categoria
-    document.getElementById("formCategoria").addEventListener("submit", function(e) {
-      e.preventDefault();
-      const categoria = {
-        id: Date.now(),
-        nome: document.getElementById("categoriaNome").value,
-        imagem: document.getElementById("categoriaImagem").value
-      };
-      const categorias = getCategorias();
-      categorias.push(categoria);
-      setCategorias(categorias);
-      alert("Categoria cadastrada com sucesso!");
-      this.reset();
-      carregarListaCategorias();
-      carregarCategoriasNoSelect();
-      carregarProdutosMigracao();
-      carregarProdutosEditar();
-    });
-    
-    // Preenche o select de categorias nos formulários de produto e edição
-    function carregarCategoriasNoSelect() {
-      const categorias = getCategorias();
-      const selectProduto = document.getElementById("produtoCategoria");
-      const selectEditar = document.getElementById("editarProdutoCategoria");
-      selectProduto.innerHTML = '<option value="">Selecione...</option>';
-      selectEditar.innerHTML = '<option value="">Selecione...</option>';
-      categorias.forEach(c => {
-        const option = document.createElement("option");
-        option.value = c.nome;
-        option.innerText = c.nome;
-        selectProduto.appendChild(option);
-        const option2 = document.createElement("option");
-        option2.value = c.nome;
-        option2.innerText = c.nome;
-        selectEditar.appendChild(option2);
-      });
-    }
-    
-    // Lista de produtos para a aba Produtos
-    function carregarListaProdutos() {
-      const produtos = getProdutos();
-      const container = document.getElementById("listaProdutos");
-      container.innerHTML = "";
-      if (produtos.length === 0) {
-        container.innerHTML = "<p>Nenhum produto cadastrado.</p>";
-        return;
-      }
-      produtos.forEach(produto => {
-        const div = document.createElement("div");
-        div.className = "card mb-2";
-        div.innerHTML = `
-          <div class="card-body">
-            <h5 class="card-title">${produto.nome}</h5>
-            <p class="card-text">Valor: R$ ${produto.valor.toFixed(2)}<br>
-            Categoria: ${produto.categoria}</p>
-            <p class="card-text">Imagem: <a href="${produto.imagem}" target="_blank">Ver Imagem</a></p>
-            <button class="btn btn-sm btn-secondary" onclick="editarProduto(${produto.id})">Editar</button>
-            <button class="btn btn-sm btn-danger" onclick="excluirProduto(${produto.id})">Excluir</button>
-          </div>
-        `;
-        container.appendChild(div);
-      });
-    }
-    
-    // Funções para editar e excluir produto (aba Produtos)
-    function editarProduto(id) {
-      const produtos = getProdutos();
-      const produto = produtos.find(p => p.id === id);
-      if (!produto) return;
-      document.getElementById("produtoNome").value = produto.nome;
-      document.getElementById("produtoValor").value = produto.valor;
-      document.getElementById("produtoImagem").value = produto.imagem;
-      document.getElementById("produtoCategoria").value = produto.categoria;
-      atualizarPreviewProduto();
-      const novosProdutos = produtos.filter(p => p.id !== id);
-      setProdutos(novosProdutos);
-      carregarListaProdutos();
-      carregarProdutosMigracao();
-      carregarProdutosEditar();
-    }
-    function excluirProduto(id) {
-      if (confirm("Deseja realmente excluir este produto?")) {
-        const produtos = getProdutos();
-        const novosProdutos = produtos.filter(p => p.id !== id);
-        setProdutos(novosProdutos);
+      try {
+        await addDoc(collection(db, "produtos"), produto);
+        alert("Produto cadastrado com sucesso!");
+        this.reset();
+        document.getElementById("produtoPreview").style.display = "none";
         carregarListaProdutos();
         carregarProdutosMigracao();
         carregarProdutosEditar();
+      } catch (error) {
+        console.error("Erro ao cadastrar produto:", error);
+        alert("Erro ao cadastrar produto.");
+      }
+    });
+    
+    // Inicia a edição de um produto na aba Editar Produtos (preenche os campos do formulário de edição)
+    async function iniciarEdicaoProduto(id) {
+      try {
+        const docRef = doc(db, "produtos", id);
+        const docSnap = await getDocs(docRef); // ou getDoc(docRef)
+        // Como getDoc é mais indicado para um único documento:
+        import { getDoc } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
+        const docData = await getDoc(docRef);
+        if (docData.exists()) {
+          const produto = docData.data();
+          produto.id = docData.id;
+          document.getElementById("editarProdutoSelect").value = produto.id;
+          document.getElementById("editarProdutoNome").value = produto.nome;
+          document.getElementById("editarProdutoValor").value = produto.valor;
+          document.getElementById("editarProdutoImagem").value = produto.imagem;
+          document.getElementById("editarProdutoCategoria").value = produto.categoria;
+          const preview = document.getElementById("editarProdutoPreview");
+          preview.src = produto.imagem;
+          preview.style.display = "block";
+          // Troque de aba para edição
+          const triggerTabList = [].slice.call(document.querySelectorAll('#adminTab a'))
+          triggerTabList.forEach(function (triggerEl) {
+            let tabTrigger = new bootstrap.Tab(triggerEl)
+            if (triggerEl.getAttribute("data-bs-target") === "#editarTab") {
+              tabTrigger.show();
+            }
+          });
+        } else {
+          alert("Produto não encontrado.");
+        }
+      } catch (error) {
+        console.error("Erro ao iniciar edição do produto:", error);
       }
     }
     
-    // Lista de categorias na aba Categorias
-    function carregarListaCategorias() {
-      const categorias = getCategorias();
-      const container = document.getElementById("listaCategorias");
-      container.innerHTML = "";
-      if (categorias.length === 0) {
-        container.innerHTML = "<p>Nenhuma categoria cadastrada.</p>";
-        return;
-      }
-      categorias.forEach(categoria => {
-        const div = document.createElement("div");
-        div.className = "card mb-2";
-        div.innerHTML = `
-          <div class="card-body">
-            <h5 class="card-title">${categoria.nome}</h5>
-            <p class="card-text">Imagem: <a href="${categoria.imagem}" target="_blank">Ver Imagem</a></p>
-            <button class="btn btn-sm btn-secondary" onclick="editarCategoria(${categoria.id})">Editar</button>
-            <button class="btn btn-sm btn-danger" onclick="excluirCategoria(${categoria.id})">Excluir</button>
-          </div>
-        `;
-        container.appendChild(div);
-      });
-    }
-    function editarCategoria(id) {
-      const categorias = getCategorias();
-      const categoria = categorias.find(c => c.id === id);
-      if (!categoria) return;
-      document.getElementById("categoriaNome").value = categoria.nome;
-      document.getElementById("categoriaImagem").value = categoria.imagem;
-      const novasCategorias = categorias.filter(c => c.id !== id);
-      setCategorias(novasCategorias);
-      carregarListaCategorias();
-      carregarCategoriasNoSelect();
-      carregarProdutosMigracao();
-      carregarProdutosEditar();
-    }
-    function excluirCategoria(id) {
-      if (confirm("Deseja realmente excluir esta categoria?")) {
-        const categorias = getCategorias();
-        const novasCategorias = categorias.filter(c => c.id !== id);
-        setCategorias(novasCategorias);
-        carregarListaCategorias();
-        carregarCategoriasNoSelect();
-        carregarProdutosMigracao();
-        carregarProdutosEditar();
-      }
-    }
-    
-    // Preenche o dropdown de produtos para edição na aba Editar Produtos
-    function carregarProdutosMigracao() {
-      const produtos = getProdutos();
-      const select = document.getElementById("editarProdutoSelect");
-      select.innerHTML = '<option value="">Selecione...</option>';
-      produtos.forEach(p => {
-        const op = document.createElement("option");
-        op.value = p.id;
-        op.innerText = p.nome + " (" + p.categoria + ")";
-        select.appendChild(op);
-      });
-    }
-    
-    // Preenche a lista de produtos na aba Editar Produtos
-    function carregarProdutosEditar() {
-      const produtos = getProdutos();
-      const container = document.getElementById("listaProdutosEditar");
-      container.innerHTML = "";
-      if (produtos.length === 0) {
-        container.innerHTML = "<p>Nenhum produto cadastrado.</p>";
-        return;
-      }
-      produtos.forEach(produto => {
-        const div = document.createElement("div");
-        div.className = "card mb-2";
-        div.innerHTML = `
-          <div class="card-body">
-            <h5 class="card-title">${produto.nome}</h5>
-            <p class="card-text">Valor: R$ ${produto.valor.toFixed(2)}<br>
-            Categoria: ${produto.categoria}</p>
-            <p class="card-text">Imagem: <a href="${produto.imagem}" target="_blank">Ver Imagem</a></p>
-          </div>
-        `;
-        container.appendChild(div);
-      });
-      carregarProdutosMigracao();
-    }
-    
-    // Formulário de edição de produto
-    document.getElementById("formEditarProduto").addEventListener("submit", function(e) {
+    // Atualiza um produto na coleção "produtos"
+    document.getElementById("formEditarProduto").addEventListener("submit", async function(e) {
       e.preventDefault();
-      const id = parseInt(document.getElementById("editarProdutoSelect").value);
+      const id = document.getElementById("editarProdutoSelect").value;
       if (!id) {
         alert("Selecione um produto para editar.");
         return;
       }
-      const produtos = getProdutos();
-      const index = produtos.findIndex(p => p.id === id);
-      if (index === -1) return;
-      produtos[index].nome = document.getElementById("editarProdutoNome").value;
-      produtos[index].valor = parseFloat(document.getElementById("editarProdutoValor").value);
-      produtos[index].imagem = document.getElementById("editarProdutoImagem").value;
-      produtos[index].categoria = document.getElementById("editarProdutoCategoria").value;
-      setProdutos(produtos);
-      alert("Produto atualizado com sucesso!");
-      this.reset();
-      document.getElementById("editarProdutoPreview").style.display = "none";
-      carregarProdutosEditar();
-      carregarListaProdutos();
-      carregarProdutosMigracao();
+      const novosDados = {
+        nome: document.getElementById("editarProdutoNome").value,
+        valor: parseFloat(document.getElementById("editarProdutoValor").value),
+        imagem: document.getElementById("editarProdutoImagem").value,
+        categoria: document.getElementById("editarProdutoCategoria").value
+      };
+      try {
+        await updateDoc(doc(db, "produtos", id), novosDados);
+        alert("Produto atualizado com sucesso!");
+        this.reset();
+        document.getElementById("editarProdutoPreview").style.display = "none";
+        carregarListaProdutos();
+        carregarProdutosMigracao();
+        carregarProdutosEditar();
+      } catch (error) {
+        console.error("Erro ao atualizar produto:", error);
+        alert("Erro ao atualizar produto.");
+      }
     });
     
-    // Atualiza a prévia da imagem no formulário de edição
+    // Exclui um produto
+    async function excluirProduto(id) {
+      if (confirm("Deseja realmente excluir este produto?")) {
+        try {
+          await deleteDoc(doc(db, "produtos", id));
+          alert("Produto excluído com sucesso!");
+          carregarListaProdutos();
+          carregarProdutosMigracao();
+          carregarProdutosEditar();
+        } catch (error) {
+          console.error("Erro ao excluir produto:", error);
+          alert("Erro ao excluir produto.");
+        }
+      }
+    }
+    
+    // FUNÇÕES DE FIRESTORE PARA CATEGORIAS
+    
+    // Carrega a lista de categorias da coleção "categorias"
+    async function carregarListaCategorias() {
+      const container = document.getElementById("listaCategorias");
+      container.innerHTML = "";
+      try {
+        const querySnapshot = await getDocs(collection(db, "categorias"));
+        if (querySnapshot.empty) {
+          container.innerHTML = "<p>Nenhuma categoria cadastrada.</p>";
+          return;
+        }
+        querySnapshot.forEach((docSnap) => {
+          const categoria = docSnap.data();
+          categoria.id = docSnap.id;
+          const div = document.createElement("div");
+          div.className = "card mb-2";
+          div.innerHTML = `
+            <div class="card-body">
+              <h5 class="card-title">${categoria.nome}</h5>
+              <p class="card-text">Imagem: <a href="${categoria.imagem}" target="_blank">Ver Imagem</a></p>
+              <button class="btn btn-sm btn-secondary" onclick="editarCategoria('${categoria.id}')">Editar</button>
+              <button class="btn btn-sm btn-danger" onclick="excluirCategoria('${categoria.id}')">Excluir</button>
+            </div>
+          `;
+          container.appendChild(div);
+        });
+      } catch (error) {
+        console.error("Erro ao carregar categorias:", error);
+        container.innerHTML = "<p>Erro ao carregar categorias.</p>";
+      }
+    }
+    
+    // Cadastra uma nova categoria
+    document.getElementById("formCategoria").addEventListener("submit", async function(e) {
+      e.preventDefault();
+      const categoria = {
+        nome: document.getElementById("categoriaNome").value,
+        imagem: document.getElementById("categoriaImagem").value
+      };
+      try {
+        await addDoc(collection(db, "categorias"), categoria);
+        alert("Categoria cadastrada com sucesso!");
+        this.reset();
+        carregarListaCategorias();
+        carregarCategoriasNoSelect();
+        carregarProdutosMigracao();
+        carregarProdutosEditar();
+      } catch (error) {
+        console.error("Erro ao cadastrar categoria:", error);
+        alert("Erro ao cadastrar categoria.");
+      }
+    });
+    
+    // Preenche o select de categorias para os formulários de produto e edição
+    async function carregarCategoriasNoSelect() {
+      const selectProduto = document.getElementById("produtoCategoria");
+      const selectEditar = document.getElementById("editarProdutoCategoria");
+      selectProduto.innerHTML = '<option value="">Selecione...</option>';
+      selectEditar.innerHTML = '<option value="">Selecione...</option>';
+      try {
+        const querySnapshot = await getDocs(collection(db, "categorias"));
+        querySnapshot.forEach((docSnap) => {
+          const categoria = docSnap.data();
+          const option1 = document.createElement("option");
+          option1.value = categoria.nome;
+          option1.innerText = categoria.nome;
+          selectProduto.appendChild(option1);
+          const option2 = document.createElement("option");
+          option2.value = categoria.nome;
+          option2.innerText = categoria.nome;
+          selectEditar.appendChild(option2);
+        });
+      } catch (error) {
+        console.error("Erro ao carregar categorias para selects:", error);
+      }
+    }
+    
+    // Edita uma categoria (preenche o formulário para edição)
+    async function editarCategoria(id) {
+      try {
+        const docSnap = await getDoc(doc(db, "categorias", id));
+        if (docSnap.exists()) {
+          const categoria = docSnap.data();
+          document.getElementById("categoriaNome").value = categoria.nome;
+          document.getElementById("categoriaImagem").value = categoria.imagem;
+          // Exclui a categoria atual para que a nova submissão seja tratada como edição
+          await deleteDoc(doc(db, "categorias", id));
+          alert("Edite os campos e cadastre a categoria novamente para concluir a edição.");
+          carregarListaCategorias();
+          carregarCategoriasNoSelect();
+          carregarProdutosMigracao();
+          carregarProdutosEditar();
+        }
+      } catch (error) {
+        console.error("Erro ao editar categoria:", error);
+      }
+    }
+    
+    // Exclui uma categoria
+    async function excluirCategoria(id) {
+      if (confirm("Deseja realmente excluir esta categoria?")) {
+        try {
+          await deleteDoc(doc(db, "categorias", id));
+          alert("Categoria excluída com sucesso!");
+          carregarListaCategorias();
+          carregarCategoriasNoSelect();
+          carregarProdutosMigracao();
+          carregarProdutosEditar();
+        } catch (error) {
+          console.error("Erro ao excluir categoria:", error);
+          alert("Erro ao excluir categoria.");
+        }
+      }
+    }
+    
+    // Aba "Editar Produtos": Carrega os produtos para o dropdown e a lista de produtos
+    async function carregarProdutosMigracao() {
+      const select = document.getElementById("editarProdutoSelect");
+      select.innerHTML = '<option value="">Selecione...</option>';
+      try {
+        const querySnapshot = await getDocs(collection(db, "produtos"));
+        querySnapshot.forEach((docSnap) => {
+          const produto = docSnap.data();
+          produto.id = docSnap.id;
+          const option = document.createElement("option");
+          option.value = produto.id;
+          option.innerText = produto.nome + " (" + produto.categoria + ")";
+          select.appendChild(option);
+        });
+      } catch (error) {
+        console.error("Erro ao carregar produtos para edição:", error);
+      }
+    }
+    
+    async function carregarProdutosEditar() {
+      const container = document.getElementById("listaProdutosEditar");
+      container.innerHTML = "";
+      try {
+        const querySnapshot = await getDocs(collection(db, "produtos"));
+        if (querySnapshot.empty) {
+          container.innerHTML = "<p>Nenhum produto cadastrado.</p>";
+          return;
+        }
+        querySnapshot.forEach((docSnap) => {
+          const produto = docSnap.data();
+          produto.id = docSnap.id;
+          const div = document.createElement("div");
+          div.className = "card mb-2";
+          div.innerHTML = `
+            <div class="card-body">
+              <h5 class="card-title">${produto.nome}</h5>
+              <p class="card-text">Valor: R$ ${produto.valor.toFixed(2)}<br>
+              Categoria: ${produto.categoria}</p>
+              <p class="card-text">Imagem: <a href="${produto.imagem}" target="_blank">Ver Imagem</a></p>
+            </div>
+          `;
+          container.appendChild(div);
+        });
+        carregarProdutosMigracao();
+      } catch (error) {
+        console.error("Erro ao carregar produtos para edição:", error);
+        container.innerHTML = "<p>Erro ao carregar produtos.</p>";
+      }
+    }
+    
+    // Função para atualizar a prévia da imagem no formulário de edição
     function atualizarPreviewEditar() {
       const url = document.getElementById("editarProdutoImagem").value;
       const preview = document.getElementById("editarProdutoPreview");
@@ -471,98 +535,17 @@
       }
     }
     
-    // Formata os campos de valor (moeda) usando Inputmask
+    // Aplica Inputmask para formatação de valor (moeda)
     window.addEventListener("load", () => {
       Inputmask({"alias": "currency", "prefix": "R$ "}).mask(document.getElementById("produtoValor"));
       Inputmask({"alias": "currency", "prefix": "R$ "}).mask(document.getElementById("editarProdutoValor"));
     });
     
-    // Função para montar o resumo do pedido (para envio via WhatsApp)
-    function montarResumo() {
-      // Coleta os dados obrigatórios da Etapa 3
-      pedido.nome = document.getElementById("nomeDados").value;
-      pedido.telefone = document.getElementById("telefoneDados").value;
-      pedido.endereco = document.getElementById("enderecoFinal").value;
-      pedido.numero = document.getElementById("numero").value;
-      pedido.complemento = document.getElementById("complemento").value;
-      pedido.observacoes = document.getElementById("observacoes").value;
-      
-      if (!pedido.nome || !pedido.telefone || !pedido.endereco) {
-        alert("Os campos Nome, Telefone e Endereço são obrigatórios.");
-        goToStep(3);
-        return;
-      }
-      
-      let resumo = "";
-      resumo += "*Dados do Cliente:*\n";
-      resumo += "*Nome:* " + pedido.nome + "\n";
-      resumo += "*Telefone:* " + pedido.telefone + "\n\n";
-      
-      let totalGeral = 0;
-      for (const categoria in pedido.produtos) {
-        const quantidades = pedido.produtos[categoria];
-        if (quantidades && quantidades.some(q => q > 0)) {
-          let catText = "";
-          if (categoria === "prontaEntrega") catText = "Pronta Entrega";
-          else if (categoria === "encomendas") catText = "Encomendas";
-          else if (categoria === "produtosEspeciais") catText = "Produtos Especiais - Queijos Premiados Boníssimo";
-          resumo += `*${catText}:*\n`;
-          let subtotalCat = 0;
-          produtosData[categoria].forEach((produto, index) => {
-            const qty = quantidades[index];
-            if (qty > 0) {
-              const totalProduto = qty * produto.valor;
-              resumo += `  - *${produto.nome}*: ${qty} x R$ ${produto.valor.toFixed(2)} = R$ ${totalProduto.toFixed(2)}\n`;
-              subtotalCat += totalProduto;
-            }
-          });
-          resumo += `  *Subtotal ${catText}:* R$ ${subtotalCat.toFixed(2)}\n\n`;
-          totalGeral += subtotalCat;
-        }
-      }
-      resumo += `*Total Geral:* R$ ${totalGeral.toFixed(2)}\n\n`;
-      resumo += `*Observações:* ${pedido.observacoes}\n`;
-      resumo += `*Endereço:* ${pedido.endereco}\n`;
-      resumo += `*Número:* ${pedido.numero}\n`;
-      resumo += `*Complemento:* ${pedido.complemento}\n`;
-      
-      document.getElementById("resumoPedido").innerText = resumo;
-    }
-    
-    // Envia o pedido via WhatsApp
-    function enviarPedido() {
-      montarResumo();
-      const resumo = document.getElementById("resumoPedido").innerText;
-      const mensagem = encodeURIComponent(resumo);
-      const url = "https://wa.me/5511984193457?text=" + mensagem;
-      window.open(url, "_blank");
-    }
-    
-    // Função para limpar o pedido (reinicia os dados e retorna à Etapa 1)
+    // Função para limpar o pedido (aqui não interfere no banco, pois é para uso do site público)
     function limparPedido() {
       if (confirm("Tem certeza que deseja limpar o pedido?")) {
-        pedido.produtos = {
-          prontaEntrega: new Array(produtosData.prontaEntrega.length).fill(0),
-          encomendas: new Array(produtosData.encomendas.length).fill(0),
-          produtosEspeciais: new Array(produtosData.produtosEspeciais.length).fill(0)
-        };
-        document.getElementById("observacoes").value = "";
-        document.getElementById("enderecoFinal").value = "";
-        document.getElementById("numero").value = "";
-        document.getElementById("complemento").value = "";
-        document.getElementById("productList").innerHTML = "";
-        atualizarSubtotal();
-        alert("Pedido limpo. Você pode recomeçar a seleção no site público.");
-        goToStep(1);
-      }
-    }
-    
-    // Alterna entre as abas do painel administrativo (as abas do Bootstrap já gerenciam isso)
-    function goToStep(stepNumber) {
-      document.querySelectorAll(".step").forEach(step => step.classList.remove("active"));
-      document.getElementById("step" + stepNumber).classList.add("active");
-      if (stepNumber === 4) {
-        montarResumo();
+        // Se necessário, você pode implementar uma função para limpar dados no site público
+        alert("Função 'limpar pedido' é exclusiva do site público.");
       }
     }
     
