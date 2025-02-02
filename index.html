@@ -44,9 +44,16 @@
     .navbar-brand img {
       max-height: 100px;
     }
-    /* Espaço para o conteúdo: margem superior de 50px */
+    /* Espaço para o conteúdo: margem superior de 100px */
     .content-wrapper {
-      margin-top: 50px;
+      margin-top: 100px;
+    }
+    /* Elemento de subtotal na navbar */
+    #navbarSubtotal {
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-left: 10px;
+      color: #fff;
     }
     /* Animação para transição entre etapas */
     .step {
@@ -60,16 +67,23 @@
       from { opacity: 0; }
       to { opacity: 1; }
     }
-    /* Botões de categoria */
-    .btn-category {
-      margin: 5px;
-      font-weight: 600;
-      border-radius: 50px;
-      padding: 10px 20px;
-      transition: background-color 0.3s;
+    /* Botões de categoria transformados em imagens clicáveis */
+    .categoria-img {
+      cursor: pointer;
+      border: 2px solid transparent;
+      border-radius: 10px;
+      transition: border-color 0.3s;
     }
-    .btn-category:hover {
-      background-color: #6E2C00;
+    .categoria-img:hover {
+      border-color: #6E2C00;
+    }
+    .categoria-container img {
+      width: 100%;
+      max-width: 600px;
+      aspect-ratio: 4 / 1;
+      object-fit: cover;
+      margin-bottom: 10px;
+      border-radius: 10px;
     }
     /* Produtos */
     .product-item {
@@ -82,7 +96,7 @@
       align-items: center;
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
-    /* Imagens dos produtos com proporção 1:4 (altura:largura) */
+    /* Imagens dos produtos com proporção 1:4 */
     .product-item img {
       width: 100%;
       max-width: 600px;
@@ -159,6 +173,7 @@
              </ul>
            </li>
          </ul>
+         <span id="navbarSubtotal">Subtotal: R$ 0.00</span>
       </div>
     </div>
   </nav>
@@ -166,43 +181,47 @@
   <!-- Conteúdo principal -->
   <div class="content-wrapper">
     <div class="container my-4">
-      <!-- ETAPA 1: Dados do Cliente -->
+      <!-- ETAPA 1: Seleção de Categoria (Imagens clicáveis) -->
       <div id="step1" class="step active">
-        <h2 class="text-center my-4">Informe seus Dados</h2>
-        <form id="formStep1" onsubmit="return validarDados();">
-          <div class="mb-3">
-            <label for="nome" class="form-label">Nome:</label>
-            <input type="text" class="form-control" id="nome" placeholder="Digite seu nome" required>
+        <h2 class="text-center my-4">Selecione a Categoria</h2>
+        <div class="row text-center">
+          <div class="col-md-4">
+            <img src="https://i.imgur.com/nWTKuD9.jpg" alt="Pronta Entrega" class="categoria-img img-fluid" onclick="selectCategory('prontaEntrega')">
+            <p>Pronta Entrega</p>
           </div>
-          <div class="mb-3">
-            <label for="telefone" class="form-label">Telefone:</label>
-            <input type="text" class="form-control" id="telefone" placeholder="(00) 00000-0000" required>
+          <div class="col-md-4">
+            <img src="https://i.imgur.com/uEf53Ls.jpg" alt="Encomendas" class="categoria-img img-fluid" onclick="selectCategory('encomendas')">
+            <p>Encomendas</p>
           </div>
-          <div class="text-center my-4">
-            <p>Selecione a Categoria de Produtos:</p>
-            <button type="button" class="btn btn-primary btn-category" onclick="selectCategory('prontaEntrega')">Pronta Entrega</button>
-            <button type="button" class="btn btn-primary btn-category" onclick="selectCategory('encomendas')">Encomendas</button>
-            <button type="button" class="btn btn-primary btn-category" onclick="selectCategory('produtosEspeciais')">Produtos Especiais - Queijos Premiados Boníssimo</button>
+          <div class="col-md-4">
+            <img src="https://i.imgur.com/Vu5IDkj.jpg" alt="Produtos Especiais" class="categoria-img img-fluid" onclick="selectCategory('produtosEspeciais')">
+            <p>Produtos Especiais</p>
           </div>
-        </form>
+        </div>
       </div>
       
       <!-- ETAPA 2: Seleção de Produtos -->
       <div id="step2" class="step">
         <h2 id="categoriaTitulo" class="text-center my-4"></h2>
-        <form id="formStep2">
-          <div id="productList"></div>
-          <div class="text-center my-4">
-            <button type="button" class="btn btn-primary" onclick="goToStep(3)">Próximo</button>
-            <button type="button" class="btn btn-secondary" onclick="goToStep(1)">Voltar</button>
-          </div>
-        </form>
+        <div id="productList"></div>
+        <div class="text-center my-4">
+          <button type="button" class="btn btn-primary" onclick="goToStep(3)">Próximo</button>
+          <button type="button" class="btn btn-secondary" onclick="goToStep(1)">Voltar</button>
+        </div>
       </div>
       
-      <!-- ETAPA 3: Dados Finais -->
+      <!-- ETAPA 3: Dados Finais (agora com Nome, Telefone e Endereço obrigatórios) -->
       <div id="step3" class="step">
         <h2 class="text-center my-4">Dados Finais</h2>
         <form id="formStep3">
+          <div class="mb-3">
+            <label for="nomeDados" class="form-label">Nome:</label>
+            <input type="text" class="form-control" id="nomeDados" placeholder="Digite seu nome" required>
+          </div>
+          <div class="mb-3">
+            <label for="telefoneDados" class="form-label">Telefone:</label>
+            <input type="text" class="form-control" id="telefoneDados" placeholder="(00) 00000-0000" required>
+          </div>
           <div class="mb-3">
             <label for="cep" class="form-label">CEP:</label>
             <input type="text" class="form-control" id="cep" placeholder="00000-000" required>
@@ -240,10 +259,9 @@
           <button type="button" class="btn btn-secondary" onclick="goToStep(3)">Voltar</button>
         </div>
       </div>
-      
     </div>
   </div>
-
+  
   <!-- Scripts: Inputmask e Bootstrap JS -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/inputmask/5.0.8/inputmask.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -256,9 +274,26 @@
       }
     }
     
+    // Atualiza o subtotal e exibe na navbar
+    function atualizarSubtotal() {
+      let total = 0;
+      for (const categoria in pedido.produtos) {
+        const quantidades = pedido.produtos[categoria];
+        if (quantidades && quantidades.length > 0) {
+          produtosData[categoria].forEach((produto, index) => {
+            const qty = quantidades[index];
+            if (qty > 0) {
+              total += qty * produto.preco;
+            }
+          });
+        }
+      }
+      document.getElementById("navbarSubtotal").innerText = "Subtotal: R$ " + total.toFixed(2);
+    }
+    
     // Aplicar máscaras aos campos de telefone e CEP
     window.addEventListener("load", () => {
-      Inputmask({"mask": "(99) 99999-9999"}).mask(document.getElementById("telefone"));
+      Inputmask({"mask": "(99) 99999-9999"}).mask(document.getElementById("telefoneDados"));
       Inputmask({"mask": "99999-999"}).mask(document.getElementById("cep"));
     });
     
@@ -298,7 +333,7 @@
     };
     let categoriaAtual = "";
     
-    // Dados dos produtos com as novas imagens
+    // Dados dos produtos com as imagens atualizadas
     const produtosData = {
       prontaEntrega: [
         { nome: "Pão de Queijo 1kg", preco: 40.00, imagem: "https://i.imgur.com/07KTZBy.jpg" },
@@ -325,14 +360,9 @@
       ]
     };
     
-    // Ao selecionar uma categoria, salva os dados do cliente e exibe os produtos
+    // Ao selecionar uma categoria, salva os dados e exibe os produtos
     function selectCategory(categoria) {
-      pedido.nome = document.getElementById("nome").value;
-      pedido.telefone = document.getElementById("telefone").value;
-      if (!pedido.nome || !pedido.telefone) {
-        alert("Nome e Telefone são obrigatórios.");
-        return;
-      }
+      // Agora, os dados de Nome e Telefone serão coletados na Etapa 3
       categoriaAtual = categoria;
       if (!pedido.produtos[categoria] || pedido.produtos[categoria].length !== produtosData[categoria].length) {
         pedido.produtos[categoria] = new Array(produtosData[categoria].length).fill(0);
@@ -346,7 +376,7 @@
       goToStep(2);
     }
     
-    // Carrega os produtos da categoria selecionada, mantendo as quantidades já definidas
+    // Carrega os produtos da categoria selecionada
     function carregarProdutos(categoria) {
       const lista = document.getElementById("productList");
       lista.innerHTML = "";
@@ -385,11 +415,30 @@
         selectQty.value = pedido.produtos[categoria][index];
         selectQty.addEventListener("change", (e) => {
           pedido.produtos[categoria][index] = Number(e.target.value);
+          atualizarSubtotal();
         });
         div.appendChild(selectQty);
         
         lista.appendChild(div);
       });
+      atualizarSubtotal();
+    }
+    
+    // Atualiza e exibe o subtotal na navbar
+    function atualizarSubtotal() {
+      let total = 0;
+      for (const categoria in pedido.produtos) {
+        const quantidades = pedido.produtos[categoria];
+        if (quantidades && quantidades.length > 0) {
+          produtosData[categoria].forEach((produto, index) => {
+            const qty = quantidades[index];
+            if (qty > 0) {
+              total += qty * produto.preco;
+            }
+          });
+        }
+      }
+      document.getElementById("navbarSubtotal").innerText = "Subtotal: R$ " + total.toFixed(2);
     }
     
     // Alterna entre as etapas do fluxo
@@ -403,6 +452,21 @@
     
     // Monta o resumo final formatado para WhatsApp com subtotais e total geral
     function montarResumo() {
+      // Coleta os dados obrigatórios da Etapa 3
+      pedido.nome = document.getElementById("nomeDados").value;
+      pedido.telefone = document.getElementById("telefoneDados").value;
+      pedido.endereco = document.getElementById("enderecoFinal").value;
+      pedido.numero = document.getElementById("numero").value;
+      pedido.complemento = document.getElementById("complemento").value;
+      pedido.observacoes = document.getElementById("observacoes").value;
+      
+      // Valida que os campos obrigatórios estejam preenchidos
+      if (!pedido.nome || !pedido.telefone || !pedido.endereco) {
+        alert("Os campos Nome, Telefone e Endereço são obrigatórios.");
+        goToStep(3);
+        return;
+      }
+      
       let resumo = "";
       resumo += "*Dados do Cliente:*\n";
       resumo += "*Nome:* " + pedido.nome + "\n";
@@ -431,10 +495,10 @@
         }
       }
       resumo += `*Total Geral:* R$ ${totalGeral.toFixed(2)}\n\n`;
-      resumo += `*Observações:* ${document.getElementById("observacoes").value}\n`;
-      resumo += `*Endereço:* ${document.getElementById("enderecoFinal").value}\n`;
-      resumo += `*Número:* ${document.getElementById("numero").value}\n`;
-      resumo += `*Complemento:* ${document.getElementById("complemento").value}\n`;
+      resumo += `*Observações:* ${pedido.observacoes}\n`;
+      resumo += `*Endereço:* ${pedido.endereco}\n`;
+      resumo += `*Número:* ${pedido.numero}\n`;
+      resumo += `*Complemento:* ${pedido.complemento}\n`;
       
       document.getElementById("resumoPedido").innerText = resumo;
     }
@@ -461,16 +525,14 @@
         document.getElementById("numero").value = "";
         document.getElementById("complemento").value = "";
         document.getElementById("productList").innerHTML = "";
+        atualizarSubtotal();
         goToStep(1);
       }
     }
     
-    // Valida os dados obrigatórios na Etapa 1
+    // Validação simples para a Etapa 3 (campos obrigatórios)
     function validarDados() {
-      if (!document.getElementById("nome").value || !document.getElementById("telefone").value) {
-        alert("Nome e Telefone são obrigatórios.");
-        return false;
-      }
+      // A validação de dados será feita na etapa 3
       return true;
     }
     
