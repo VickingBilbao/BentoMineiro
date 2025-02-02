@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Painel Administrativo - Bento Mineiro</title>
+  <!-- Bootstrap CSS (usado para estilização rápida) -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f7f7f7;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+    }
+    /* Centraliza o conteúdo da página de login */
+    #loginSection, #adminSection {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    /* Esconde a área administrativa até o login ser validado */
+    #adminSection {
+      display: none;
+    }
+    /* Menu de navegação do painel (abas) */
+    .nav-tabs .nav-link {
+      cursor: pointer;
+    }
+    /* Pequeno ajuste para os botões */
+    .btn {
+      margin-top: 5px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Seção de Login (aparecerá se o usuário não estiver logado) -->
+  <div id="loginSection">
+    <h2 class="text-center mb-4">Painel Administrativo</h2>
+    <div class="card">
+      <div class="card-body">
+        <h4 class="card-title">Faça o Login</h4>
+        <div class="mb-3">
+          <label for="loginInput" class="form-label">Login:</label>
+          <input type="text" id="loginInput" class="form-control" placeholder="Digite o login">
+        </div>
+        <div class="mb-3">
+          <label for="senhaInput" class="form-label">Senha:</label>
+          <input type="password" id="senhaInput" class="form-control" placeholder="Digite a senha">
+        </div>
+        <button class="btn btn-primary" onclick="validarAdmin()">Entrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Seção Administrativa (visível somente após o login) -->
+  <div id="adminSection">
+    <!-- Menu de navegação (abas) -->
+    <ul class="nav nav-tabs" id="adminTab" role="tablist">
+      <li class="nav-item" role="presentation">
+        <a class="nav-link active" id="produtos-tab" data-bs-toggle="tab" data-bs-target="#produtos" type="button" role="tab">Produtos</a>
+      </li>
+      <li class="nav-item" role="presentation">
+        <a class="nav-link" id="categorias-tab" data-bs-toggle="tab" data-bs-target="#categorias" type="button" role="tab">Categorias</a>
+      </li>
+      <li class="nav-item" role="presentation">
+        <a class="nav-link" id="migrar-tab" data-bs-toggle="tab" data-bs-target="#migrar" type="button" role="tab">Migrar Produto</a>
+      </li>
+      <li class="nav-item" role="presentation">
+        <a class="nav-link" id="planilha-tab" data-bs-toggle="tab" data-bs-target="#planilha" type="button" role="tab">Planilha de Pedidos</a>
+      </li>
+      <li class="nav-item ms-auto" role="presentation">
+        <a class="nav-link text-danger" onclick="sairAdmin()">Sair</a>
+      </li>
+    </ul>
+    <div class="tab-content mt-3" id="adminTabContent">
+      <!-- Aba Produtos -->
+      <div class="tab-pane fade show active" id="produtos" role="tabpanel">
+        <h4>Produtos</h4>
+        <!-- Lista de produtos -->
+        <div id="listaProdutos"></div>
+        <hr>
+        <h5>Cadastrar Novo Produto</h5>
+        <form id="formProduto">
+          <div class="mb-3">
+            <label for="produtoNome" class="form-label">Nome:</label>
+            <input type="text" id="produtoNome" class="form-control" placeholder="Nome do produto" required>
+          </div>
+          <div class="mb-3">
+            <label for="produtoValor" class="form-label">Valor (R$):</label>
+            <input type="number" id="produtoValor" class="form-control" placeholder="Valor" step="0.01" required>
+          </div>
+          <div class="mb-3">
+            <label for="produtoImagem" class="form-label">URL da Imagem:</label>
+            <input type="url" id="produtoImagem" class="form-control" placeholder="Link da imagem" required>
+          </div>
+          <div class="mb-3">
+            <label for="produtoCategoria" class="form-label">Categoria:</label>
+            <select id="produtoCategoria" class="form-select" required>
+              <!-- As opções serão preenchidas dinamicamente a partir das categorias cadastradas -->
+            </select>
+          </div>
+          <button type="submit" class="btn btn-success">Cadastrar Produto</button>
+        </form>
+      </div>
+      <!-- Aba Categorias -->
+      <div class="tab-pane fade" id="categorias" role="tabpanel">
+        <h4>Categorias</h4>
+        <!-- Lista de categorias -->
+        <div id="listaCategorias"></div>
+        <hr>
+        <h5>Cadastrar Nova Categoria</h5>
+        <form id="formCategoria">
+          <div class="mb-3">
+            <label for="categoriaNome" class="form-label">Nome:</label>
+            <input type="text" id="categoriaNome" class="form-control" placeholder="Nome da categoria" required>
+          </div>
+          <div class="mb-3">
+            <label for="categoriaImagem" class="form-label">URL da Imagem:</label>
+            <input type="url" id="categoriaImagem" class="form-control" placeholder="Link da imagem" required>
+          </div>
+          <button type="submit" class="btn btn-success">Cadastrar Categoria</button>
+        </form>
+      </div>
+      <!-- Aba Migrar Produto -->
+      <div class="tab-pane fade" id="migrar" role="tabpanel">
+        <h4>Migrar Produto de Categoria</h4>
+        <form id="formMigrar">
+          <div class="mb-3">
+            <label for="migrarProduto" class="form-label">Produto:</label>
+            <select id="migrarProduto" class="form-select" required>
+              <!-- Será preenchido com a lista de produtos -->
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="migrarNovaCategoria" class="form-label">Nova Categoria:</label>
+            <select id="migrarNovaCategoria" class="form-select" required>
+              <!-- Será preenchido com a lista de categorias -->
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary">Migrar Produto</button>
+        </form>
+      </div>
+      <!-- Aba Planilha -->
+      <div class="tab-pane fade" id="planilha" role="tabpanel">
+        <h4>Planilha de Pedidos</h4>
+        <!-- Você pode inserir o link direto para sua planilha -->
+        <p>Para visualizar os pedidos, clique no botão abaixo:</p>
+        <a href="https://docs.google.com/spreadsheets/d/SEU_ID_AQUI" target="_blank" class="btn btn-info">Abrir Planilha de Pedidos</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS (Bundle com Popper) -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Credenciais fixas para acesso ao painel administrativo
+    const ADMIN_LOGIN = "BentoMineiro";
+    const ADMIN_SENHA = "SantoBento2025";
+
+    // Função para validar o login
+    function validarAdmin() {
+      const login = document.getElementById("loginInput").value;
+      const senha = document.getElementById("senhaInput").value;
+      if (login === ADMIN_LOGIN && senha === ADMIN_SENHA) {
+        document.getElementById("loginSection").style.display = "none";
+        document.getElementById("adminSection").style.display = "block";
+        carregarCategoriasNoSelect();
+        carregarListaProdutos();
+        carregarListaCategorias();
+        carregarProdutosMigracao();
+      } else {
+        alert("Login ou senha incorretos.");
+      }
+    }
+
+    // Função para sair do painel (simplesmente recarrega a página)
+    function sairAdmin() {
+      if (confirm("Deseja realmente sair?")) {
+        window.location.reload();
+      }
+    }
+
+    // Funções para gerenciar dados – usaremos localStorage para persistência simples
+
+    // Inicializa os arrays, se não existirem
+    function inicializarDados() {
+      if (!localStorage.getItem("admin_produtos")) {
+        localStorage.setItem("admin_produtos", JSON.stringify([]));
+      }
+      if (!localStorage.getItem("admin_categorias")) {
+        localStorage.setItem("admin_categorias", JSON.stringify([]));
+      }
+    }
+
+    // Obtém os produtos do localStorage
+    function getProdutos() {
+      return JSON.parse(localStorage.getItem("admin_produtos"));
+    }
+    // Salva os produtos
+    function setProdutos(produtos) {
+      localStorage.setItem("admin_produtos", JSON.stringify(produtos));
+    }
+    // Obtém as categorias
+    function getCategorias() {
+      return JSON.parse(localStorage.getItem("admin_categorias"));
+    }
+    // Salva as categorias
+    function setCategorias(categorias) {
+      localStorage.setItem("admin_categorias", JSON.stringify(categorias));
+    }
+
+    // Função para cadastrar novo produto
+    document.getElementById("formProduto").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const produto = {
+        id: Date.now(),
+        nome: document.getElementById("produtoNome").value,
+        valor: parseFloat(document.getElementById("produtoValor").value),
+        imagem: document.getElementById("produtoImagem").value,
+        categoria: document.getElementById("produtoCategoria").value
+      };
+      const produtos = getProdutos();
+      produtos.push(produto);
+      setProdutos(produtos);
+      alert("Produto cadastrado com sucesso!");
+      this.reset();
+      carregarListaProdutos();
+      carregarProdutosMigracao();
+      carregarCategoriasNoSelect(); // Atualiza o select de categorias para produtos
+    });
+
+    // Função para cadastrar nova categoria
+    document.getElementById("formCategoria").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const categoria = {
+        id: Date.now(),
+        nome: document.getElementById("categoriaNome").value,
+        imagem: document.getElementById("categoriaImagem").value
+      };
+      const categorias = getCategorias();
+      categorias.push(categoria);
+      setCategorias(categorias);
+      alert("Categoria cadastrada com sucesso!");
+      this.reset();
+      carregarListaCategorias();
+      carregarCategoriasNoSelect();
+      carregarProdutosMigracao();
+    });
+
+    // Função para carregar a lista de produtos no painel de administração
+    function carregarListaProdutos() {
+      const produtos = getProdutos();
+      const container = document.getElementById("listaProdutos");
+      container.innerHTML = "";
+      if (produtos.length === 0) {
+        container.innerHTML = "<p>Nenhum produto cadastrado.</p>";
+        return;
+      }
+      produtos.forEach(produto => {
+        const div = document.createElement("div");
+        div.className = "card mb-2";
+        div.innerHTML = `
+          <div class="card-body">
+            <h5 class="card-title">${produto.nome}</h5>
+            <p class="card-text">Valor: R$ ${produto.valor.toFixed(2)}<br>
+            Categoria: ${produto.categoria}</p>
+            <p class="card-text">Imagem: <a href="${produto.imagem}" target="_blank">Ver Imagem</a></p>
+            <button class="btn btn-sm btn-secondary" onclick="editarProduto(${produto.id})">Editar</button>
+            <button class="btn btn-sm btn-danger" onclick="excluirProduto(${produto.id})">Excluir</button>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    // Funções para editar e excluir produto
+    function editarProduto(id) {
+      const produtos = getProdutos();
+      const produto = produtos.find(p => p.id === id);
+      if (!produto) return;
+      // Simplesmente preenche os campos do formulário de produto para edição
+      document.getElementById("produtoNome").value = produto.nome;
+      document.getElementById("produtoValor").value = produto.valor;
+      document.getElementById("produtoImagem").value = produto.imagem;
+      document.getElementById("produtoCategoria").value = produto.categoria;
+      // Remove o produto atual para que, ao submeter o formulário, seja considerado uma "edição"
+      const novosProdutos = produtos.filter(p => p.id !== id);
+      setProdutos(novosProdutos);
+      carregarListaProdutos();
+      carregarProdutosMigracao();
+    }
+    function excluirProduto(id) {
+      if (confirm("Deseja realmente excluir este produto?")) {
+        const produtos = getProdutos();
+        const novosProdutos = produtos.filter(p => p.id !== id);
+        setProdutos(novosProdutos);
+        carregarListaProdutos();
+        carregarProdutosMigracao();
+      }
+    }
+
+    // Função para carregar a lista de categorias no painel de administração
+    function carregarListaCategorias() {
+      const categorias = getCategorias();
+      const container = document.getElementById("listaCategorias");
+      container.innerHTML = "";
+      if (categorias.length === 0) {
+        container.innerHTML = "<p>Nenhuma categoria cadastrada.</p>";
+        return;
+      }
+      categorias.forEach(categoria => {
+        const div = document.createElement("div");
+        div.className = "card mb-2";
+        div.innerHTML = `
+          <div class="card-body">
+            <h5 class="card-title">${categoria.nome}</h5>
+            <p class="card-text">Imagem: <a href="${categoria.imagem}" target="_blank">Ver Imagem</a></p>
+            <button class="btn btn-sm btn-secondary" onclick="editarCategoria(${categoria.id})">Editar</button>
+            <button class="btn btn-sm btn-danger" onclick="excluirCategoria(${categoria.id})">Excluir</button>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+    // Funções para editar e excluir categoria
+    function editarCategoria(id) {
+      const categorias = getCategorias();
+      const categoria = categorias.find(c => c.id === id);
+      if (!categoria) return;
+      document.getElementById("categoriaNome").value = categoria.nome;
+      document.getElementById("categoriaImagem").value = categoria.imagem;
+      const novasCategorias = categorias.filter(c => c.id !== id);
+      setCategorias(novasCategorias);
+      carregarListaCategorias();
+      carregarCategoriasNoSelect();
+      carregarProdutosMigracao();
+    }
+    function excluirCategoria(id) {
+      if (confirm("Deseja realmente excluir esta categoria?")) {
+        const categorias = getCategorias();
+        const novasCategorias = categorias.filter(c => c.id !== id);
+        setCategorias(novasCategorias);
+        carregarListaCategorias();
+        carregarCategoriasNoSelect();
+        carregarProdutosMigracao();
+      }
+    }
+
+    // Preenche o select de categorias nos formulários (produtos e migração)
+    function carregarCategoriasNoSelect() {
+      const categorias = getCategorias();
+      const selectProduto = document.getElementById("produtoCategoria");
+      const selectMigrar = document.getElementById("migrarNovaCategoria");
+      // Limpa as opções atuais
+      selectProduto.innerHTML = "";
+      selectMigrar.innerHTML = "";
+      // Adiciona uma opção padrão
+      const opDefault = document.createElement("option");
+      opDefault.value = "";
+      opDefault.innerText = "Selecione...";
+      selectProduto.appendChild(opDefault);
+      selectMigrar.appendChild(opDefault.cloneNode(true));
+      categorias.forEach(categoria => {
+        const option1 = document.createElement("option");
+        option1.value = categoria.nome;
+        option1.innerText = categoria.nome;
+        selectProduto.appendChild(option1);
+        const option2 = document.createElement("option");
+        option2.value = categoria.nome;
+        option2.innerText = categoria.nome;
+        selectMigrar.appendChild(option2);
+      });
+    }
+
+    // Função para gerenciar a migração de produto entre categorias
+    document.getElementById("formMigrar").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const produtoId = parseInt(document.getElementById("migrarProduto").value);
+      const novaCategoria = document.getElementById("migrarNovaCategoria").value;
+      let produtos = getProdutos();
+      const index = produtos.findIndex(p => p.id === produtoId);
+      if (index === -1) {
+        alert("Produto não encontrado.");
+        return;
+      }
+      produtos[index].categoria = novaCategoria;
+      setProdutos(produtos);
+      alert("Produto migrado com sucesso!");
+      carregarListaProdutos();
+      carregarProdutosMigracao();
+    });
+    // Carrega os produtos para o dropdown de migração
+    function carregarProdutosMigracao() {
+      const produtos = getProdutos();
+      const selectMigrarProduto = document.getElementById("migrarProduto");
+      selectMigrarProduto.innerHTML = "";
+      if (produtos.length === 0) {
+        const op = document.createElement("option");
+        op.value = "";
+        op.innerText = "Nenhum produto cadastrado";
+        selectMigrarProduto.appendChild(op);
+        return;
+      }
+      produtos.forEach(p => {
+        const op = document.createElement("option");
+        op.value = p.id;
+        op.innerText = p.nome + " (" + p.categoria + ")";
+        selectMigrarProduto.appendChild(op);
+      });
+    }
+
+    // Atualiza o subtotal na navbar (já definido)
+    // (A função atualizarSubtotal() já foi definida acima)
+
+    // Alterna entre as abas do painel administrativo (usando Bootstrap)
+    // Como usamos as abas do Bootstrap, a navegação é automática
+
+    // Função para alternar entre as seções do painel administrativo (se necessário)
+    // Neste exemplo, usamos as abas do Bootstrap, então não precisamos de função extra
+
+    // Função para limpar o pedido (esta parte permanece a mesma do site público)
+    function limparPedido() {
+      if (confirm("Tem certeza que deseja limpar o pedido?")) {
+        pedido.produtos = {
+          prontaEntrega: new Array(produtosData.prontaEntrega.length).fill(0),
+          encomendas: new Array(produtosData.encomendas.length).fill(0),
+          produtosEspeciais: new Array(produtosData.produtosEspeciais.length).fill(0)
+        };
+        // Atualiza os campos do formulário (se houver)
+        document.getElementById("observacoes").value = "";
+        document.getElementById("enderecoFinal").value = "";
+        document.getElementById("numero").value = "";
+        document.getElementById("complemento").value = "";
+        document.getElementById("productList").innerHTML = "";
+        atualizarSubtotal();
+        alert("Pedido limpo. Você pode recomeçar o cadastro de produtos no site público.");
+      }
+    }
+
+    // Inicializa os dados se ainda não estiverem no localStorage
+    inicializarDados();
+  </script>
+</body>
+</html>
