@@ -40,16 +40,13 @@
     .navbar .navbar-brand {
       color: #fff !important;
     }
-    .navbar-brand {
-      margin: 0 auto;
-      text-align: center;
-    }
+    /* Exibe somente o logo na navbar, sem texto */
     .navbar-brand img {
-      max-height: 80px;
+      max-height: 100px;
     }
-    /* Espaço para o conteúdo */
+    /* Espaço para o conteúdo: margem superior de 100px */
     .content-wrapper {
-      margin-top: 150px;
+      margin-top: 100px;
     }
     /* Animação para transição entre etapas */
     .step {
@@ -85,7 +82,7 @@
       align-items: center;
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
-    /* Imagens dos produtos com proporção 4:1 */
+    /* Imagens dos produtos com proporção 1:4 */
     .product-item img {
       width: 100%;
       max-width: 600px;
@@ -123,7 +120,7 @@
     /* Responsividade */
     @media (max-width: 576px) {
       .navbar-brand img {
-        max-height: 60px;
+        max-height: 80px;
       }
       .product-item {
         flex-direction: column;
@@ -250,7 +247,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/inputmask/5.0.8/inputmask.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    // Recolher o menu (colapsar) ao clicar em um link (para mobile)
+    // Função para recolher o menu (colapsar) ao clicar (mobile)
     function collapseNavbar() {
       const navbarCollapse = document.querySelector('.navbar-collapse');
       if (navbarCollapse.classList.contains('show')) {
@@ -264,7 +261,7 @@
       Inputmask({"mask": "99999-999"}).mask(document.getElementById("cep"));
     });
     
-    // Auto-completar endereço via ViaCEP (Etapa 3)
+    // Auto-completar endereço via ViaCEP na Etapa 3
     document.getElementById("cep").addEventListener("blur", async function() {
       const cep = this.value.replace(/\D/g, '');
       if (cep.length === 8) {
@@ -300,7 +297,7 @@
     };
     let categoriaAtual = "";
     
-    // Dados dos produtos com as imagens atualizadas
+    // Dados dos produtos com as novas imagens
     const produtosData = {
       prontaEntrega: [
         { nome: "Pão de Queijo 1kg", preco: 40.00, imagem: "https://i.imgur.com/07KTZBy.jpg" },
@@ -316,18 +313,18 @@
         { nome: "Mel de Abelhas", preco: 45.00, imagem: "https://i.imgur.com/pem7XBG.jpg" },
         { nome: "Farofa", preco: 20.00, imagem: "https://i.imgur.com/xeIsT0J.jpg" },
         { nome: "Pimenta", preco: 50.00, imagem: "https://i.imgur.com/lJvwLRa.jpg" },
-        { nome: "Doces Diversos", preco: 50.00, imagem: "https://i.imgur.com/FG3PYCR.jpg" }
+        { nome: "Doces Diversos", preco: 50.00, imagem: "https://i.imgur.com/YUeY2jo.jpg" }
       ],
       produtosEspeciais: [
-        { nome: "Queijo Rocambole Recheado Goiabada", preco: 50.00, imagem: "https://via.placeholder.com/600x150?text=Queijo+Rocambole+Goiabada" },
-        { nome: "Queijo Rocambole Recheado Doce de Leite", preco: 50.00, imagem: "https://via.placeholder.com/600x150?text=Queijo+Rocambole+Doce+de+Leite" },
-        { nome: "Queijo Minas Padrão", preco: 50.00, imagem: "https://via.placeholder.com/600x150?text=Queijo+Minas+Padrão" },
-        { nome: "Queijo Minas Padrão Temperado", preco: 50.00, imagem: "https://via.placeholder.com/600x150?text=Queijo+Minas+Temperado" },
-        { nome: "Queijo Minas Frescal", preco: 50.00, imagem: "https://via.placeholder.com/600x150?text=Queijo+Minas+Frescal" }
+        { nome: "Queijo Rocambole Recheado Doce de Leite", preco: 50.00, imagem: "https://i.imgur.com/2sXyNAn.jpg" },
+        { nome: "Queijo Rocambole Recheado Goiabada", preco: 50.00, imagem: "https://i.imgur.com/AE6J6ex.jpg" },
+        { nome: "Queijo Minas Padrão", preco: 50.00, imagem: "https://i.imgur.com/MYtwY7F.jpg" },
+        { nome: "Queijo Minas Padrão Temperado", preco: 50.00, imagem: "https://i.imgur.com/w3AfkNs.jpg" },
+        { nome: "Queijo Minas Frescal", preco: 50.00, imagem: "https://i.imgur.com/ygJH68S.jpg" }
       ]
     };
     
-    // Ao selecionar uma categoria, salva os dados do cliente e exibe os produtos da categoria
+    // Ao selecionar uma categoria, salva os dados do cliente e exibe os produtos
     function selectCategory(categoria) {
       pedido.nome = document.getElementById("nome").value;
       pedido.telefone = document.getElementById("telefone").value;
@@ -348,7 +345,7 @@
       goToStep(2);
     }
     
-    // Carrega os produtos da categoria selecionada, mantendo as quantidades já definidas
+    // Carrega os produtos da categoria selecionada
     function carregarProdutos(categoria) {
       const lista = document.getElementById("productList");
       lista.innerHTML = "";
@@ -373,6 +370,7 @@
         infoDiv.appendChild(precoProduto);
         div.appendChild(infoDiv);
         
+        // Dropdown para quantidade (0 a 10)
         const selectQty = document.createElement("select");
         selectQty.className = "form-select";
         selectQty.style.width = "100px";
@@ -452,18 +450,15 @@
     // Botão para limpar o pedido com confirmação
     function limparPedido() {
       if (confirm("Tem certeza que deseja limpar o pedido?")) {
-        // Reinicia os arrays de produtos
         pedido.produtos = {
           prontaEntrega: new Array(produtosData.prontaEntrega.length).fill(0),
           encomendas: new Array(produtosData.encomendas.length).fill(0),
           produtosEspeciais: new Array(produtosData.produtosEspeciais.length).fill(0)
         };
-        // Limpa campos de observações e dados finais
         document.getElementById("observacoes").value = "";
         document.getElementById("enderecoFinal").value = "";
         document.getElementById("numero").value = "";
         document.getElementById("complemento").value = "";
-        // Limpa a lista de produtos e retorna à Etapa 1
         document.getElementById("productList").innerHTML = "";
         goToStep(1);
       }
