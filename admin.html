@@ -17,7 +17,7 @@
       margin: 0;
       padding: 20px;
     }
-    /* Centraliza o conteúdo do painel */
+    /* Centraliza o conteúdo */
     #loginSection, #adminSection {
       max-width: 900px;
       margin: 0 auto;
@@ -104,7 +104,7 @@
             <label for="produtoCategoria" class="form-label">Categoria:</label>
             <select id="produtoCategoria" class="form-select" required>
               <option value="">Selecione...</option>
-              <!-- Preenchido dinamicamente -->
+              <!-- Preenchido via API -->
             </select>
           </div>
           <button type="submit" class="btn btn-success">Cadastrar Produto</button>
@@ -141,7 +141,7 @@
             <label for="editarProdutoSelect" class="form-label">Selecione o Produto:</label>
             <select id="editarProdutoSelect" class="form-select" required>
               <option value="">Selecione...</option>
-              <!-- Preenchido dinamicamente -->
+              <!-- Preenchido via API -->
             </select>
           </div>
           <div class="mb-3">
@@ -161,7 +161,7 @@
             <label for="editarProdutoCategoria" class="form-label">Categoria:</label>
             <select id="editarProdutoCategoria" class="form-select" required>
               <option value="">Selecione...</option>
-              <!-- Preenchido dinamicamente -->
+              <!-- Preenchido via API -->
             </select>
           </div>
           <button type="submit" class="btn btn-primary">Salvar Alterações</button>
@@ -214,7 +214,8 @@
       }
     }
     
-    // Funções para PRODUTOS via API
+    // --- FUNÇÕES PARA PRODUTOS VIA API ---
+    
     async function carregarListaProdutos() {
       const container = document.getElementById("listaProdutos");
       container.innerHTML = "";
@@ -292,7 +293,8 @@
       }
     }
     
-    // Funções para CATEGORIAS via API
+    // --- FUNÇÕES PARA CATEGORIAS VIA API ---
+    
     async function carregarListaCategorias() {
       const container = document.getElementById("listaCategorias");
       container.innerHTML = "";
@@ -384,6 +386,7 @@
         const categoria = await response.json();
         document.getElementById("categoriaNome").value = categoria.Nome;
         document.getElementById("categoriaImagem").value = categoria.Imagem;
+        // Para edição, vamos usar o método DELETE e, em seguida, cadastrar novamente
         await excluirCategoria(id);
         alert("Edite os campos e cadastre a categoria novamente para concluir a edição.");
       } catch (error) {
@@ -407,7 +410,8 @@
       }
     }
     
-    // Aba Editar Produtos: Carrega os produtos para o dropdown e a lista
+    // --- Aba Editar Produtos ---
+    
     async function carregarProdutosMigracao() {
       const select = document.getElementById("editarProdutoSelect");
       select.innerHTML = '<option value="">Selecione...</option>';
@@ -455,6 +459,7 @@
       }
     }
     
+    // Quando um produto é selecionado para edição, preenche os campos
     document.getElementById("editarProdutoSelect").addEventListener("change", async function() {
       const id = this.value;
       if (!id) return;
@@ -484,11 +489,50 @@
       }
     }
     
-    // Aplica Inputmask para formatação de valor (moeda)
+    // Atualiza a formatação de moeda
     window.addEventListener("load", () => {
       Inputmask({"alias": "currency", "prefix": "R$ "}).mask(document.getElementById("produtoValor"));
       Inputmask({"alias": "currency", "prefix": "R$ "}).mask(document.getElementById("editarProdutoValor"));
     });
+    
+    // --- Atualização de Produto (PUT) ---
+    document.getElementById("formEditarProduto").addEventListener("submit", async function(e) {
+      e.preventDefault();
+      const id = document.getElementById("editarProdutoSelect").value;
+      if (!id) {
+        alert("Selecione um produto para editar.");
+        return;
+      }
+      const produtoAtualizado = {
+        id: id,
+        nome: document.getElementById("editarProdutoNome").value,
+        valor: parseFloat(document.getElementById("editarProdutoValor").value),
+        imagem: document.getElementById("editarProdutoImagem").value,
+        categoria: document.getElementById("editarProdutoCategoria").value
+      };
+      try {
+        const response = await fetch(API_BASE_URL + "?type=produto", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(produtoAtualizado)
+        });
+        const result = await response.json();
+        if (result && result.result === "success") {
+          alert("Produto atualizado com sucesso!");
+          this.reset();
+          document.getElementById("editarProdutoPreview").style.display = "none";
+          await carregarProdutosEditar();
+          await carregarListaProdutos();
+          await carregarProdutosMigracao();
+        } else {
+          alert("Erro ao atualizar produto: " + (result.error || ""));
+        }
+      } catch (error) {
+        console.error("Erro ao atualizar produto:", error);
+        alert("Erro ao atualizar produto.");
+      }
+    });
+    
   </script>
 </body>
 </html>

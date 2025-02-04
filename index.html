@@ -278,7 +278,7 @@
       }
     }
     
-    // Função para atualizar o subtotal exibido na navbar
+    // Função para atualizar o subtotal exibido na navbar (para o fluxo de pedido)
     function atualizarSubtotal() {
       let total = 0;
       for (const categoria in pedido.produtos) {
@@ -321,7 +321,7 @@
       }
     });
     
-    // Objeto para armazenar os dados do pedido
+    // Objeto para armazenar os dados do pedido (usado no fluxo público)
     let pedido = {
       nome: "",
       telefone: "",
@@ -337,7 +337,7 @@
     };
     let categoriaAtual = "";
     
-    // Dados dos produtos (exemplo fixo para o fluxo de pedido)
+    // Dados fixos de produtos para o fluxo de pedido (exemplo – estes dados são para exibição no index)
     const produtosData = {
       prontaEntrega: [
         { nome: "Pão de Queijo 1kg", preco: 40.00, imagem: "https://i.imgur.com/07KTZBy.jpg" },
@@ -349,22 +349,22 @@
       encomendas: [
         { nome: "Queijo Fresco 500g", preco: 50.00, imagem: "https://i.imgur.com/GNZMVoL.jpg" },
         { nome: "Requeijao", preco: 50.00, imagem: "https://i.imgur.com/3dXUKyl.jpg" },
-        { nome: "Café (moído ou grão)", preco: 50.00, imagem: "https://i.imgur.com/fE5KAlW.jpg" },
-        { nome: "Mel de Abelhas", preco: 45.00, imagem: "https://i.imgur.com/pem7XBG.jpg" },
-        { nome: "Farofa", preco: 20.00, imagem: "https://i.imgur.com/xeIsT0J.jpg" },
-        { nome: "Pimenta", preco: 50.00, imagem: "https://i.imgur.com/lJvwLRa.jpg" },
+        { nome: "Café 500g (moído ou grão)", preco: 50.00, imagem: "https://i.imgur.com/fE5KAlW.jpg" },
+        { nome: "Mel 500g", preco: 45.00, imagem: "https://i.imgur.com/pem7XBG.jpg" },
+        { nome: "Farofa 300g (sabores)", preco: 20.00, imagem: "https://i.imgur.com/xeIsT0J.jpg" },
+        { nome: "Pimenta Conserva 450g", preco: 50.00, imagem: "https://i.imgur.com/lJvwLRa.jpg" },
         { nome: "Doces Diversos", preco: 50.00, imagem: "https://i.imgur.com/YUeY2jo.jpg" }
       ],
       produtosEspeciais: [
-        { nome: "Queijo Rocambole Recheado Doce de Leite", preco: 50.00, imagem: "https://i.imgur.com/2sXyNAn.jpg" },
         { nome: "Queijo Rocambole Recheado Goiabada", preco: 50.00, imagem: "https://i.imgur.com/AE6J6ex.jpg" },
+        { nome: "Queijo Rocambole Recheado Doce de Leite", preco: 50.00, imagem: "https://i.imgur.com/2sXyNAn.jpg" },
         { nome: "Queijo Minas Padrão", preco: 50.00, imagem: "https://i.imgur.com/MYtwY7F.jpg" },
         { nome: "Queijo Minas Padrão Temperado", preco: 50.00, imagem: "https://i.imgur.com/w3AfkNs.jpg" },
         { nome: "Queijo Minas Frescal", preco: 50.00, imagem: "https://i.imgur.com/ygJH68S.jpg" }
       ]
     };
     
-    // Seleciona a categoria no fluxo de pedido
+    // Função para selecionar a categoria no fluxo de pedido (index)
     function selectCategory(categoria) {
       categoriaAtual = categoria;
       if (!pedido.produtos[categoria] || pedido.produtos[categoria].length !== produtosData[categoria].length) {
@@ -379,19 +379,17 @@
       goToStep(2);
     }
     
-    // Carrega os produtos da categoria selecionada
+    // Carrega os produtos do fluxo de pedido (usando os dados fixos)
     function carregarProdutos(categoria) {
       const lista = document.getElementById("productList");
       lista.innerHTML = "";
       produtosData[categoria].forEach((produto, index) => {
         const div = document.createElement("div");
         div.className = "product-item";
-        
         const img = document.createElement("img");
         img.src = produto.imagem;
         img.alt = produto.nome;
         div.appendChild(img);
-        
         const infoDiv = document.createElement("div");
         infoDiv.className = "product-info";
         const nomeProduto = document.createElement("div");
@@ -403,7 +401,6 @@
         infoDiv.appendChild(nomeProduto);
         infoDiv.appendChild(precoProduto);
         div.appendChild(infoDiv);
-        
         const selectQty = document.createElement("select");
         selectQty.className = "form-select";
         selectQty.style.width = "100px";
@@ -420,7 +417,6 @@
           atualizarSubtotal();
         });
         div.appendChild(selectQty);
-        
         lista.appendChild(div);
       });
       atualizarSubtotal();
@@ -435,7 +431,7 @@
       }
     }
     
-    // Monta o resumo final para WhatsApp
+    // Monta o resumo final do pedido
     function montarResumo() {
       pedido.nome = document.getElementById("nomeDados").value;
       pedido.telefone = document.getElementById("telefoneDados").value;
@@ -443,18 +439,15 @@
       pedido.numero = document.getElementById("numero").value;
       pedido.complemento = document.getElementById("complemento").value;
       pedido.observacoes = document.getElementById("observacoes").value;
-      
       if (!pedido.nome || !pedido.telefone || !pedido.endereco) {
         alert("Os campos Nome, Telefone e Endereço são obrigatórios.");
         goToStep(3);
         return;
       }
-      
       let resumo = "";
       resumo += "*Dados do Cliente:*\n";
       resumo += "*Nome:* " + pedido.nome + "\n";
       resumo += "*Telefone:* " + pedido.telefone + "\n\n";
-      
       let totalGeral = 0;
       for (const categoria in pedido.produtos) {
         const quantidades = pedido.produtos[categoria];
@@ -482,7 +475,6 @@
       resumo += `*Endereço:* ${pedido.endereco}\n`;
       resumo += `*Número:* ${pedido.numero}\n`;
       resumo += `*Complemento:* ${pedido.complemento}\n`;
-      
       document.getElementById("resumoPedido").innerText = resumo;
     }
     
