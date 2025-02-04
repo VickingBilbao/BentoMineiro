@@ -72,6 +72,10 @@
       from { opacity: 0; }
       to { opacity: 1; }
     }
+    /* Aplicar scroll-margin-top para que títulos não fiquem encobertos pela navbar fixa */
+    h2 {
+      scroll-margin-top: 130px;
+    }
     /* Categorias como imagens clicáveis */
     .categoria-img {
       cursor: pointer;
@@ -168,7 +172,7 @@
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown">
         <span class="navbar-toggler-icon"></span>
       </button>
-      <!-- Dropdown de categorias -->
+      <!-- Dropdown de categorias e botão FECHAR PEDIDO -->
       <div class="collapse navbar-collapse justify-content-end" id="navbarNavDropdown">
          <ul class="navbar-nav">
            <li class="nav-item dropdown">
@@ -183,6 +187,7 @@
            </li>
          </ul>
          <span id="navbarSubtotal">Carrinho: R$ 0.00</span>
+         <button type="button" class="btn btn-warning ms-2" onclick="collapseNavbar(); goToStep(3)">FECHAR PEDIDO</button>
       </div>
     </div>
   </nav>
@@ -222,8 +227,8 @@
         <h2 id="categoriaTitulo" class="text-center my-4"></h2>
         <div id="productList"></div>
         <div class="text-center my-4">
-          <button type="button" class="btn btn-primary" onclick="goToStep(3)">Fechar Pedido</button>
-          <button type="button" class="btn btn-secondary" onclick="goToStep(1)">Categorias</button>
+          <button type="button" class="btn btn-primary" onclick="collapseNavbar(); goToStep(3)">Fechar Pedido</button>
+          <button type="button" class="btn btn-secondary" onclick="collapseNavbar(); goToStep(1)">Categorias</button>
         </div>
       </div>
       
@@ -260,8 +265,8 @@
             <textarea class="form-control" id="observacoes" rows="3" placeholder="Digite observações, se houver"></textarea>
           </div>
           <div class="text-center my-4">
-            <button type="button" class="btn btn-primary" onclick="goToStep(4)">Ver Resumo</button>
-            <button type="button" class="btn btn-secondary" onclick="goToStep(2)">Voltar</button>
+            <button type="button" class="btn btn-primary" onclick="collapseNavbar(); goToStep(4)">Ver Resumo</button>
+            <button type="button" class="btn btn-secondary" onclick="collapseNavbar(); goToStep(2)">Voltar</button>
           </div>
         </form>
       </div>
@@ -273,7 +278,7 @@
         <div class="text-center my-4">
           <button type="button" class="btn btn-success" onclick="enviarPedido()">Enviar Pedido via WhatsApp</button>
           <button type="button" class="btn btn-warning" onclick="if(confirm('Tem certeza que deseja limpar o pedido?')) { limparPedido(); }">Limpar Pedido</button>
-          <button type="button" class="btn btn-secondary" onclick="goToStep(3)">Voltar</button>
+          <button type="button" class="btn btn-secondary" onclick="collapseNavbar(); goToStep(3)">Voltar</button>
         </div>
       </div>
     </div>
@@ -288,7 +293,7 @@
     const API_BASE_URL = "https://script.google.com/macros/s/AKfycbw7DBXd8noLHPBVnN4Xhoga3V9KwCOFRcp4CGb0EyrrlrDcAt6k96Gx0vZRrJthqNGdVA/exec";
   </script>
   
-  <!-- Código de integração com a API e melhorias de performance -->
+  <!-- Código de integração com a API, persistência do pedido e ajustes -->
   <script>
     const CACHE_EXPIRATION = 10 * 60 * 1000; // 10 minutos
 
@@ -333,12 +338,12 @@
       numero: "",
       complemento: "",
       observacoes: "",
-      produtos: {} // Estruturado por categoria: { categoriaNome: [ { produto, quantity } ] }
+      produtos: {} // Estruturado por categoria: { [categoria]: [ { produto, quantity } ] }
     };
 
     let categoriaSelecionada = "";
 
-    // Fecha o menu navbar (usando API do Bootstrap)
+    // Fecha a navbar (utilizando a API do Bootstrap)
     function collapseNavbar() {
       const navbarCollapse = document.getElementById('navbarNavDropdown');
       const collapseInstance = bootstrap.Collapse.getInstance(navbarCollapse);
@@ -347,68 +352,89 @@
       }
     }
 
-    // Seleciona uma categoria e carrega os produtos correspondentes
+    // Renderiza a lista de produtos para a categoria (mantendo as quantidades previamente selecionadas)
+    function renderProductList(categoria) {
+      const container = document.getElementById("productList");
+      container.innerHTML = "";
+      const itens = pedido.produtos[categoria];
+      if (!itens || itens.length === 0) {
+        container.innerHTML = "<p>Nenhum produto cadastrado nesta categoria.</p>";
+        return;
+      }
+      itens.forEach((item, index) => {
+        const div = document.createElement("div");
+        div.className = "product-item";
+
+        const img = document.createElement("img");
+        img.src = item.produto.Imagem;
+        img.alt = item.produto.Nome;
+        div.appendChild(img);
+
+        const infoDiv = document.createElement("div");
+        infoDiv.className = "product-info";
+        const nomeProduto = document.createElement("div");
+        nomeProduto.className = "product-name";
+        nomeProduto.innerText = item.produto.Nome;
+        const precoProduto = document.createElement("div");
+        precoProduto.className = "product-price";
+        precoProduto.innerText = "R$ " + parseFloat(item.produto.Valor).toFixed(2);
+        infoDiv.appendChild(nomeProduto);
+        infoDiv.appendChild(precoProduto);
+        div.appendChild(infoDiv);
+
+        const selectQty = document.createElement("select");
+        selectQty.className = "form-select";
+        selectQty.style.width = "100px";
+        for (let i = 0; i <= 10; i++) {
+          const option = document.createElement("option");
+          option.value = i;
+          option.innerText = i;
+          selectQty.appendChild(option);
+        }
+        // Define o valor atual conforme o pedido
+        selectQty.value = item.quantity;
+        selectQty.addEventListener("change", (e) => {
+          pedido.produtos[categoria][index].quantity = Number(e.target.value);
+          atualizarSubtotal();
+        });
+        div.appendChild(selectQty);
+
+        container.appendChild(div);
+      });
+      atualizarSubtotal();
+    }
+
+    // Seleciona uma categoria e carrega os produtos correspondentes (mantendo as quantidades se já foram carregados)
     async function selectCategory(categoriaKey) {
-      categoriaSelecionada = categoriaMapping[categoriaKey];
-      document.getElementById("categoriaTitulo").innerText = categoriaSelecionada;
+      const novaCategoria = categoriaMapping[categoriaKey];
+      categoriaSelecionada = novaCategoria;
+      document.getElementById("categoriaTitulo").innerText = novaCategoria;
+      
+      // Se a categoria já foi carregada, apenas renderiza a lista existente
+      if (pedido.produtos[novaCategoria]) {
+        renderProductList(novaCategoria);
+        goToStep(2);
+        return;
+      }
+
+      const container = document.getElementById("productList");
+      container.innerHTML = "";
+      document.getElementById("loadingIndicator").style.display = "block";
       try {
         const produtos = await fetchProdutosCache();
-        const produtosFiltrados = produtos.filter(p => p.Categoria === categoriaSelecionada);
-        const container = document.getElementById("productList");
-        container.innerHTML = "";
-        document.getElementById("loadingIndicator").style.display = "block";
-
+        const produtosFiltrados = produtos.filter(p => p.Categoria === novaCategoria);
         if (produtosFiltrados.length === 0) {
           container.innerHTML = "<p>Nenhum produto cadastrado nesta categoria.</p>";
         } else {
-          // Armazena os produtos na estrutura do pedido
-          pedido.produtos[categoriaSelecionada] = produtosFiltrados.map(produto => ({
+          // Armazena os produtos com quantidade zero inicialmente
+          pedido.produtos[novaCategoria] = produtosFiltrados.map(produto => ({
             produto: produto,
             quantity: 0
           }));
-
-          // Renderiza os produtos
-          pedido.produtos[categoriaSelecionada].forEach((item, index) => {
-            const div = document.createElement("div");
-            div.className = "product-item";
-
-            const img = document.createElement("img");
-            img.src = item.produto.Imagem;
-            img.alt = item.produto.Nome;
-            div.appendChild(img);
-
-            const infoDiv = document.createElement("div");
-            infoDiv.className = "product-info";
-            const nomeProduto = document.createElement("div");
-            nomeProduto.className = "product-name";
-            nomeProduto.innerText = item.produto.Nome;
-            const precoProduto = document.createElement("div");
-            precoProduto.className = "product-price";
-            precoProduto.innerText = "R$ " + parseFloat(item.produto.Valor).toFixed(2);
-            infoDiv.appendChild(nomeProduto);
-            infoDiv.appendChild(precoProduto);
-            div.appendChild(infoDiv);
-
-            const selectQty = document.createElement("select");
-            selectQty.className = "form-select";
-            selectQty.style.width = "100px";
-            for (let i = 0; i <= 10; i++) {
-              const option = document.createElement("option");
-              option.value = i;
-              option.innerText = i;
-              selectQty.appendChild(option);
-            }
-            // Atualiza a quantidade no objeto global e o subtotal
-            selectQty.addEventListener("change", (e) => {
-              pedido.produtos[categoriaSelecionada][index].quantity = Number(e.target.value);
-              atualizarSubtotal();
-            });
-            div.appendChild(selectQty);
-            container.appendChild(div);
-          });
+          renderProductList(novaCategoria);
         }
       } catch (error) {
-        document.getElementById("productList").innerHTML = "<p>Erro ao carregar produtos.</p>";
+        container.innerHTML = "<p>Erro ao carregar produtos.</p>";
       } finally {
         document.getElementById("loadingIndicator").style.display = "none";
         goToStep(2);
@@ -426,10 +452,12 @@
       document.getElementById("navbarSubtotal").innerText = "Carrinho: R$ " + total.toFixed(2);
     }
 
-    // Alterna entre as etapas do fluxo
+    // Alterna entre as etapas do fluxo, garantindo fechamento da navbar e scroll para o topo
     function goToStep(stepNumber) {
+      collapseNavbar();
       document.querySelectorAll(".step").forEach(step => step.classList.remove("active"));
       document.getElementById("step" + stepNumber).classList.add("active");
+      window.scrollTo(0, 0);
       if (stepNumber === 4) {
         montarResumo();
       }
@@ -492,7 +520,7 @@
       window.open(url, "_blank");
     }
 
-    // Limpa os dados do pedido
+    // Limpa os dados do pedido (esta ação é exclusiva do botão de limpar)
     function limparPedido() {
       if (confirm("Tem certeza que deseja limpar o pedido?")) {
         // Reseta as quantidades no objeto global
