@@ -72,7 +72,7 @@
       from { opacity: 0; }
       to { opacity: 1; }
     }
-    /* Aplicar scroll-margin-top para que títulos não fiquem encobertos pela navbar fixa */
+    /* Garante que os títulos não fiquem encobertos pela navbar fixa */
     h2 {
       scroll-margin-top: 130px;
     }
@@ -288,13 +288,9 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/inputmask/5.0.8/inputmask.min.js"></script>
   
-  <!-- Configuração da URL da API do Google Apps Script -->
+  <!-- Código JavaScript -->
   <script>
     const API_BASE_URL = "https://script.google.com/macros/s/AKfycbw7DBXd8noLHPBVnN4Xhoga3V9KwCOFRcp4CGb0EyrrlrDcAt6k96Gx0vZRrJthqNGdVA/exec";
-  </script>
-  
-  <!-- Código de integração com a API, persistência do pedido e ajustes -->
-  <script>
     const CACHE_EXPIRATION = 10 * 60 * 1000; // 10 minutos
 
     // Função para buscar produtos com cache
@@ -343,7 +339,7 @@
 
     let categoriaSelecionada = "";
 
-    // Fecha a navbar (utilizando a API do Bootstrap)
+    // Fecha a navbar utilizando a API do Bootstrap
     function collapseNavbar() {
       const navbarCollapse = document.getElementById('navbarNavDropdown');
       const collapseInstance = bootstrap.Collapse.getInstance(navbarCollapse);
@@ -352,7 +348,7 @@
       }
     }
 
-    // Renderiza a lista de produtos para a categoria (mantendo as quantidades previamente selecionadas)
+    // Renderiza a lista de produtos para uma categoria mantendo as quantidades selecionadas
     function renderProductList(categoria) {
       const container = document.getElementById("productList");
       container.innerHTML = "";
@@ -404,13 +400,13 @@
       atualizarSubtotal();
     }
 
-    // Seleciona uma categoria e carrega os produtos correspondentes (mantendo as quantidades se já foram carregados)
+    // Seleciona uma categoria e carrega os produtos correspondentes (mantendo os valores se já carregados)
     async function selectCategory(categoriaKey) {
       const novaCategoria = categoriaMapping[categoriaKey];
       categoriaSelecionada = novaCategoria;
       document.getElementById("categoriaTitulo").innerText = novaCategoria;
       
-      // Se a categoria já foi carregada, apenas renderiza a lista existente
+      // Se a categoria já foi carregada, renderiza os itens existentes
       if (pedido.produtos[novaCategoria]) {
         renderProductList(novaCategoria);
         goToStep(2);
@@ -441,7 +437,7 @@
       }
     }
 
-    // Atualiza o subtotal exibido na navbar com base em todos os produtos selecionados
+    // Atualiza o subtotal exibido na navbar com base nos produtos selecionados
     function atualizarSubtotal() {
       let total = 0;
       Object.keys(pedido.produtos).forEach(cat => {
@@ -452,7 +448,7 @@
       document.getElementById("navbarSubtotal").innerText = "Carrinho: R$ " + total.toFixed(2);
     }
 
-    // Alterna entre as etapas do fluxo, garantindo fechamento da navbar e scroll para o topo
+    // Alterna entre as etapas do fluxo, fechando a navbar e fazendo scroll para o topo
     function goToStep(stepNumber) {
       collapseNavbar();
       document.querySelectorAll(".step").forEach(step => step.classList.remove("active"));
@@ -463,7 +459,7 @@
       }
     }
 
-    // Monta o resumo final para envio via WhatsApp
+    // Monta o resumo final para visualização e envio
     function montarResumo() {
       pedido.nome = document.getElementById("nomeDados").value;
       pedido.telefone = document.getElementById("telefoneDados").value;
@@ -483,7 +479,7 @@
       resumo += "*Telefone:* " + pedido.telefone + "\n\n";
 
       let totalGeral = 0;
-      // Percorre cada categoria com produtos selecionados
+      // Monta uma lista dos itens selecionados por categoria
       for (const cat in pedido.produtos) {
         const itens = pedido.produtos[cat];
         const produtosSelecionados = itens.filter(item => item.quantity > 0);
@@ -511,28 +507,66 @@
       document.getElementById("resumoPedido").innerText = resumo;
     }
 
-    // Envia o pedido via WhatsApp
-    function enviarPedido() {
+    // Função para enviar o pedido para a planilha via POST
+    async function enviarPedidoParaPlanilha() {
+      // Calcula o total e monta o array de itens para o envio
+      let total = 0;
+      let itensArray = [];
+      Object.keys(pedido.produtos).forEach(cat => {
+        pedido.produtos[cat].forEach(item => {
+          if(item.quantity > 0){
+            const valor = parseFloat(item.produto.Valor);
+            const subtotalItem = valor * item.quantity;
+            total += subtotalItem;
+            const linha = `${cat} - ${item.produto.Nome}: ${item.quantity} x R$ ${valor.toFixed(2)} = R$ ${subtotalItem.toFixed(2)}`;
+            itensArray.push(linha);
+          }
+        });
+      });
+
+      // Monta o payload conforme o esperado pelo Apps Script
+      const payload = {
+        nome: pedido.nome,
+        telefone: pedido.telefone,
+        itens: itensArray,
+        total: total.toFixed(2)
+      };
+
+      try {
+        const response = await fetch(API_BASE_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+        const resultText = await response.text();
+        console.log("Resposta do Apps Script:", resultText);
+      } catch (error) {
+        console.error("Erro ao enviar o pedido para a planilha:", error);
+      }
+    }
+
+    // Função para enviar o pedido: primeiro envia para a planilha e depois abre o WhatsApp
+    async function enviarPedido() {
       montarResumo();
+      await enviarPedidoParaPlanilha();
       const resumo = document.getElementById("resumoPedido").innerText;
       const mensagem = encodeURIComponent(resumo);
       const url = "https://wa.me/5511984193457?text=" + mensagem;
       window.open(url, "_blank");
     }
 
-    // Limpa os dados do pedido (esta ação é exclusiva do botão de limpar)
+    // Limpa os dados do pedido e reseta os formulários e selects
     function limparPedido() {
       if (confirm("Tem certeza que deseja limpar o pedido?")) {
-        // Reseta as quantidades no objeto global
         Object.keys(pedido.produtos).forEach(cat => {
           pedido.produtos[cat].forEach(item => item.quantity = 0);
         });
-        // Reseta os campos do formulário
         document.getElementById("observacoes").value = "";
         document.getElementById("enderecoFinal").value = "";
         document.getElementById("numero").value = "";
         document.getElementById("complemento").value = "";
-        // Reseta os selects na lista de produtos
         const selects = document.querySelectorAll("#productList select");
         selects.forEach(select => { select.value = 0; });
         atualizarSubtotal();
