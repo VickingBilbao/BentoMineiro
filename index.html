@@ -46,6 +46,7 @@
     /* Logo com tamanho reduzido */
     .navbar-brand img {
       max-height: 90px;
+      cursor: pointer;
     }
     /* Espaço para o conteúdo: margem superior de 20px e padding-top para compensar a navbar */
     .content-wrapper {
@@ -155,25 +156,24 @@
   <!-- Navbar fixa -->
   <nav class="navbar navbar-expand-lg">
     <div class="container">
-      <a class="navbar-brand" href="#" onclick="collapseNavbar(); goToStep(1)">
+      <!-- Logo: agora ao clicar ele leva para a etapa 1 e faz scroll para o topo -->
+      <a class="navbar-brand" href="#" onclick="collapseNavbar(); goToStep(1); window.scrollTo(0,0);">
         <img src="https://i.imgur.com/NVldFUa.png" alt="Logo Bento Mineiro">
       </a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown">
         <span class="navbar-toggler-icon"></span>
       </button>
+      <!-- Remove o link "Pedido" e mantém somente o dropdown de categorias -->
       <div class="collapse navbar-collapse justify-content-end" id="navbarNavDropdown">
          <ul class="navbar-nav">
-           <li class="nav-item">
-             <a class="nav-link" href="#" onclick="collapseNavbar(); goToStep(1)">Pedido</a>
-           </li>
            <li class="nav-item dropdown">
-             <a class="nav-link dropdown-toggle" id="categoryDropdown" role="button" data-bs-toggle="dropdown">
+             <a class="nav-link dropdown-toggle" id="categoryDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                 Categorias
              </a>
              <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="categoryDropdown">
-                <li><a class="dropdown-item" href="#" onclick="collapseNavbar(); selectCategory('prontaEntrega')">Pronta Entrega</a></li>
-                <li><a class="dropdown-item" href="#" onclick="collapseNavbar(); selectCategory('encomendas')">Encomendas</a></li>
-                <li><a class="dropdown-item" href="#" onclick="collapseNavbar(); selectCategory('produtosEspeciais')">Produtos Especiais - Queijos Premiados Boníssimo</a></li>
+                <li><a class="dropdown-item" href="#" onclick="event.preventDefault(); collapseNavbar(); selectCategory('prontaEntrega');">Pronta Entrega</a></li>
+                <li><a class="dropdown-item" href="#" onclick="event.preventDefault(); collapseNavbar(); selectCategory('encomendas');">Encomendas</a></li>
+                <li><a class="dropdown-item" href="#" onclick="event.preventDefault(); collapseNavbar(); selectCategory('produtosEspeciais');">Produtos Especiais - Queijos Premiados Boníssimo</a></li>
              </ul>
            </li>
          </ul>
@@ -190,15 +190,15 @@
         <h2 class="text-center my-4">Selecione a Categoria</h2>
         <div class="row text-center">
           <div class="col-md-4">
-            <img src="https://i.imgur.com/nWTKuD9.jpg" alt="Pronta Entrega" class="categoria-img img-fluid" onclick="selectCategory('prontaEntrega')">
+            <img src="https://i.imgur.com/nWTKuD9.jpg" alt="Pronta Entrega" class="categoria-img img-fluid" onclick="selectCategory('prontaEntrega');">
             <p>Pronta Entrega</p>
           </div>
           <div class="col-md-4">
-            <img src="https://i.imgur.com/uEf53Ls.jpg" alt="Encomendas" class="categoria-img img-fluid" onclick="selectCategory('encomendas')">
+            <img src="https://i.imgur.com/uEf53Ls.jpg" alt="Encomendas" class="categoria-img img-fluid" onclick="selectCategory('encomendas');">
             <p>Encomendas</p>
           </div>
           <div class="col-md-4">
-            <img src="https://i.imgur.com/Vu5IDkj.jpg" alt="Produtos Especiais" class="categoria-img img-fluid" onclick="selectCategory('produtosEspeciais')">
+            <img src="https://i.imgur.com/Vu5IDkj.jpg" alt="Produtos Especiais" class="categoria-img img-fluid" onclick="selectCategory('produtosEspeciais');">
             <p>Produtos Especiais - Queijos Premiados Boníssimo</p>
           </div>
         </div>
@@ -270,54 +270,51 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/inputmask/5.0.8/inputmask.min.js"></script>
   
-  <!-- Configuração da API do Google Apps Script -->
+  <!-- Configuração da URL da API do Google Apps Script -->
   <script>
     const API_BASE_URL = "https://script.google.com/macros/s/AKfycbw7DBXd8noLHPBVnN4Xhoga3V9KwCOFRcp4CGb0EyrrlrDcAt6k96Gx0vZRrJthqNGdVA/exec";
   </script>
   
-  <!-- Código de integração com a API -->
+  <!-- Código de integração com a API para o fluxo público -->
   <script>
-    // Mapeamento de chaves para nomes de categorias na planilha
+    // Mapeamento para converter as chaves internas em nomes exatos
     const categoriaMapping = {
       prontaEntrega: "Pronta Entrega",
       encomendas: "Encomendas",
       produtosEspeciais: "Produtos Especiais - Queijos Premiados Boníssimo"
     };
 
-    // Variável global para armazenar o pedido (para o fluxo público)
+    // Objeto global para armazenar o pedido (produtos selecionados)
     let pedido = {
       nome: "",
       telefone: "",
-      produtos: {}  // Será criado dinamicamente por categoria
+      produtos: {}  // Será criado dinamicamente para cada categoria
     };
     let categoriaSelecionada = "";
-    
-    // Função de login no site público (caso exista; aqui não há login no index)
-    // Função para selecionar a categoria
+
+    // Função para selecionar categoria e carregar produtos via API
     function selectCategory(categoriaKey) {
       categoriaSelecionada = categoriaMapping[categoriaKey];
-      // Inicializa o array de quantidades para esta categoria
       pedido.produtos[categoriaSelecionada] = [];
       carregarProdutosIndex(categoriaSelecionada);
       goToStep(2);
     }
-    
-    // Função para carregar os produtos do index via API e filtrar pela categoria selecionada
+
+    // Carrega os produtos da planilha via API, filtrando pela categoria
     async function carregarProdutosIndex(categoriaNome) {
       const container = document.getElementById("productList");
       container.innerHTML = "";
       try {
         const response = await fetch(API_BASE_URL + "?type=produtos");
         const produtos = await response.json();
-        // Filtra os produtos cuja categoria (na planilha) seja igual a categoriaNome
+        // Filtra produtos pela categoria exata
         const produtosFiltrados = produtos.filter(p => p.Categoria === categoriaNome);
         if (produtosFiltrados.length === 0) {
           container.innerHTML = "<p>Nenhum produto cadastrado nesta categoria.</p>";
           return;
         }
-        // Cria elementos para cada produto com dropdown de quantidade
         produtosFiltrados.forEach((produto, index) => {
-          // Inicializa a quantidade para este produto como zero
+          // Inicializa quantidade para este produto
           pedido.produtos[categoriaNome][index] = 0;
           const div = document.createElement("div");
           div.className = "product-item";
@@ -339,7 +336,6 @@
           const selectQty = document.createElement("select");
           selectQty.className = "form-select";
           selectQty.style.width = "100px";
-          // Popula o dropdown de 0 a 10
           for (let i = 0; i <= 10; i++) {
             const option = document.createElement("option");
             option.value = i;
@@ -358,33 +354,21 @@
         console.error("Erro ao carregar produtos do index:", error);
       }
     }
-    
-    // Atualiza o subtotal (carrinho) no index
+
+    // Atualiza o subtotal (carrinho) com base nas quantidades selecionadas
     function atualizarSubtotal() {
       let total = 0;
-      // Percorre cada categoria do pedido
-      for (const cat in pedido.produtos) {
-        const quantidades = pedido.produtos[cat];
-        // Para cada produto, soma (quantidade * valor)
-        // Para obter o valor, é necessário buscar os produtos da API – aqui simplificamos assumindo que os produtos já estão carregados na tela
-        // Uma abordagem correta seria armazenar também os valores dos produtos ao carregá-los.
-        // Neste exemplo, vamos buscar novamente os produtos da categoria (síncrono para cada categoria).
-      }
-      // Como o subtotal é atualizado localmente (em cada alteração do dropdown), podemos calcular iterando sobre os elementos exibidos:
-      // Se cada produto exibido possui um elemento com a classe "product-price", podemos extrair o valor.
-      // Aqui, implementamos uma versão simples:
       const productItems = document.querySelectorAll("#productList .product-item");
-      productItems.forEach((item, index) => {
+      productItems.forEach(item => {
         const precoText = item.querySelector(".product-price").innerText;
         const valor = parseFloat(precoText.replace("R$ ", "").replace(",", "."));
-        const select = item.querySelector("select");
-        const qty = Number(select.value);
+        const qty = Number(item.querySelector("select").value);
         total += valor * qty;
       });
       document.getElementById("navbarSubtotal").innerText = "Carrinho: R$ " + total.toFixed(2);
     }
-    
-    // Alterna entre as etapas do fluxo
+
+    // Alterna entre as etapas (steps) do fluxo
     function goToStep(stepNumber) {
       document.querySelectorAll(".step").forEach(step => step.classList.remove("active"));
       document.getElementById("step" + stepNumber).classList.add("active");
@@ -392,8 +376,8 @@
         montarResumo();
       }
     }
-    
-    // Monta o resumo final para WhatsApp
+
+    // Monta o resumo do pedido para envio via WhatsApp
     function montarResumo() {
       pedido.nome = document.getElementById("nomeDados").value;
       pedido.telefone = document.getElementById("telefoneDados").value;
@@ -411,18 +395,17 @@
       resumo += "*Nome:* " + pedido.nome + "\n";
       resumo += "*Telefone:* " + pedido.telefone + "\n\n";
       let totalGeral = 0;
+      // Percorre cada categoria do pedido
       for (const cat in pedido.produtos) {
         const quantidades = pedido.produtos[cat];
         if (quantidades && quantidades.some(q => q > 0)) {
           resumo += `*${cat}:*\n`;
           let subtotalCat = 0;
-          // Percorre os itens exibidos na tela da categoria
           const items = document.querySelectorAll("#productList .product-item");
           items.forEach((item, index) => {
             const precoText = item.querySelector(".product-price").innerText;
             const valor = parseFloat(precoText.replace("R$ ", "").replace(",", "."));
-            const select = item.querySelector("select");
-            const qty = Number(select.value);
+            const qty = Number(item.querySelector("select").value);
             if (qty > 0) {
               resumo += `  - ${item.querySelector(".product-name").innerText}: ${qty} x R$ ${valor.toFixed(2)} = R$ ${(valor * qty).toFixed(2)}\n`;
               subtotalCat += valor * qty;
@@ -439,7 +422,7 @@
       resumo += `*Complemento:* ${pedido.complemento}\n`;
       document.getElementById("resumoPedido").innerText = resumo;
     }
-    
+
     // Envia o pedido via WhatsApp
     function enviarPedido() {
       montarResumo();
@@ -448,11 +431,10 @@
       const url = "https://wa.me/5511984193457?text=" + mensagem;
       window.open(url, "_blank");
     }
-    
+
     // Limpa os dados do pedido (fluxo público)
     function limparPedido() {
       if (confirm("Tem certeza que deseja limpar o pedido?")) {
-        // Reinicia as quantidades
         for (const cat in pedido.produtos) {
           pedido.produtos[cat] = pedido.produtos[cat].map(() => 0);
         }
@@ -460,13 +442,36 @@
         document.getElementById("enderecoFinal").value = "";
         document.getElementById("numero").value = "";
         document.getElementById("complemento").value = "";
-        // Reinicia os selects
         const selects = document.querySelectorAll("#productList select");
         selects.forEach(select => { select.value = 0; });
         atualizarSubtotal();
         goToStep(1);
       }
     }
+
+    // Registra o evento de auto-completar o endereço via CEP após o carregamento do DOM
+    document.addEventListener("DOMContentLoaded", function() {
+      // Auto-completar endereço via ViaCEP
+      const cepInput = document.getElementById("cep");
+      cepInput.addEventListener("blur", async function() {
+        const cep = this.value.replace(/\D/g, '');
+        if (cep.length === 8) {
+          try {
+            const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+            const data = await response.json();
+            if (!data.erro) {
+              if (!document.getElementById("enderecoFinal").value)
+                document.getElementById("enderecoFinal").value = `${data.logradouro}, ${data.bairro}, ${data.localidade} - ${data.uf}`;
+            } else {
+              alert("CEP não encontrado.");
+            }
+          } catch (error) {
+            console.error("Erro ao buscar CEP:", error);
+            alert("Erro ao buscar o CEP.");
+          }
+        }
+      });
+    });
   </script>
 </body>
 </html>
