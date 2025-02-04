@@ -43,12 +43,12 @@
     .navbar .navbar-brand {
       color: #fff !important;
     }
-    /* Logo com tamanho reduzido */
+    /* Logo com tamanho reduzido e ação de voltar ao topo */
     .navbar-brand img {
       max-height: 90px;
       cursor: pointer;
     }
-    /* Espaço para o conteúdo: margem superior de 20px e padding-top para compensar a navbar */
+    /* Espaço para o conteúdo: margem superior e padding-top para compensar a navbar */
     .content-wrapper {
       margin-top: 20px;
       padding-top: 120px;
@@ -136,6 +136,12 @@
       padding: 10px;
       border: 1px solid #ccc;
     }
+    /* Loading Indicator */
+    #loadingIndicator {
+      display: none;
+      text-align: center;
+      margin: 20px 0;
+    }
     /* Responsividade */
     @media (max-width: 576px) {
       .navbar-brand img {
@@ -156,14 +162,14 @@
   <!-- Navbar fixa -->
   <nav class="navbar navbar-expand-lg">
     <div class="container">
-      <!-- Logo: agora ao clicar ele leva para a etapa 1 e faz scroll para o topo -->
+      <!-- Logo: volta à etapa 1 e scroll para o topo -->
       <a class="navbar-brand" href="#" onclick="collapseNavbar(); goToStep(1); window.scrollTo(0,0);">
         <img src="https://i.imgur.com/NVldFUa.png" alt="Logo Bento Mineiro">
       </a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown">
         <span class="navbar-toggler-icon"></span>
       </button>
-      <!-- Remove o link "Pedido" e mantém somente o dropdown de categorias -->
+      <!-- Mantém apenas o dropdown de categorias -->
       <div class="collapse navbar-collapse justify-content-end" id="navbarNavDropdown">
          <ul class="navbar-nav">
            <li class="nav-item dropdown">
@@ -182,10 +188,18 @@
     </div>
   </nav>
 
+  <!-- Indicador de Carregamento -->
+  <div id="loadingIndicator">
+    <div class="spinner-border" role="status">
+      <span class="visually-hidden">Carregando...</span>
+    </div>
+    <p>Carregando produtos...</p>
+  </div>
+
   <!-- Conteúdo principal -->
   <div class="content-wrapper">
     <div class="container my-4">
-      <!-- ETAPA 1: Seleção de Categoria (Imagens clicáveis) -->
+      <!-- ETAPA 1: Seleção de Categoria -->
       <div id="step1" class="step active">
         <h2 class="text-center my-4">Selecione a Categoria</h2>
         <div class="row text-center">
@@ -204,7 +218,7 @@
         </div>
       </div>
       
-      <!-- ETAPA 2: Seleção de Produtos (Carregados via API) -->
+      <!-- ETAPA 2: Seleção de Produtos (Carregados via API e cache) -->
       <div id="step2" class="step">
         <h2 id="categoriaTitulo" class="text-center my-4"></h2>
         <div id="productList"></div>
@@ -265,7 +279,7 @@
       </div>
     </div>
   </div>
-  
+
   <!-- Bootstrap JS (Bundle com Popper) e Inputmask -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/inputmask/5.0.8/inputmask.min.js"></script>
@@ -275,47 +289,67 @@
     const API_BASE_URL = "https://script.google.com/macros/s/AKfycbw7DBXd8noLHPBVnN4Xhoga3V9KwCOFRcp4CGb0EyrrlrDcAt6k96Gx0vZRrJthqNGdVA/exec";
   </script>
   
-  <!-- Código de integração com a API para o fluxo público -->
+  <!-- Código de integração com a API e melhorias de performance -->
   <script>
-    // Mapeamento para converter as chaves internas em nomes exatos
+    // Tempo de expiração do cache (em milissegundos – exemplo: 10 minutos)
+    const CACHE_EXPIRATION = 10 * 60 * 1000;
+
+    // Função para buscar produtos com cache
+    async function fetchProdutosCache() {
+      const cacheKey = "produtosAPI";
+      const cacheTimestampKey = "produtosAPITimestamp";
+      const cachedData = localStorage.getItem(cacheKey);
+      const cachedTimestamp = localStorage.getItem(cacheTimestampKey);
+      const now = new Date().getTime();
+      if (cachedData && cachedTimestamp && now - cachedTimestamp < CACHE_EXPIRATION) {
+        return JSON.parse(cachedData);
+      } else {
+        const response = await fetch(API_BASE_URL + "?type=produtos");
+        const produtos = await response.json();
+        localStorage.setItem(cacheKey, JSON.stringify(produtos));
+        localStorage.setItem(cacheTimestampKey, now);
+        return produtos;
+      }
+    }
+
+    // Mapeamento de chaves para nomes exatos de categorias
     const categoriaMapping = {
       prontaEntrega: "Pronta Entrega",
       encomendas: "Encomendas",
       produtosEspeciais: "Produtos Especiais - Queijos Premiados Boníssimo"
     };
 
-    // Objeto global para armazenar o pedido (produtos selecionados)
+    // Objeto global para armazenar o pedido
     let pedido = {
       nome: "",
       telefone: "",
-      produtos: {}  // Será criado dinamicamente para cada categoria
+      produtos: {} // Será criado dinamicamente por categoria
     };
     let categoriaSelecionada = "";
 
-    // Função para selecionar categoria e carregar produtos via API
-    function selectCategory(categoriaKey) {
+    // Função para selecionar uma categoria e carregar os produtos via cache
+    async function selectCategory(categoriaKey) {
       categoriaSelecionada = categoriaMapping[categoriaKey];
+      // Inicializa array para a categoria se não existir
       pedido.produtos[categoriaSelecionada] = [];
-      carregarProdutosIndex(categoriaSelecionada);
+      await carregarProdutosIndex(categoriaSelecionada);
       goToStep(2);
     }
 
-    // Carrega os produtos da planilha via API, filtrando pela categoria
+    // Carrega os produtos da API (usando cache) e filtra pela categoria
     async function carregarProdutosIndex(categoriaNome) {
       const container = document.getElementById("productList");
       container.innerHTML = "";
+      document.getElementById("loadingIndicator").style.display = "block";
       try {
-        const response = await fetch(API_BASE_URL + "?type=produtos");
-        const produtos = await response.json();
-        // Filtra produtos pela categoria exata
+        const produtos = await fetchProdutosCache();
         const produtosFiltrados = produtos.filter(p => p.Categoria === categoriaNome);
         if (produtosFiltrados.length === 0) {
           container.innerHTML = "<p>Nenhum produto cadastrado nesta categoria.</p>";
           return;
         }
         produtosFiltrados.forEach((produto, index) => {
-          // Inicializa quantidade para este produto
-          pedido.produtos[categoriaNome][index] = 0;
+          pedido.produtos[categoriaNome][index] = 0; // inicializa quantidade
           const div = document.createElement("div");
           div.className = "product-item";
           const img = document.createElement("img");
@@ -352,14 +386,17 @@
         atualizarSubtotal();
       } catch (error) {
         console.error("Erro ao carregar produtos do index:", error);
+        container.innerHTML = "<p>Erro ao carregar produtos.</p>";
+      } finally {
+        document.getElementById("loadingIndicator").style.display = "none";
       }
     }
 
-    // Atualiza o subtotal (carrinho) com base nas quantidades selecionadas
+    // Atualiza o subtotal com base nos produtos selecionados
     function atualizarSubtotal() {
       let total = 0;
-      const productItems = document.querySelectorAll("#productList .product-item");
-      productItems.forEach(item => {
+      const items = document.querySelectorAll("#productList .product-item");
+      items.forEach(item => {
         const precoText = item.querySelector(".product-price").innerText;
         const valor = parseFloat(precoText.replace("R$ ", "").replace(",", "."));
         const qty = Number(item.querySelector("select").value);
@@ -368,7 +405,7 @@
       document.getElementById("navbarSubtotal").innerText = "Carrinho: R$ " + total.toFixed(2);
     }
 
-    // Alterna entre as etapas (steps) do fluxo
+    // Função para alternar entre etapas do fluxo
     function goToStep(stepNumber) {
       document.querySelectorAll(".step").forEach(step => step.classList.remove("active"));
       document.getElementById("step" + stepNumber).classList.add("active");
@@ -377,7 +414,7 @@
       }
     }
 
-    // Monta o resumo do pedido para envio via WhatsApp
+    // Monta o resumo final para envio via WhatsApp
     function montarResumo() {
       pedido.nome = document.getElementById("nomeDados").value;
       pedido.telefone = document.getElementById("telefoneDados").value;
@@ -395,7 +432,7 @@
       resumo += "*Nome:* " + pedido.nome + "\n";
       resumo += "*Telefone:* " + pedido.telefone + "\n\n";
       let totalGeral = 0;
-      // Percorre cada categoria do pedido
+      // Para cada categoria no pedido, percorre os itens exibidos e soma os valores
       for (const cat in pedido.produtos) {
         const quantidades = pedido.produtos[cat];
         if (quantidades && quantidades.some(q => q > 0)) {
@@ -432,7 +469,7 @@
       window.open(url, "_blank");
     }
 
-    // Limpa os dados do pedido (fluxo público)
+    // Limpa os dados do pedido
     function limparPedido() {
       if (confirm("Tem certeza que deseja limpar o pedido?")) {
         for (const cat in pedido.produtos) {
@@ -449,9 +486,8 @@
       }
     }
 
-    // Registra o evento de auto-completar o endereço via CEP após o carregamento do DOM
+    // Registro do evento de auto-completar endereço via CEP após carregamento do DOM
     document.addEventListener("DOMContentLoaded", function() {
-      // Auto-completar endereço via ViaCEP
       const cepInput = document.getElementById("cep");
       cepInput.addEventListener("blur", async function() {
         const cep = this.value.replace(/\D/g, '');
