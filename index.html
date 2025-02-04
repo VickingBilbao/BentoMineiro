@@ -101,7 +101,6 @@
       align-items: center;
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
-    /* Imagens dos produtos com proporção 1:4 */
     .product-item img {
       width: 100%;
       max-width: 600px;
@@ -169,7 +168,7 @@
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown">
         <span class="navbar-toggler-icon"></span>
       </button>
-      <!-- Mantém apenas o dropdown de categorias -->
+      <!-- Dropdown de categorias -->
       <div class="collapse navbar-collapse justify-content-end" id="navbarNavDropdown">
          <ul class="navbar-nav">
            <li class="nav-item dropdown">
@@ -218,7 +217,7 @@
         </div>
       </div>
       
-      <!-- ETAPA 2: Seleção de Produtos (Carregados via API e cache) -->
+      <!-- ETAPA 2: Seleção de Produtos -->
       <div id="step2" class="step">
         <h2 id="categoriaTitulo" class="text-center my-4"></h2>
         <div id="productList"></div>
@@ -291,24 +290,31 @@
   
   <!-- Código de integração com a API e melhorias de performance -->
   <script>
-    // Tempo de expiração do cache (em milissegundos – exemplo: 10 minutos)
-    const CACHE_EXPIRATION = 10 * 60 * 1000;
+    const CACHE_EXPIRATION = 10 * 60 * 1000; // 10 minutos
 
     // Função para buscar produtos com cache
     async function fetchProdutosCache() {
       const cacheKey = "produtosAPI";
       const cacheTimestampKey = "produtosAPITimestamp";
+      const now = Date.now();
       const cachedData = localStorage.getItem(cacheKey);
       const cachedTimestamp = localStorage.getItem(cacheTimestampKey);
-      const now = new Date().getTime();
-      if (cachedData && cachedTimestamp && now - cachedTimestamp < CACHE_EXPIRATION) {
+      if (cachedData && cachedTimestamp && (now - Number(cachedTimestamp) < CACHE_EXPIRATION)) {
         return JSON.parse(cachedData);
       } else {
-        const response = await fetch(API_BASE_URL + "?type=produtos");
-        const produtos = await response.json();
-        localStorage.setItem(cacheKey, JSON.stringify(produtos));
-        localStorage.setItem(cacheTimestampKey, now);
-        return produtos;
+        try {
+          const response = await fetch(`${API_BASE_URL}?type=produtos`);
+          if (!response.ok) {
+            throw new Error("Erro na resposta da API");
+          }
+          const produtos = await response.json();
+          localStorage.setItem(cacheKey, JSON.stringify(produtos));
+          localStorage.setItem(cacheTimestampKey, now.toString());
+          return produtos;
+        } catch (error) {
+          console.error("Erro ao buscar produtos:", error);
+          throw error;
+        }
       }
     }
 
@@ -323,89 +329,104 @@
     let pedido = {
       nome: "",
       telefone: "",
-      produtos: {} // Será criado dinamicamente por categoria
+      endereco: "",
+      numero: "",
+      complemento: "",
+      observacoes: "",
+      produtos: {} // Estruturado por categoria: { categoriaNome: [ { produto, quantity } ] }
     };
+
     let categoriaSelecionada = "";
 
-    // Função para selecionar uma categoria e carregar os produtos via cache
-    async function selectCategory(categoriaKey) {
-      categoriaSelecionada = categoriaMapping[categoriaKey];
-      // Inicializa array para a categoria se não existir
-      pedido.produtos[categoriaSelecionada] = [];
-      await carregarProdutosIndex(categoriaSelecionada);
-      goToStep(2);
-    }
-
-    // Carrega os produtos da API (usando cache) e filtra pela categoria
-    async function carregarProdutosIndex(categoriaNome) {
-      const container = document.getElementById("productList");
-      container.innerHTML = "";
-      document.getElementById("loadingIndicator").style.display = "block";
-      try {
-        const produtos = await fetchProdutosCache();
-        const produtosFiltrados = produtos.filter(p => p.Categoria === categoriaNome);
-        if (produtosFiltrados.length === 0) {
-          container.innerHTML = "<p>Nenhum produto cadastrado nesta categoria.</p>";
-          return;
-        }
-        produtosFiltrados.forEach((produto, index) => {
-          pedido.produtos[categoriaNome][index] = 0; // inicializa quantidade
-          const div = document.createElement("div");
-          div.className = "product-item";
-          const img = document.createElement("img");
-          img.src = produto.Imagem;
-          img.alt = produto.Nome;
-          div.appendChild(img);
-          const infoDiv = document.createElement("div");
-          infoDiv.className = "product-info";
-          const nomeProduto = document.createElement("div");
-          nomeProduto.className = "product-name";
-          nomeProduto.innerText = produto.Nome;
-          const precoProduto = document.createElement("div");
-          precoProduto.className = "product-price";
-          precoProduto.innerText = "R$ " + parseFloat(produto.Valor).toFixed(2);
-          infoDiv.appendChild(nomeProduto);
-          infoDiv.appendChild(precoProduto);
-          div.appendChild(infoDiv);
-          const selectQty = document.createElement("select");
-          selectQty.className = "form-select";
-          selectQty.style.width = "100px";
-          for (let i = 0; i <= 10; i++) {
-            const option = document.createElement("option");
-            option.value = i;
-            option.innerText = i;
-            selectQty.appendChild(option);
-          }
-          selectQty.addEventListener("change", (e) => {
-            pedido.produtos[categoriaNome][index] = Number(e.target.value);
-            atualizarSubtotal();
-          });
-          div.appendChild(selectQty);
-          container.appendChild(div);
-        });
-        atualizarSubtotal();
-      } catch (error) {
-        console.error("Erro ao carregar produtos do index:", error);
-        container.innerHTML = "<p>Erro ao carregar produtos.</p>";
-      } finally {
-        document.getElementById("loadingIndicator").style.display = "none";
+    // Fecha o menu navbar (usando API do Bootstrap)
+    function collapseNavbar() {
+      const navbarCollapse = document.getElementById('navbarNavDropdown');
+      const collapseInstance = bootstrap.Collapse.getInstance(navbarCollapse);
+      if (collapseInstance) {
+        collapseInstance.hide();
       }
     }
 
-    // Atualiza o subtotal com base nos produtos selecionados
+    // Seleciona uma categoria e carrega os produtos correspondentes
+    async function selectCategory(categoriaKey) {
+      categoriaSelecionada = categoriaMapping[categoriaKey];
+      document.getElementById("categoriaTitulo").innerText = categoriaSelecionada;
+      try {
+        const produtos = await fetchProdutosCache();
+        const produtosFiltrados = produtos.filter(p => p.Categoria === categoriaSelecionada);
+        const container = document.getElementById("productList");
+        container.innerHTML = "";
+        document.getElementById("loadingIndicator").style.display = "block";
+
+        if (produtosFiltrados.length === 0) {
+          container.innerHTML = "<p>Nenhum produto cadastrado nesta categoria.</p>";
+        } else {
+          // Armazena os produtos na estrutura do pedido
+          pedido.produtos[categoriaSelecionada] = produtosFiltrados.map(produto => ({
+            produto: produto,
+            quantity: 0
+          }));
+
+          // Renderiza os produtos
+          pedido.produtos[categoriaSelecionada].forEach((item, index) => {
+            const div = document.createElement("div");
+            div.className = "product-item";
+
+            const img = document.createElement("img");
+            img.src = item.produto.Imagem;
+            img.alt = item.produto.Nome;
+            div.appendChild(img);
+
+            const infoDiv = document.createElement("div");
+            infoDiv.className = "product-info";
+            const nomeProduto = document.createElement("div");
+            nomeProduto.className = "product-name";
+            nomeProduto.innerText = item.produto.Nome;
+            const precoProduto = document.createElement("div");
+            precoProduto.className = "product-price";
+            precoProduto.innerText = "R$ " + parseFloat(item.produto.Valor).toFixed(2);
+            infoDiv.appendChild(nomeProduto);
+            infoDiv.appendChild(precoProduto);
+            div.appendChild(infoDiv);
+
+            const selectQty = document.createElement("select");
+            selectQty.className = "form-select";
+            selectQty.style.width = "100px";
+            for (let i = 0; i <= 10; i++) {
+              const option = document.createElement("option");
+              option.value = i;
+              option.innerText = i;
+              selectQty.appendChild(option);
+            }
+            // Atualiza a quantidade no objeto global e o subtotal
+            selectQty.addEventListener("change", (e) => {
+              pedido.produtos[categoriaSelecionada][index].quantity = Number(e.target.value);
+              atualizarSubtotal();
+            });
+            div.appendChild(selectQty);
+            container.appendChild(div);
+          });
+        }
+      } catch (error) {
+        document.getElementById("productList").innerHTML = "<p>Erro ao carregar produtos.</p>";
+      } finally {
+        document.getElementById("loadingIndicator").style.display = "none";
+        goToStep(2);
+      }
+    }
+
+    // Atualiza o subtotal exibido na navbar com base em todos os produtos selecionados
     function atualizarSubtotal() {
       let total = 0;
-      const items = document.querySelectorAll("#productList .product-item");
-      items.forEach(item => {
-        const precoText = item.querySelector(".product-price").innerText;
-        const valor = parseFloat(precoText.replace("R$ ", "").replace(",", "."));
-        const qty = Number(item.querySelector("select").value);
-        total += valor * qty;
+      Object.keys(pedido.produtos).forEach(cat => {
+        pedido.produtos[cat].forEach(item => {
+          total += parseFloat(item.produto.Valor) * item.quantity;
+        });
       });
       document.getElementById("navbarSubtotal").innerText = "Carrinho: R$ " + total.toFixed(2);
     }
 
-    // Função para alternar entre etapas do fluxo
+    // Alterna entre as etapas do fluxo
     function goToStep(stepNumber) {
       document.querySelectorAll(".step").forEach(step => step.classList.remove("active"));
       document.getElementById("step" + stepNumber).classList.add("active");
@@ -422,41 +443,43 @@
       pedido.numero = document.getElementById("numero").value;
       pedido.complemento = document.getElementById("complemento").value;
       pedido.observacoes = document.getElementById("observacoes").value;
+
       if (!pedido.nome || !pedido.telefone || !pedido.endereco) {
         alert("Os campos Nome, Telefone e Endereço são obrigatórios.");
         goToStep(3);
         return;
       }
-      let resumo = "";
-      resumo += "*Dados do Cliente:*\n";
+
+      let resumo = "*Dados do Cliente:*\n";
       resumo += "*Nome:* " + pedido.nome + "\n";
       resumo += "*Telefone:* " + pedido.telefone + "\n\n";
+
       let totalGeral = 0;
-      // Para cada categoria no pedido, percorre os itens exibidos e soma os valores
+      // Percorre cada categoria com produtos selecionados
       for (const cat in pedido.produtos) {
-        const quantidades = pedido.produtos[cat];
-        if (quantidades && quantidades.some(q => q > 0)) {
+        const itens = pedido.produtos[cat];
+        const produtosSelecionados = itens.filter(item => item.quantity > 0);
+        if (produtosSelecionados.length > 0) {
           resumo += `*${cat}:*\n`;
           let subtotalCat = 0;
-          const items = document.querySelectorAll("#productList .product-item");
-          items.forEach((item, index) => {
-            const precoText = item.querySelector(".product-price").innerText;
-            const valor = parseFloat(precoText.replace("R$ ", "").replace(",", "."));
-            const qty = Number(item.querySelector("select").value);
-            if (qty > 0) {
-              resumo += `  - ${item.querySelector(".product-name").innerText}: ${qty} x R$ ${valor.toFixed(2)} = R$ ${(valor * qty).toFixed(2)}\n`;
-              subtotalCat += valor * qty;
-            }
+          produtosSelecionados.forEach(item => {
+            const nome = item.produto.Nome;
+            const valor = parseFloat(item.produto.Valor);
+            const qty = item.quantity;
+            const subtotalItem = valor * qty;
+            resumo += `  - ${nome}: ${qty} x R$ ${valor.toFixed(2)} = R$ ${subtotalItem.toFixed(2)}\n`;
+            subtotalCat += subtotalItem;
           });
           resumo += `  Subtotal ${cat}: R$ ${subtotalCat.toFixed(2)}\n\n`;
           totalGeral += subtotalCat;
         }
       }
       resumo += `*Total Geral:* R$ ${totalGeral.toFixed(2)}\n\n`;
-      resumo += `*Observações:* ${pedido.observacoes}\n`;
+      resumo += `*Observações:* ${pedido.observacoes || "-"}\n`;
       resumo += `*Endereço:* ${pedido.endereco}\n`;
       resumo += `*Número:* ${pedido.numero}\n`;
-      resumo += `*Complemento:* ${pedido.complemento}\n`;
+      resumo += `*Complemento:* ${pedido.complemento || "-"}\n`;
+
       document.getElementById("resumoPedido").innerText = resumo;
     }
 
@@ -472,13 +495,16 @@
     // Limpa os dados do pedido
     function limparPedido() {
       if (confirm("Tem certeza que deseja limpar o pedido?")) {
-        for (const cat in pedido.produtos) {
-          pedido.produtos[cat] = pedido.produtos[cat].map(() => 0);
-        }
+        // Reseta as quantidades no objeto global
+        Object.keys(pedido.produtos).forEach(cat => {
+          pedido.produtos[cat].forEach(item => item.quantity = 0);
+        });
+        // Reseta os campos do formulário
         document.getElementById("observacoes").value = "";
         document.getElementById("enderecoFinal").value = "";
         document.getElementById("numero").value = "";
         document.getElementById("complemento").value = "";
+        // Reseta os selects na lista de produtos
         const selects = document.querySelectorAll("#productList select");
         selects.forEach(select => { select.value = 0; });
         atualizarSubtotal();
@@ -486,7 +512,7 @@
       }
     }
 
-    // Registro do evento de auto-completar endereço via CEP após carregamento do DOM
+    // Auto-completar endereço via CEP
     document.addEventListener("DOMContentLoaded", function() {
       const cepInput = document.getElementById("cep");
       cepInput.addEventListener("blur", async function() {
