@@ -25,7 +25,7 @@
     .header-left {
       display: flex;
       align-items: center;
-      gap: 10px; /* Aumenta o espaço entre logo e texto */
+      gap: 10px; /* Espaço entre logo e texto */
     }
     .header-left img {
       max-height: 50px;
@@ -261,6 +261,11 @@
             <label for="observacoesDados" class="form-label">Observações:</label>
             <textarea class="form-control" id="observacoesDados" rows="3"></textarea>
           </div>
+          <!-- Cupom de Desconto -->
+          <div class="mb-3">
+            <label for="cupomDados" class="form-label">Cupom de Desconto:</label>
+            <input type="text" class="form-control" id="cupomDados" placeholder="Ex: TESTE10">
+          </div>
         </form>
       </div>
       <div class="modal-footer">
@@ -281,7 +286,7 @@
 /* ==============================================
    CONFIGURAÇÕES E VARIÁVEIS GLOBAIS
 ============================================== */
-const API_BASE_URL = "https://script.google.com/macros/s/AKfycbzoRWay1-1W0C5weOZcISg1AfYPJ8SHtfrOoZhoxIrbZDC3MrrsIIyRnrnHjqdyKc8u/exec"; // Ajuste para sua URL
+const API_BASE_URL = "https://script.google.com/macros/s/AKfycbzoRWay1-1W0C5weOZcISg1AfYPJ8SHtfrOoZhoxIrbZDC3MrrsIIyRnrnHjqdyKc8u/exec"; // Ajuste para sua URL real
 const CACHE_KEY = "bentoMineiroProdutos";
 const CACHE_TIMESTAMP_KEY = "bentoMineiroProdutosTimestamp";
 const CACHE_EXPIRATION = 10 * 60 * 1000; // 10 minutos
@@ -304,6 +309,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   } finally {
     mostrarCarregando(false);
   }
+
   // CEP autocomplete
   document.getElementById("cepDados").addEventListener("blur", async function() {
     const cep = this.value.replace(/\D/g, '');
@@ -373,7 +379,7 @@ function exibirProdutos(produtos) {
 ============================================== */
 function filtrarCategoria(cat) {
   if (cat === "Destaques") {
-    // Ex: 1 produto de cada
+    // 1 produto de cada
     const categorias = [
       "Pronta Entrega",
       "Encomendas",
@@ -483,6 +489,9 @@ function finalizarPedidoWhatsApp() {
   userData.obs = document.getElementById("observacoesDados").value;
   salvarUserData();
 
+  // Lê o cupom
+  const cupom = document.getElementById("cupomDados").value.trim().toUpperCase();
+
   // Monta mensagem
   let msg = "*Pedido Bento Mineiro*\n\n";
   msg += `*Nome:* ${userData.nome}\n`;
@@ -491,17 +500,49 @@ function finalizarPedidoWhatsApp() {
   msg += `*Endereço:* ${userData.endereco}\n`;
   msg += `*Número:* ${userData.numero}\n`;
   msg += `*Complemento:* ${userData.complemento}\n\n`;
-  let total = 0;
+
+  // Agrupa itens por categoria
+  let categoriasCarrinho = {};
   for (const pid in cart) {
     const item = cart[pid];
     if (item.quantidade > 0) {
-      const subtotal = parseFloat(item.produto.Valor) * item.quantidade;
-      total += subtotal;
-      msg += `- ${item.produto.Nome} (x${item.quantidade}) = R$ ${subtotal.toFixed(2)}\n`;
+      const cat = item.produto.Categoria || "Outros";
+      if (!categoriasCarrinho[cat]) {
+        categoriasCarrinho[cat] = [];
+      }
+      categoriasCarrinho[cat].push(item);
     }
   }
-  msg += `\n*Total:* R$ ${total.toFixed(2)}\n`;
-  msg += `\n*Observações:* ${userData.obs}\n`;
+
+  let totalGeral = 0;
+  for (const cat in categoriasCarrinho) {
+    msg += `*${cat}*\n`;
+    let subtotalCat = 0;
+    categoriasCarrinho[cat].forEach(item => {
+      const subtotal = parseFloat(item.produto.Valor) * item.quantidade;
+      subtotalCat += subtotal;
+      msg += `- ${item.produto.Nome} (x${item.quantidade}) = R$ ${subtotal.toFixed(2)}\n`;
+    });
+    if (cat === "Encomendas") {
+      msg += "_(Consulte a agenda de entrega de encomendas na hora de finalizar o pagamento)_\n";
+    }
+    msg += `Subtotal ${cat}: R$ ${subtotalCat.toFixed(2)}\n\n`;
+    totalGeral += subtotalCat;
+  }
+
+  // Aplica cupom TESTE10 => 10% desconto
+  let desconto = 0;
+  if (cupom === "TESTE10") {
+    desconto = totalGeral * 0.10;
+    msg += `*Cupom TESTE10 aplicado: -R$ ${desconto.toFixed(2)}*\n\n`;
+  }
+
+  let totalFinal = totalGeral - desconto;
+
+  msg += `*Total Geral:* R$ ${totalFinal.toFixed(2)}\n\n`;
+  msg += `*Observações:* ${userData.obs}\n\n`;
+  msg += "_Valor total sem frete - Consulte o valor de frete na hora de finalizar o pagamento_\n";
+
   const url = "https://wa.me/5511984193457?text=" + encodeURIComponent(msg);
   window.open(url, "_blank");
 }
@@ -528,6 +569,5 @@ function mostrarCarregando(status) {
   document.getElementById("loadingIndicator").style.display = status ? "block" : "none";
 }
 </script>
-
 </body>
 </html>
