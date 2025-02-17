@@ -7,40 +7,48 @@
   <!-- Google Fonts e Bootstrap CSS -->
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-
   <style>
     body {
       font-family: 'Poppins', sans-serif;
       background-color: #f7f7f7;
       margin: 0; padding: 0;
     }
-    /* Header Superior */
-    .header-top {
-      background-color: #a56347; /* Cor de fundo */
+    /* Header com Logo, Slogan e Carrinho */
+    .header-bar {
+      background-color: #a56347; /* Cor de fundo principal */
       color: #fff;
-      text-align: center;
-      padding: 15px 0;
+      padding: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
     }
-    .header-top img.logo {
-      max-height: 60px;
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
-    .header-top h2 {
-      font-size: 1.2rem;
-      margin: 5px 0 0 0;
+    .header-left img {
+      max-height: 50px;
+    }
+    .header-left h2 {
+      font-size: 1rem;
+      margin: 0;
       font-weight: 500;
     }
-    /* Navbar */
-    .navbar-categories {
-      background-color: #fff;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-    .navbar-toggler {
-      border: none;
-    }
-    .navbar-nav .nav-link {
-      color: #a56347 !important;
-      font-weight: 500;
+    .cart-icon {
+      position: relative;
       cursor: pointer;
+      color: #fff;
+    }
+    .cart-count {
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      background-color: #dc3545;
+      color: #fff;
+      font-size: 0.7rem;
+      padding: 2px 5px;
+      border-radius: 50%;
     }
     /* Chips de categoria */
     .category-chips {
@@ -48,6 +56,7 @@
       gap: 10px;
       overflow-x: auto;
       padding: 10px;
+      background-color: #fff;
     }
     .category-chip {
       flex: 0 0 auto;
@@ -59,9 +68,16 @@
       cursor: pointer;
       transition: background-color 0.2s;
       white-space: nowrap;
+      color: #a56347;
     }
     .category-chip:hover {
       background-color: #ffe6cc;
+    }
+    /* Indicador de carregamento */
+    #loadingIndicator {
+      display: none;
+      text-align: center;
+      margin: 20px 0;
     }
     /* Cards de produto */
     .product-card {
@@ -90,7 +106,7 @@
       font-weight: 500;
       margin-bottom: 8px;
     }
-    /* Botões de quantidade ( - 2 + ) */
+    /* Botões de quantidade */
     .qty-controls {
       display: flex;
       align-items: center;
@@ -114,48 +130,50 @@
       text-align: center;
       font-weight: 500;
     }
-    /* Indicador de carregamento */
-    #loadingIndicator {
-      display: none;
-      text-align: center;
-      margin: 20px 0;
-    }
-    /* Modais */
+    /* Modal do Carrinho e Dados */
     .modal-header, .modal-footer {
       border: none;
     }
-    /* Responsividade */
+    .modal-body .cart-item {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    /* Rodapé */
+    footer {
+      margin-top: 30px;
+      padding: 10px;
+      text-align: center;
+      color: #888;
+      font-size: 0.9rem;
+    }
     @media (max-width: 576px) {
-      .header-top h2 {
-        font-size: 1rem;
+      .header-left h2 {
+        font-size: 0.9rem;
       }
     }
   </style>
 </head>
 <body>
 
-<!-- Header Superior -->
-<div class="header-top">
-  <img src="https://i.imgur.com/NVldFUa.png" alt="Logo Bento Mineiro" class="logo mb-2">
-  <h2>Seja bem vindo em nossa loja!</h2>
-</div>
-
-<!-- Navbar (categorias) -->
-<nav class="navbar navbar-expand-lg navbar-categories">
-  <div class="container">
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCategories">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbarCategories">
-      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-        <li class="nav-item me-3">
-          <a class="nav-link" onclick="collapseNavbar(); verCarrinho()">Ver carrinho</a>
-        </li>
-        <!-- Adicione mais itens se quiser -->
-      </ul>
-    </div>
+<!-- Header com Logo, Slogan e Carrinho -->
+<div class="header-bar">
+  <div class="header-left">
+    <img src="https://i.imgur.com/NVldFUa.png" alt="Logo Bento Mineiro">
+    <h2>Seja bem vindo em nossa loja!</h2>
   </div>
-</nav>
+  <div class="cart-icon" onclick="verCarrinho()">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#fff" viewBox="0 0 24 24">
+      <path d="M7 18c-1.105 0-2 .895-2 2s.895 2 2 2c1.105 
+               0 2-.895 2-2s-.895-2-2-2zm10 
+               0c-1.105 0-2 .895-2 2s.895 2 2 
+               2 2-.895 2-2-.895-2-2-2zm-13.364 
+               -16l3.364 6h10.364l3-6h-16.728zm-1.636 
+               -2h20l-4 8h-12l-4-8z"/>
+    </svg>
+    <span id="cartCount" class="cart-count">0</span>
+  </div>
+</div>
 
 <!-- Chips de Categoria -->
 <div class="category-chips">
@@ -180,7 +198,7 @@
   </div>
 </div>
 
-<!-- Modal Ver Carrinho -->
+<!-- Modal do Carrinho -->
 <div class="modal fade" id="cartModal" tabindex="-1" aria-labelledby="cartModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-scrollable">
     <div class="modal-content">
@@ -245,7 +263,7 @@
         </form>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-secondary" data-bs-dismiss="modal">Voltar para produtos</button>
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Voltar</button>
         <button class="btn btn-success" onclick="finalizarPedidoWhatsApp()">Finalizar no WhatsApp</button>
       </div>
     </div>
@@ -258,38 +276,43 @@
 
 <!-- Bootstrap JS (Bundle com Popper) -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
 <script>
 /* ==============================================
    CONFIGURAÇÕES E VARIÁVEIS GLOBAIS
 ============================================== */
-const API_BASE_URL = "https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec"; // Substituir pela URL real
+const API_BASE_URL = "https://script.google.com/macros/s/AKfycbzoRWay1-1W0C5weOZcISg1AfYPJ8SHtfrOoZhoxIrbZDC3MrrsIIyRnrnHjqdyKc8u/exec"; // Substituir pela URL real
 const CACHE_KEY = "bentoMineiroProdutos";
 const CACHE_TIMESTAMP_KEY = "bentoMineiroProdutosTimestamp";
 const CACHE_EXPIRATION = 10 * 60 * 1000; // 10 minutos
 
+// Armazena todos os produtos
 let allProducts = [];
-let cart = {}; // { productID: { produto, quantidade } }
+// Objeto de carrinho { productID: { produto, quantidade } }
+let cart = {};
+
+// Objeto de dados do usuário, salvos em localStorage
+let userData = {};
 
 /* ==============================================
    INICIALIZAÇÃO
 ============================================== */
 document.addEventListener("DOMContentLoaded", async () => {
-  // Mascara de telefone e CEP
-  // (Opcional: use inputmask ou outra lib)
+  // Carrega dados do usuário do localStorage
+  carregarUserData();
+
   // Carrega produtos
   mostrarCarregando(true);
   try {
     allProducts = await fetchProdutosCache();
-    exibirProdutos(allProducts); // Exibe todos
+    exibirProdutos(allProducts); // Exibe todos por padrão
   } catch (error) {
     console.error("Erro ao carregar produtos:", error);
   } finally {
     mostrarCarregando(false);
   }
+
   // CEP autocomplete no modal de dados
-  const cepInput = document.getElementById("cepDados");
-  cepInput.addEventListener("blur", async function() {
+  document.getElementById("cepDados").addEventListener("blur", async function() {
     const cep = this.value.replace(/\D/g, '');
     if (cep.length === 8) {
       try {
@@ -332,7 +355,6 @@ function exibirProdutos(produtos) {
   const container = document.getElementById("productsContainer");
   container.innerHTML = "";
   produtos.forEach(prod => {
-    // Se for a pseudo-categoria "Destaques", podemos filtrar por 'prod.Destaque === true'
     const col = document.createElement("div");
     col.className = "col-6 col-md-4 col-lg-3";
     col.innerHTML = `
@@ -355,9 +377,18 @@ function exibirProdutos(produtos) {
 
 function filtrarCategoria(cat) {
   if (cat === "Destaques") {
-    // Exemplo: se produto tiver campo Destaque === true
-    const filtrados = allProducts.filter(p => p.Destaque === true);
-    exibirProdutos(filtrados);
+    // 1 produto de cada categoria
+    const categorias = [
+      "Pronta Entrega",
+      "Encomendas",
+      "Produtos Especiais - Queijos Premiados Boníssimo"
+    ];
+    let destaqueProds = [];
+    categorias.forEach(c => {
+      const found = allProducts.find(p => p.Categoria === c);
+      if (found) destaqueProds.push(found);
+    });
+    exibirProdutos(destaqueProds);
   } else {
     const filtrados = allProducts.filter(p => p.Categoria === cat);
     exibirProdutos(filtrados);
@@ -365,32 +396,23 @@ function filtrarCategoria(cat) {
 }
 
 /* ==============================================
-   FUNÇÕES DE QUANTIDADE
+   FUNÇÕES DE QUANTIDADE E CARRINHO
 ============================================== */
 function alterarQuantidade(productID, delta) {
-  // Adiciona ou subtrai 1 do item no carrinho
   let item = cart[productID];
   if (!item) {
-    // Cria item no carrinho
     const produto = allProducts.find(p => p.ID == productID);
     if (!produto) return;
     cart[productID] = { produto, quantidade: 0 };
     item = cart[productID];
   }
   item.quantidade += delta;
-  if (item.quantidade < 0) {
-    item.quantidade = 0;
-  }
-  // Atualiza valor na tela
+  if (item.quantidade < 0) item.quantidade = 0;
   document.getElementById(`qty-${productID}`).textContent = item.quantidade;
 }
 
-/* ==============================================
-   VER CARRINHO (MODAL)
-============================================== */
 function verCarrinho() {
-  // Monta o HTML do carrinho
-  const modalEl = document.getElementById("cartModal");
+  // Monta modal
   const cartItemsEl = document.getElementById("cartItems");
   const cartTotalEl = document.getElementById("cartTotal");
   cartItemsEl.innerHTML = "";
@@ -398,30 +420,26 @@ function verCarrinho() {
   for (const pid in cart) {
     const item = cart[pid];
     if (item.quantidade > 0) {
-      const valorItem = parseFloat(item.produto.Valor) * item.quantidade;
-      total += valorItem;
+      const subtotal = parseFloat(item.produto.Valor) * item.quantidade;
+      total += subtotal;
       cartItemsEl.innerHTML += `
-        <div class="d-flex justify-content-between mb-2">
+        <div class="cart-item">
           <span>${item.produto.Nome} (x${item.quantidade})</span>
-          <strong>R$ ${valorItem.toFixed(2)}</strong>
+          <strong>R$ ${subtotal.toFixed(2)}</strong>
         </div>
       `;
     }
   }
   cartTotalEl.textContent = "R$ " + total.toFixed(2);
-  // Abre o modal
-  const cartModal = new bootstrap.Modal(modalEl);
-  cartModal.show();
+  const modalEl = new bootstrap.Modal(document.getElementById("cartModal"));
+  modalEl.show();
 }
 
-/* ==============================================
-   LIMPAR CARRINHO
-============================================== */
 function limparCarrinho() {
   cart = {};
   document.getElementById("cartItems").innerHTML = "";
   document.getElementById("cartTotal").textContent = "R$ 0,00";
-  // Zera os contadores visuais
+  // Zera quantidades na UI
   allProducts.forEach(p => {
     const el = document.getElementById(`qty-${p.ID}`);
     if (el) el.textContent = "0";
@@ -429,39 +447,46 @@ function limparCarrinho() {
 }
 
 /* ==============================================
-   MOSTRAR FORMULÁRIO DE DADOS
+   FINALIZAR PEDIDO
 ============================================== */
 function mostrarFormularioDados() {
-  const cartModalEl = document.getElementById("cartModal");
-  const cartModal = bootstrap.Modal.getInstance(cartModalEl);
-  cartModal.hide(); // Fecha o modal do carrinho
-  // Abre modal de dados
-  const dadosModalEl = document.getElementById("dadosModal");
-  const dadosModal = new bootstrap.Modal(dadosModalEl);
+  // Fecha cartModal
+  const cartModal = bootstrap.Modal.getInstance(document.getElementById("cartModal"));
+  cartModal.hide();
+
+  // Carrega dados do userData e preenche form
+  document.getElementById("nomeDados").value = userData.nome || "";
+  document.getElementById("telefoneDados").value = userData.telefone || "";
+  document.getElementById("cepDados").value = userData.cep || "";
+  document.getElementById("enderecoDados").value = userData.endereco || "";
+  document.getElementById("numeroDados").value = userData.numero || "";
+  document.getElementById("complementoDados").value = userData.complemento || "";
+  document.getElementById("observacoesDados").value = userData.obs || "";
+
+  // Abre dadosModal
+  const dadosModal = new bootstrap.Modal(document.getElementById("dadosModal"));
   dadosModal.show();
 }
 
-/* ==============================================
-   FINALIZAR PEDIDO NO WHATSAPP
-============================================== */
 function finalizarPedidoWhatsApp() {
-  // Pega dados do form
-  const nome = document.getElementById("nomeDados").value;
-  const telefone = document.getElementById("telefoneDados").value;
-  const cep = document.getElementById("cepDados").value;
-  const endereco = document.getElementById("enderecoDados").value;
-  const numero = document.getElementById("numeroDados").value;
-  const complemento = document.getElementById("complementoDados").value;
-  const obs = document.getElementById("observacoesDados").value;
+  // Salva dados do user no localStorage
+  userData.nome = document.getElementById("nomeDados").value;
+  userData.telefone = document.getElementById("telefoneDados").value;
+  userData.cep = document.getElementById("cepDados").value;
+  userData.endereco = document.getElementById("enderecoDados").value;
+  userData.numero = document.getElementById("numeroDados").value;
+  userData.complemento = document.getElementById("complementoDados").value;
+  userData.obs = document.getElementById("observacoesDados").value;
+  salvarUserData();
 
-  // Monta mensagem
+  // Monta msg
   let msg = "*Pedido Bento Mineiro*\n\n";
-  msg += `*Nome:* ${nome}\n`;
-  msg += `*Telefone:* ${telefone}\n`;
-  msg += `*Endereço:* ${endereco}\n`;
-  msg += `*Número:* ${numero}\n`;
-  msg += `*Complemento:* ${complemento}\n`;
-  msg += `*CEP:* ${cep}\n\n`;
+  msg += `*Nome:* ${userData.nome}\n`;
+  msg += `*Telefone:* ${userData.telefone}\n`;
+  msg += `*CEP:* ${userData.cep}\n`;
+  msg += `*Endereço:* ${userData.endereco}\n`;
+  msg += `*Número:* ${userData.numero}\n`;
+  msg += `*Complemento:* ${userData.complemento}\n\n`;
   let total = 0;
   for (const pid in cart) {
     const item = cart[pid];
@@ -472,22 +497,31 @@ function finalizarPedidoWhatsApp() {
     }
   }
   msg += `\n*Total:* R$ ${total.toFixed(2)}\n`;
-  msg += `\n*Observações:* ${obs}\n`;
-
-  const url = `https://wa.me/5511984193457?text=${encodeURIComponent(msg)}`;
+  msg += `\n*Observações:* ${userData.obs}\n`;
+  const url = "https://wa.me/5511984193457?text=" + encodeURIComponent(msg);
   window.open(url, "_blank");
 }
 
 /* ==============================================
-   FUNÇÕES AUXILIARES
+   SALVAR/CARREGAR DADOS DO USUÁRIO
+============================================== */
+function salvarUserData() {
+  localStorage.setItem("bentoMineiroUserData", JSON.stringify(userData));
+}
+function carregarUserData() {
+  const data = localStorage.getItem("bentoMineiroUserData");
+  if (data) {
+    userData = JSON.parse(data);
+  } else {
+    userData = {};
+  }
+}
+
+/* ==============================================
+   OUTROS
 ============================================== */
 function mostrarCarregando(status) {
   document.getElementById("loadingIndicator").style.display = status ? "block" : "none";
-}
-function collapseNavbar() {
-  const navEl = document.getElementById("navbarCategories");
-  const bsCollapse = new bootstrap.Collapse(navEl, {toggle:false});
-  bsCollapse.hide();
 }
 </script>
 
