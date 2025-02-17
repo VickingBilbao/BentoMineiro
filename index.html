@@ -25,7 +25,7 @@
     .header-left {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 10px; /* Aumenta o espaço entre logo e texto */
     }
     .header-left img {
       max-height: 50px;
@@ -163,11 +163,12 @@
     <h2>Seja bem vindo em nossa loja!</h2>
   </div>
   <div class="cart-icon" onclick="verCarrinho()">
+    <!-- Ícone do carrinho -->
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#fff" viewBox="0 0 24 24">
-      <path d="M7 18c-1.105 0-2 .895-2 2s.895 2 2 2c1.105 
-               0 2-.895 2-2s-.895-2-2-2zm10 
+      <path d="M7 18c-1.105 0-2 .895-2 2s.895 2 2 
+               2c1.105 0 2-.895 2-2s-.895-2-2-2zm10 
                0c-1.105 0-2 .895-2 2s.895 2 2 
-               2 2-.895 2-2-.895-2-2-2zm-13.364 
+               2c1.105 0 2-.895 2-2s-.895-2-2-2zm-13.364 
                -16l3.364 6h10.364l3-6h-16.728zm-1.636 
                -2h20l-4 8h-12l-4-8z"/>
     </svg>
@@ -280,38 +281,30 @@
 /* ==============================================
    CONFIGURAÇÕES E VARIÁVEIS GLOBAIS
 ============================================== */
-const API_BASE_URL = "https://script.google.com/macros/s/AKfycbzoRWay1-1W0C5weOZcISg1AfYPJ8SHtfrOoZhoxIrbZDC3MrrsIIyRnrnHjqdyKc8u/exec"; // Substituir pela URL real
+const API_BASE_URL = "https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec"; // Ajuste para sua URL
 const CACHE_KEY = "bentoMineiroProdutos";
 const CACHE_TIMESTAMP_KEY = "bentoMineiroProdutosTimestamp";
 const CACHE_EXPIRATION = 10 * 60 * 1000; // 10 minutos
 
-// Armazena todos os produtos
 let allProducts = [];
-// Objeto de carrinho { productID: { produto, quantidade } }
-let cart = {};
-
-// Objeto de dados do usuário, salvos em localStorage
+let cart = {}; // { productID: { produto, quantidade } }
 let userData = {};
 
 /* ==============================================
    INICIALIZAÇÃO
 ============================================== */
 document.addEventListener("DOMContentLoaded", async () => {
-  // Carrega dados do usuário do localStorage
   carregarUserData();
-
-  // Carrega produtos
   mostrarCarregando(true);
   try {
     allProducts = await fetchProdutosCache();
-    exibirProdutos(allProducts); // Exibe todos por padrão
+    exibirProdutos(allProducts);
   } catch (error) {
     console.error("Erro ao carregar produtos:", error);
   } finally {
     mostrarCarregando(false);
   }
-
-  // CEP autocomplete no modal de dados
+  // CEP autocomplete
   document.getElementById("cepDados").addEventListener("blur", async function() {
     const cep = this.value.replace(/\D/g, '');
     if (cep.length === 8) {
@@ -349,7 +342,7 @@ async function fetchProdutosCache() {
 }
 
 /* ==============================================
-   EXIBIR E FILTRAR PRODUTOS
+   EXIBIR PRODUTOS
 ============================================== */
 function exibirProdutos(produtos) {
   const container = document.getElementById("productsContainer");
@@ -375,9 +368,12 @@ function exibirProdutos(produtos) {
   });
 }
 
+/* ==============================================
+   FILTRAR CATEGORIA (inclui Destaques)
+============================================== */
 function filtrarCategoria(cat) {
   if (cat === "Destaques") {
-    // 1 produto de cada categoria
+    // Ex: 1 produto de cada
     const categorias = [
       "Pronta Entrega",
       "Encomendas",
@@ -396,7 +392,7 @@ function filtrarCategoria(cat) {
 }
 
 /* ==============================================
-   FUNÇÕES DE QUANTIDADE E CARRINHO
+   QUANTIDADE / CARRINHO
 ============================================== */
 function alterarQuantidade(productID, delta) {
   let item = cart[productID];
@@ -409,6 +405,15 @@ function alterarQuantidade(productID, delta) {
   item.quantidade += delta;
   if (item.quantidade < 0) item.quantidade = 0;
   document.getElementById(`qty-${productID}`).textContent = item.quantidade;
+  atualizarCartCount();
+}
+
+function atualizarCartCount() {
+  let totalItens = 0;
+  for (const pid in cart) {
+    totalItens += cart[pid].quantidade;
+  }
+  document.getElementById("cartCount").textContent = totalItens;
 }
 
 function verCarrinho() {
@@ -439,11 +444,12 @@ function limparCarrinho() {
   cart = {};
   document.getElementById("cartItems").innerHTML = "";
   document.getElementById("cartTotal").textContent = "R$ 0,00";
-  // Zera quantidades na UI
+  // Zera UI
   allProducts.forEach(p => {
     const el = document.getElementById(`qty-${p.ID}`);
     if (el) el.textContent = "0";
   });
+  atualizarCartCount();
 }
 
 /* ==============================================
@@ -453,8 +459,7 @@ function mostrarFormularioDados() {
   // Fecha cartModal
   const cartModal = bootstrap.Modal.getInstance(document.getElementById("cartModal"));
   cartModal.hide();
-
-  // Carrega dados do userData e preenche form
+  // Carrega userData
   document.getElementById("nomeDados").value = userData.nome || "";
   document.getElementById("telefoneDados").value = userData.telefone || "";
   document.getElementById("cepDados").value = userData.cep || "";
@@ -462,14 +467,13 @@ function mostrarFormularioDados() {
   document.getElementById("numeroDados").value = userData.numero || "";
   document.getElementById("complementoDados").value = userData.complemento || "";
   document.getElementById("observacoesDados").value = userData.obs || "";
-
   // Abre dadosModal
   const dadosModal = new bootstrap.Modal(document.getElementById("dadosModal"));
   dadosModal.show();
 }
 
 function finalizarPedidoWhatsApp() {
-  // Salva dados do user no localStorage
+  // Salva dados no localStorage
   userData.nome = document.getElementById("nomeDados").value;
   userData.telefone = document.getElementById("telefoneDados").value;
   userData.cep = document.getElementById("cepDados").value;
@@ -479,7 +483,7 @@ function finalizarPedidoWhatsApp() {
   userData.obs = document.getElementById("observacoesDados").value;
   salvarUserData();
 
-  // Monta msg
+  // Monta mensagem
   let msg = "*Pedido Bento Mineiro*\n\n";
   msg += `*Nome:* ${userData.nome}\n`;
   msg += `*Telefone:* ${userData.telefone}\n`;
@@ -503,7 +507,7 @@ function finalizarPedidoWhatsApp() {
 }
 
 /* ==============================================
-   SALVAR/CARREGAR DADOS DO USUÁRIO
+   SALVAR/CARREGAR USER DATA
 ============================================== */
 function salvarUserData() {
   localStorage.setItem("bentoMineiroUserData", JSON.stringify(userData));
