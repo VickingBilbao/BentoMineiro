@@ -11,20 +11,47 @@
     body {
       font-family: 'Poppins', sans-serif;
       background-color: #f7f7f7;
+      margin: 0;
       padding: 20px;
     }
-    h2 {
-      margin-top: 20px;
-      margin-bottom: 20px;
-    }
-    .form-section {
-      background: #fff;
+    /* Header */
+    .header {
+      background-color: #a56347;
+      color: #fff;
       padding: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       border-radius: 8px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
       margin-bottom: 20px;
     }
-    .list-section {
+    .header .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .header .logo img {
+      max-height: 50px;
+    }
+    .header .logo h2 {
+      font-size: 1.2rem;
+      margin: 0;
+    }
+    .nav-admin {
+      margin-bottom: 20px;
+    }
+    .nav-admin .nav-link {
+      cursor: pointer;
+      font-weight: 500;
+      color: #a56347;
+    }
+    .section {
+      display: none;
+    }
+    .section.active {
+      display: block;
+    }
+    .form-section, .list-section {
       background: #fff;
       padding: 15px;
       border-radius: 8px;
@@ -38,77 +65,179 @@
 </head>
 <body>
 
-<div class="container">
-  <h2 class="text-center">Painel Administrativo - Bento Mineiro</h2>
+<!-- Tela de Login -->
+<div id="loginSection" class="container">
+  <div class="card mx-auto" style="max-width: 400px;">
+    <div class="card-body">
+      <h3 class="card-title text-center mb-4">Login ADM</h3>
+      <div class="mb-3">
+        <label for="loginInput" class="form-label">Login</label>
+        <input type="text" id="loginInput" class="form-control" placeholder="Digite seu login">
+      </div>
+      <div class="mb-3">
+        <label for="senhaInput" class="form-label">Senha</label>
+        <input type="password" id="senhaInput" class="form-control" placeholder="Digite sua senha">
+      </div>
+      <button class="btn btn-primary w-100" onclick="validarLogin()">Entrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Painel Administrativo -->
+<div id="adminSection" class="container" style="display:none;">
+  <!-- Header -->
+  <div class="header">
+    <div class="logo">
+      <img src="https://i.imgur.com/NVldFUa.png" alt="Logo Bento Mineiro">
+      <h2>Bento Mineiro - ADM</h2>
+    </div>
+    <div>
+      <button class="btn btn-danger" onclick="logout()">Sair</button>
+    </div>
+  </div>
   
-  <!-- Seção de Produtos -->
-  <div class="form-section">
-    <h3>Incluir Produto</h3>
-    <form id="formIncluirProduto">
-      <div class="mb-3">
-        <label for="prodNome" class="form-label">Nome</label>
-        <input type="text" class="form-control" id="prodNome" required>
-      </div>
-      <div class="mb-3">
-        <label for="prodValor" class="form-label">Valor (R$)</label>
-        <input type="number" step="0.01" class="form-control" id="prodValor" required>
-      </div>
-      <div class="mb-3">
-        <label for="prodImagem" class="form-label">URL da Imagem</label>
-        <input type="url" class="form-control" id="prodImagem" required>
-      </div>
-      <div class="mb-3">
-        <label for="prodCategoria" class="form-label">Categoria</label>
-        <input type="text" class="form-control" id="prodCategoria" placeholder="Ex: Pronta Entrega" required>
-      </div>
-      <div class="mb-3">
-        <label for="prodTipo" class="form-label">Tipo</label>
-        <select class="form-select" id="prodTipo" required>
-          <option value="Pronta Entrega">Pronta Entrega</option>
-          <option value="Encomenda">Encomenda</option>
-        </select>
-      </div>
-      <div class="mb-3">
-        <label for="prodDescricao" class="form-label">Descrição (Opcional)</label>
-        <textarea class="form-control" id="prodDescricao" rows="3"></textarea>
-      </div>
-      <button type="submit" class="btn btn-success btn-space">Incluir Produto</button>
-    </form>
+  <!-- Navegação -->
+  <ul class="nav nav-tabs nav-admin" id="adminNav">
+    <li class="nav-item">
+      <a class="nav-link active" data-section="incluirProduto">Incluir Produto</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" data-section="editarProduto">Editar/Excluir Produto</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" data-section="incluirCategoria">Incluir Categoria</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" data-section="editarCategoria">Editar/Excluir Categoria</a>
+    </li>
+  </ul>
+  
+  <!-- Seção: Incluir Produto -->
+  <div id="incluirProduto" class="section active">
+    <div class="form-section">
+      <h3>Incluir Produto</h3>
+      <form id="formIncluirProduto">
+        <div class="mb-3">
+          <label for="prodNome" class="form-label">Nome</label>
+          <input type="text" id="prodNome" class="form-control" required>
+        </div>
+        <div class="mb-3">
+          <label for="prodValor" class="form-label">Valor (R$)</label>
+          <input type="number" step="0.01" id="prodValor" class="form-control" required>
+        </div>
+        <div class="mb-3">
+          <label for="prodImagem" class="form-label">URL da Imagem</label>
+          <input type="url" id="prodImagem" class="form-control" required>
+        </div>
+        <div class="mb-3">
+          <label for="prodCategoria" class="form-label">Categoria</label>
+          <select id="prodCategoria" class="form-select" required>
+            <!-- Dropdown preenchido via API -->
+          </select>
+        </div>
+        <div class="mb-3">
+          <label for="prodTipo" class="form-label">Tipo</label>
+          <select id="prodTipo" class="form-select" required>
+            <option value="Pronta Entrega">Pronta Entrega</option>
+            <option value="Encomenda">Encomenda</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label for="prodDescricao" class="form-label">Descrição (Opcional)</label>
+          <textarea id="prodDescricao" class="form-control" rows="3"></textarea>
+        </div>
+        <button type="submit" class="btn btn-success">Incluir Produto</button>
+      </form>
+    </div>
   </div>
-
-  <!-- Seção de Edição de Produto -->
-  <div class="list-section">
-    <h3>Editar/Excluir Produto</h3>
-    <div id="listaProdutosAdmin"></div>
+  
+  <!-- Seção: Editar/Excluir Produto -->
+  <div id="editarProduto" class="section">
+    <div class="list-section">
+      <h3>Lista de Produtos</h3>
+      <div id="listaProdutosAdmin"></div>
+    </div>
   </div>
-
-  <!-- Seção de Categorias -->
-  <div class="form-section">
-    <h3>Incluir Categoria</h3>
-    <form id="formIncluirCategoria">
-      <div class="mb-3">
-        <label for="catNome" class="form-label">Nome da Categoria</label>
-        <input type="text" class="form-control" id="catNome" required>
-      </div>
-      <button type="submit" class="btn btn-success btn-space">Incluir Categoria</button>
-    </form>
+  
+  <!-- Seção: Incluir Categoria -->
+  <div id="incluirCategoria" class="section">
+    <div class="form-section">
+      <h3>Incluir Categoria</h3>
+      <form id="formIncluirCategoria">
+        <div class="mb-3">
+          <label for="catNome" class="form-label">Nome da Categoria</label>
+          <input type="text" id="catNome" class="form-control" required>
+        </div>
+        <button type="submit" class="btn btn-success">Incluir Categoria</button>
+      </form>
+    </div>
   </div>
-  <div class="list-section">
-    <h3>Editar/Excluir Categoria</h3>
-    <div id="listaCategoriasAdmin"></div>
+  
+  <!-- Seção: Editar/Excluir Categoria -->
+  <div id="editarCategoria" class="section">
+    <div class="list-section">
+      <h3>Lista de Categorias</h3>
+      <div id="listaCategoriasAdmin"></div>
+    </div>
   </div>
 </div>
 
 <!-- Bootstrap JS (Bundle com Popper) -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-  /* ==============================================
-     CONFIGURAÇÕES GLOBAIS
-  ============================================= */
-  // URL da API do Google Apps Script (seu Web App)
+  /***************** CONFIGURAÇÕES GLOBAIS ******************/
   const API_BASE_URL = "https://script.google.com/macros/s/AKfycbzoRWay1-1W0C5weOZcISg1AfYPJ8SHtfrOoZhoxIrbZDC3MrrsIIyRnrnHjqdyKc8u/exec";
+  const CACHE_KEY = "bentoMineiroProdutos";
+  const CACHE_TIMESTAMP_KEY = "bentoMineiroProdutosTimestamp";
+  const CACHE_EXPIRATION = 10 * 60 * 1000; // 10 minutos
+
+  let allProducts = [];
+  let allCategories = [];
+  let userData = {};
   
-  // Função para fazer requisição GET
+  /***************** LOGIN ******************/
+  const ADMIN_USER = "BentoMineiro2025!";
+  const ADMIN_PASS = "SantoBento2025!#";
+  
+  function validarLogin() {
+    const login = document.getElementById("loginInput").value;
+    const senha = document.getElementById("senhaInput").value;
+    if (login === ADMIN_USER && senha === ADMIN_PASS) {
+      document.getElementById("loginSection").style.display = "none";
+      document.getElementById("adminSection").style.display = "block";
+      inicializarAdmin();
+    } else {
+      alert("Credenciais incorretas!");
+    }
+  }
+  
+  function logout() {
+    if (confirm("Deseja sair do painel?")) {
+      window.location.reload();
+    }
+  }
+  
+  /***************** NAVEGAÇÃO ADMIN ******************/
+  document.querySelectorAll("#adminNav .nav-link").forEach(link => {
+    link.addEventListener("click", function() {
+      document.querySelectorAll("#adminNav .nav-link").forEach(l => l.classList.remove("active"));
+      this.classList.add("active");
+      const section = this.getAttribute("data-section");
+      document.querySelectorAll(".section").forEach(sec => sec.classList.remove("active"));
+      document.getElementById(section).classList.add("active");
+      // Se for a seção de editar produto ou editar categoria, recarrega a lista
+      if (section === "editarProduto") {
+        carregarProdutosAdmin();
+      } else if (section === "editarCategoria") {
+        carregarCategoriasAdmin();
+      } else if (section === "incluirProduto") {
+        // Preenche o dropdown de categorias
+        preencherDropdownCategorias();
+      }
+    });
+  });
+  
+  /***************** FUNÇÕES DE API (GET, POST, PUT, DELETE) ******************/
   async function apiGet(type, id = "") {
     let url = API_BASE_URL + "?type=" + type;
     if (id) url += "&id=" + id;
@@ -116,10 +245,8 @@
     return await response.json();
   }
   
-  // Função para fazer requisição POST
   async function apiPost(type, data) {
-    const url = API_BASE_URL + "?type=" + type;
-    const response = await fetch(url, {
+    const response = await fetch(API_BASE_URL + "?type=" + type, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data)
@@ -127,10 +254,8 @@
     return await response.json();
   }
   
-  // Função para fazer requisição PUT (atualização)
   async function apiPut(type, data) {
-    const url = API_BASE_URL + "?type=" + type;
-    const response = await fetch(url, {
+    const response = await fetch(API_BASE_URL + "?type=" + type, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data)
@@ -138,16 +263,34 @@
     return await response.json();
   }
   
-  // Função para fazer requisição DELETE
   async function apiDelete(type, id) {
-    const url = API_BASE_URL + "?type=" + type + "&id=" + id;
-    const response = await fetch(url, { method: "DELETE" });
+    const response = await fetch(API_BASE_URL + "?type=" + type + "&id=" + id, {
+      method: "DELETE"
+    });
     return await response.json();
   }
   
-  /* ==============================================
-     FUNÇÕES PARA PRODUTOS
-  ============================================= */
+  /***************** FUNÇÕES DE CACHE E BUSCA DE PRODUTOS/CATEGORIAS ******************/
+  async function fetchProdutosCache() {
+    const now = Date.now();
+    const cachedData = localStorage.getItem(CACHE_KEY);
+    const cachedTimestamp = localStorage.getItem(CACHE_TIMESTAMP_KEY);
+    if (cachedData && cachedTimestamp && (now - cachedTimestamp < CACHE_EXPIRATION)) {
+      return JSON.parse(cachedData);
+    } else {
+      const response = await apiGet("produtos");
+      localStorage.setItem(CACHE_KEY, JSON.stringify(response));
+      localStorage.setItem(CACHE_TIMESTAMP_KEY, now);
+      return response;
+    }
+  }
+  
+  async function fetchCategorias() {
+    const response = await apiGet("categorias");
+    return response;
+  }
+  
+  /***************** FUNÇÕES ADMIN PRODUTOS ******************/
   async function carregarProdutosAdmin() {
     try {
       const produtos = await apiGet("produtos");
@@ -174,7 +317,7 @@
           ${prod.Descricao ? prod.Descricao : ""}
         </div>
         <div>
-          <button class="btn btn-sm btn-primary me-1" onclick="editarProduto('${prod.ID}')">Editar</button>
+          <button class="btn btn-sm btn-primary me-1" onclick="prepararEdicaoProduto('${prod.ID}')">Editar</button>
           <button class="btn btn-sm btn-danger" onclick="excluirProduto('${prod.ID}')">Excluir</button>
         </div>
       `;
@@ -206,22 +349,22 @@
     }
   }
   
-  async function editarProduto(id) {
-    // Carrega dados do produto e preenche o formulário de inclusão (pode criar um modal separado para edição)
+  // Para edição, preenche os campos do formulário e altera o comportamento para PUT
+  async function prepararEdicaoProduto(id) {
     try {
-      const produto = await apiGet("produto", id);
-      if (produto.result && produto.error) {
+      const prod = await apiGet("produto", id);
+      if (!prod || prod.error) {
         alert("Produto não encontrado.");
         return;
       }
-      // Preenche o formulário com os dados atuais
-      document.getElementById("prodNome").value = produto.Nome;
-      document.getElementById("prodValor").value = produto.Valor;
-      document.getElementById("prodImagem").value = produto.Imagem;
-      document.getElementById("prodCategoria").value = produto.Categoria;
-      document.getElementById("prodTipo").value = produto.Tipo || "Pronta Entrega";
-      document.getElementById("prodDescricao").value = produto.Descricao || "";
-      // Altera o comportamento do formulário para editar
+      // Preenche o formulário de inclusão com os dados do produto
+      document.getElementById("prodNome").value = prod.Nome;
+      document.getElementById("prodValor").value = prod.Valor;
+      document.getElementById("prodImagem").value = prod.Imagem;
+      document.getElementById("prodCategoria").value = prod.Categoria;
+      document.getElementById("prodTipo").value = prod.Tipo || "Pronta Entrega";
+      document.getElementById("prodDescricao").value = prod.Descricao || "";
+      // Muda o submit para atualização
       document.getElementById("formIncluirProduto").onsubmit = async function(e) {
         e.preventDefault();
         const produtoAtualizado = {
@@ -237,7 +380,6 @@
         if (res.result === "success") {
           alert("Produto atualizado com sucesso!");
           document.getElementById("formIncluirProduto").reset();
-          // Restaura o comportamento do formulário para inclusão
           document.getElementById("formIncluirProduto").onsubmit = incluirProduto;
           carregarProdutosAdmin();
         } else {
@@ -245,7 +387,7 @@
         }
       };
     } catch (error) {
-      console.error("Erro ao editar produto:", error);
+      console.error("Erro ao preparar edição:", error);
     }
   }
   
@@ -261,13 +403,13 @@
     }
   }
   
-  /* ==============================================
-     FUNÇÕES PARA CATEGORIAS
-  ============================================= */
+  /***************** FUNÇÕES ADMIN CATEGORIAS ******************/
   async function carregarCategoriasAdmin() {
     try {
       const categorias = await apiGet("categorias");
+      allCategories = categorias; // Salva globalmente
       renderizarListaCategorias(categorias);
+      preencherDropdownCategorias();
     } catch (error) {
       console.error("Erro ao carregar categorias:", error);
     }
@@ -286,7 +428,7 @@
       div.innerHTML = `
         <div><strong>${cat.Nome}</strong></div>
         <div>
-          <button class="btn btn-sm btn-primary me-1" onclick="editarCategoria('${cat.ID}', '${cat.Nome}')">Editar</button>
+          <button class="btn btn-sm btn-primary me-1" onclick="prepararEdicaoCategoria('${cat.ID}', '${cat.Nome}')">Editar</button>
           <button class="btn btn-sm btn-danger" onclick="excluirCategoria('${cat.ID}')">Excluir</button>
         </div>
       `;
@@ -311,11 +453,11 @@
     }
   }
   
-  async function editarCategoria(id, nomeAtual) {
+  async function prepararEdicaoCategoria(id, nomeAtual) {
     const novoNome = prompt("Edite o nome da categoria:", nomeAtual);
     if (novoNome && novoNome.trim() !== "") {
-      const categoriaAtualizada = { id: id, Nome: novoNome.trim() };
-      const res = await apiPut("categoria", categoriaAtualizada);
+      const catAtualizada = { id: id, Nome: novoNome.trim() };
+      const res = await apiPut("categoria", catAtualizada);
       if (res.result === "success") {
         alert("Categoria atualizada com sucesso!");
         carregarCategoriasAdmin();
@@ -337,9 +479,23 @@
     }
   }
   
-  /* ==============================================
-     SALVAR/CARREGAR USER DATA (localStorage)
-  ============================================= */
+  function preencherDropdownCategorias() {
+    // Preenche o dropdown de categorias no formulário de incluir produto
+    const dropdown = document.getElementById("prodCategoria");
+    dropdown.innerHTML = "";
+    if (allCategories && allCategories.length > 0) {
+      allCategories.forEach(cat => {
+        const option = document.createElement("option");
+        option.value = cat.Nome;
+        option.innerText = cat.Nome;
+        dropdown.appendChild(option);
+      });
+    } else {
+      dropdown.innerHTML = `<option value="">Nenhuma categoria cadastrada</option>`;
+    }
+  }
+  
+  /***************** SALVAR/CARREGAR USER DATA ******************/
   function salvarUserData() {
     localStorage.setItem("bentoMineiroUserData", JSON.stringify(userData));
   }
@@ -348,23 +504,19 @@
     userData = data ? JSON.parse(data) : {};
   }
   
-  /* ==============================================
-     OUTROS
-  ============================================= */
+  /***************** OUTROS ******************/
   function mostrarCarregando(status) {
     document.getElementById("loadingIndicator").style.display = status ? "block" : "none";
   }
   
-  // Inicializa as listas de produtos e categorias no admin
-  window.onload = function() {
+  function inicializarAdmin() {
     carregarProdutosAdmin();
     carregarCategoriasAdmin();
-  };
+  }
   
-  // Registra os formulários
+  // Registra formulários
   document.getElementById("formIncluirProduto").addEventListener("submit", incluirProduto);
   document.getElementById("formIncluirCategoria").addEventListener("submit", incluirCategoria);
-  
 </script>
 </body>
 </html>
