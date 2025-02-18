@@ -11,9 +11,10 @@
     body {
       font-family: 'Poppins', sans-serif;
       background-color: #f7f7f7;
-      margin: 0; padding: 0;
+      margin: 0; 
+      padding: 0;
     }
-    /* Header com Logo, Slogan e Carrinho */
+    /* Header */
     .header-bar {
       background-color: #a56347;
       color: #fff;
@@ -73,7 +74,7 @@
     .category-chip:hover {
       background-color: #ffe6cc;
     }
-    /* Indicador de Carregamento */
+    /* Indicador de carregamento */
     #loadingIndicator {
       display: none;
       text-align: center;
@@ -269,7 +270,9 @@
     carregarUserData();
     mostrarCarregando(true);
     try {
-      allProducts = await fetchProdutosCache();
+      // Busca os produtos e converte o array de arrays em objetos
+      const data = await fetchProdutosCache();
+      allProducts = transformarDados(data);
       exibirProdutos(allProducts);
     } catch (error) {
       console.error("Erro ao carregar produtos:", error);
@@ -294,6 +297,19 @@
       }
     });
   });
+
+  // Função para converter o array de arrays retornado pela API em objetos
+  function transformarDados(data) {
+    if (!Array.isArray(data) || data.length < 2) return [];
+    const headers = data[0];
+    return data.slice(1).map(row => {
+      let obj = {};
+      headers.forEach((header, index) => {
+        obj[header] = row[index];
+      });
+      return obj;
+    });
+  }
 
   /***************** FUNÇÕES DE CACHE E BUSCA ******************/
   async function fetchProdutosCache() {

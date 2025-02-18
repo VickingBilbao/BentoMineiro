@@ -272,11 +272,18 @@
   function renderizarListaProdutos(produtos) {
     const container = document.getElementById("listaProdutosAdmin");
     container.innerHTML = "";
-    if (!produtos || produtos.length === 0) {
+    if (!produtos || produtos.length < 2) {
       container.innerHTML = "<p>Nenhum produto cadastrado.</p>";
       return;
     }
-    produtos.forEach(prod => {
+    // Converte array de arrays para objetos (pulando a linha de cabeçalho)
+    const headers = produtos[0];
+    const lista = produtos.slice(1).map(row => {
+      let obj = {};
+      headers.forEach((h, i) => { obj[h] = row[i]; });
+      return obj;
+    });
+    lista.forEach(prod => {
       const div = document.createElement("div");
       div.className = "d-flex justify-content-between align-items-center border-bottom py-2";
       div.innerHTML = `
@@ -384,11 +391,17 @@
   function renderizarListaCategorias(categorias) {
     const container = document.getElementById("listaCategoriasAdmin");
     container.innerHTML = "";
-    if (!categorias || categorias.length === 0) {
+    if (!categorias || categorias.length < 2) {
       container.innerHTML = "<p>Nenhuma categoria cadastrada.</p>";
       return;
     }
-    categorias.forEach(cat => {
+    const headers = categorias[0];
+    const lista = categorias.slice(1).map(row => {
+      let obj = {};
+      headers.forEach((h, i) => { obj[h] = row[i]; });
+      return obj;
+    });
+    lista.forEach(cat => {
       const div = document.createElement("div");
       div.className = "d-flex justify-content-between align-items-center border-bottom py-2";
       div.innerHTML = `
@@ -448,8 +461,14 @@
   function preencherDropdownCategorias() {
     const dropdown = document.getElementById("prodCategoria");
     dropdown.innerHTML = "";
-    if (allCategories && allCategories.length > 0) {
-      allCategories.forEach(cat => {
+    if (allCategories && allCategories.length > 1) {
+      const headers = allCategories[0];
+      const lista = allCategories.slice(1).map(row => {
+        let obj = {};
+        headers.forEach((h, i) => { obj[h] = row[i]; });
+        return obj;
+      });
+      lista.forEach(cat => {
         const option = document.createElement("option");
         option.value = cat.Nome;
         option.innerText = cat.Nome;
