@@ -8,26 +8,125 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
-    body { font-family: 'Poppins', sans-serif; background-color: #f7f7f7; margin: 0; padding: 0; }
-    .header-bar { background-color: #a56347; color: #fff; padding: 10px; display: flex; align-items: center; justify-content: space-between; }
-    .header-left { display: flex; align-items: center; gap: 10px; }
-    .header-left img { max-height: 50px; }
-    .header-left h2 { font-size: 1rem; margin: 0; font-weight: 500; }
-    .cart-icon { position: relative; cursor: pointer; color: #fff; }
-    .cart-count { position: absolute; top: -6px; right: -6px; background-color: #dc3545; color: #fff; font-size: 0.7rem; padding: 2px 5px; border-radius: 50%; }
-    .category-chips { display: flex; gap: 10px; overflow-x: auto; padding: 10px; background-color: #fff; }
-    .category-chip { flex: 0 0 auto; background-color: #fff; border: 1px solid #ddd; border-radius: 20px; padding: 8px 16px; font-weight: 500; cursor: pointer; transition: background-color 0.2s; white-space: nowrap; color: #a56347; }
-    .category-chip:hover { background-color: #ffe6cc; }
-    #loadingIndicator { display: none; text-align: center; margin: 20px 0; }
-    .product-card { border: none; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); overflow: hidden; margin-bottom: 20px; background-color: #fff; }
-    .product-card img { width: 100%; aspect-ratio: 4 / 1; object-fit: cover; }
-    .product-body { padding: 10px; }
-    .product-title { font-size: 1rem; font-weight: 600; margin-bottom: 5px; }
-    .product-price { color: #8B4513; font-weight: 500; margin-bottom: 8px; }
-    .qty-controls { display: flex; align-items: center; gap: 10px; }
-    .qty-btn { background-color: #fff; border: 1px solid #ff6600; color: #ff6600; font-weight: 600; width: 30px; height: 30px; border-radius: 6px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-    .qty-value { min-width: 20px; text-align: center; font-weight: 500; }
-    /* Tag para Tipo – caixa arredondada sem texto "Tipo:" */
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #f7f7f7;
+      margin: 0;
+      padding: 0;
+    }
+    .header-bar {
+      background-color: #a56347;
+      color: #fff;
+      padding: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .header-left img {
+      max-height: 50px;
+    }
+    .header-left h2 {
+      font-size: 1rem;
+      margin: 0;
+      font-weight: 500;
+    }
+    .cart-icon {
+      position: relative;
+      cursor: pointer;
+      color: #fff;
+    }
+    .cart-count {
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      background-color: #dc3545;
+      color: #fff;
+      font-size: 0.7rem;
+      padding: 2px 5px;
+      border-radius: 50%;
+    }
+    .category-chips {
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      padding: 10px;
+      background-color: #fff;
+    }
+    .category-chip {
+      flex: 0 0 auto;
+      background-color: #fff;
+      border: 1px solid #ddd;
+      border-radius: 20px;
+      padding: 8px 16px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      white-space: nowrap;
+      color: #a56347;
+    }
+    .category-chip:hover {
+      background-color: #ffe6cc;
+    }
+    #loadingIndicator {
+      display: none;
+      text-align: center;
+      margin: 20px 0;
+    }
+    .product-card {
+      border: none;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      overflow: hidden;
+      margin-bottom: 20px;
+      background-color: #fff;
+    }
+    .product-card img {
+      width: 100%;
+      aspect-ratio: 4 / 1;
+      object-fit: cover;
+    }
+    .product-body {
+      padding: 10px;
+    }
+    .product-title {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 5px;
+    }
+    .product-price {
+      color: #8B4513;
+      font-weight: 500;
+      margin-bottom: 8px;
+    }
+    .qty-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .qty-btn {
+      background-color: #fff;
+      border: 1px solid #ff6600;
+      color: #ff6600;
+      font-weight: 600;
+      width: 30px;
+      height: 30px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    .qty-value {
+      min-width: 20px;
+      text-align: center;
+      font-weight: 500;
+    }
+    /* Tag para Tipo – caixa arredondada com cores distintas */
     .product-tag {
       display: inline-block;
       padding: 2px 8px;
@@ -37,14 +136,32 @@
       color: #fff;
       margin-top: 6px;
     }
-    /* Cores para cada tipo */
-    .tag-pronta { background-color: #28a745; }
-    .tag-encomenda { background-color: #007bff; }
-    .modal-header, .modal-footer { border: none; }
-    .modal-body .cart-item { display: flex; justify-content: space-between; margin-bottom: 10px; }
-    .modal-body .form-control { margin-bottom: 10px; }
-    footer { margin-top: 30px; padding: 10px; text-align: center; color: #888; font-size: 0.9rem; }
-    @media (max-width: 576px) { .header-left h2 { font-size: 0.9rem; } }
+    .tag-pronta { background-color: #28a745; }    /* Verde para Pronta Entrega */
+    .tag-encomenda { background-color: #007bff; } /* Azul para Encomenda */
+    
+    .modal-header, .modal-footer {
+      border: none;
+    }
+    .modal-body .cart-item {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .modal-body .form-control {
+      margin-bottom: 10px;
+    }
+    footer {
+      margin-top: 30px;
+      padding: 10px;
+      text-align: center;
+      color: #888;
+      font-size: 0.9rem;
+    }
+    @media (max-width: 576px) {
+      .header-left h2 {
+        font-size: 0.9rem;
+      }
+    }
   </style>
 </head>
 <body>
@@ -57,7 +174,11 @@
   </div>
   <div class="cart-icon" onclick="verCarrinho()">
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#fff" viewBox="0 0 24 24">
-      <path d="M7 18c-1.105 0-2 .895-2 2s.895 2 2 2c1.105 0 2-.895 2-2s-.895-2-2-2zm10 0c-1.105 0-2 .895-2 2s.895 2 2 2c1.105 0 2-.895 2-2s-.895-2-2-2zm-13.364-16l3.364 6h10.364l3-6h-16.728zm-1.636-2h20l-4 8h-12l-4-8z"/>
+      <path d="M7 18c-1.105 0-2 .895-2 2s.895 2 2 2c1.105 
+               0 2-.895 2-2s-.895-2-2-2zm10 0c-1.105 0-2 
+               .895-2 2s.895 2 2 2c1.105 0 2-.895 
+               2-2s-.895-2-2-2zm-13.364-16l3.364 6h10.364l3-6h-16.728zm-1.636-2h20l-4 
+               8h-12l-4-8z"/>
     </svg>
     <span id="cartCount" class="cart-count">0</span>
   </div>
@@ -66,9 +187,10 @@
 <!-- Chips de Categoria -->
 <div class="category-chips">
   <div class="category-chip" onclick="filtrarCategoria('Destaques')">Destaques</div>
-  <div class="category-chip" onclick="filtrarCategoria('Pronta Entrega')">Pronta Entrega</div>
-  <div class="category-chip" onclick="filtrarCategoria('Encomendas')">Encomendas</div>
-  <div class="category-chip" onclick="filtrarCategoria('Produtos Especiais - Queijos Premiados Boníssimo')">Produtos Especiais</div>
+  <div class="category-chip" onclick="filtrarCategoria('Queijos')">Queijos</div>
+  <div class="category-chip" onclick="filtrarCategoria('Doces')">Doces</div>
+  <div class="category-chip" onclick="filtrarCategoria('Café da Tarde')">Café da Tarde</div>
+  <div class="category-chip" onclick="filtrarCategoria('Outros')">Outros</div>
 </div>
 
 <!-- Indicador de Carregamento -->
@@ -161,13 +283,14 @@
     try {
       const data = await fetchProdutosCache();
       allProducts = transformarDados(data);
-      // Ao carregar, exiba somente os destaques
+      // Ao carregar, exibimos somente os Destaques
       filtrarCategoria("Destaques");
     } catch (error) {
       console.error("Erro ao carregar produtos:", error);
     } finally {
       mostrarCarregando(false);
     }
+    // Auto-complete de endereço via CEP
     document.getElementById("cepDados").addEventListener("blur", async function() {
       const cep = this.value.replace(/\D/g, '');
       if (cep.length === 8) {
@@ -191,7 +314,9 @@
     const headers = data[0];
     return data.slice(1).map(row => {
       let obj = {};
-      headers.forEach((header, index) => { obj[header] = row[index]; });
+      headers.forEach((header, index) => {
+        obj[header] = row[index];
+      });
       return obj;
     });
   }
@@ -215,10 +340,10 @@
     const container = document.getElementById("productsContainer");
     container.innerHTML = "";
     produtos.forEach(prod => {
+      // Define a cor da tag de acordo com o tipo
+      const tagClass = (prod.Tipo === "Pronta Entrega") ? "tag-pronta" : "tag-encomenda";
       const col = document.createElement("div");
       col.className = "col-6 col-md-4 col-lg-3";
-      // Define a classe da tag com base no Tipo
-      const tagClass = prod.Tipo === "Pronta Entrega" ? "tag-pronta" : "tag-encomenda";
       col.innerHTML = `
         <div class="product-card p-2">
           <img src="${prod.Imagem}" alt="${prod.Nome}">
@@ -240,12 +365,8 @@
 
   function filtrarCategoria(cat) {
     if (cat === "Destaques") {
-      // Exibe um produto de cada categoria principal para os destaques
-      const categoriasPrincipais = [
-        "Pronta Entrega",
-        "Encomendas",
-        "Produtos Especiais - Queijos Premiados Boníssimo"
-      ];
+      // Exibe um produto de cada categoria principal
+      const categoriasPrincipais = ["Queijos", "Doces", "Café da Tarde", "Outros"];
       let destaques = [];
       categoriasPrincipais.forEach(c => {
         const found = allProducts.find(p => p.Categoria === c);
@@ -253,6 +374,7 @@
       });
       exibirProdutos(destaques);
     } else {
+      // Filtra pela categoria
       const filtrados = allProducts.filter(p => p.Categoria === cat);
       exibirProdutos(filtrados);
     }
@@ -369,7 +491,7 @@
         subtotalCat += subtotal;
         msg += `- ${item.produto.Nome} (x${item.quantidade}) = R$ ${subtotal.toFixed(2)}\n`;
       });
-      if (cat === "Encomendas") {
+      if (cat === "Encomenda") {
         msg += "_(Consulte a agenda de entrega de encomendas na hora de finalizar o pagamento)_\n";
       }
       msg += `Subtotal ${cat}: R$ ${subtotalCat.toFixed(2)}\n\n`;
@@ -386,6 +508,7 @@
     msg += `*Observações:* ${userData.obs}\n\n`;
     msg += "_Valor total sem frete - Consulte o valor de frete na hora de finalizar o pagamento_\n";
 
+    // Novo número de WhatsApp
     const url = "https://wa.me/5511917420830?text=" + encodeURIComponent(msg);
     window.open(url, "_blank");
   }
