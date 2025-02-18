@@ -59,10 +59,11 @@
     .btn-space {
       margin-right: 10px;
     }
-    /* Toggle container para Tipo */
+    /* Container para o switch de Tipo com rótulos */
     .toggle-container {
       display: flex;
       align-items: center;
+      justify-content: center;
       gap: 10px;
       margin-bottom: 10px;
     }
@@ -122,10 +123,10 @@
     </li>
   </ul>
   
-  <!-- Seção: Incluir Produto -->
+  <!-- Seção: Incluir Produto / Editar Produto -->
   <div id="incluirProduto" class="section active">
     <div class="form-section">
-      <h3>Incluir Produto</h3>
+      <h3 id="formTitulo">Incluir Produto</h3>
       <form id="formIncluirProduto">
         <div class="mb-3">
           <label for="prodNome" class="form-label">Nome</label>
@@ -145,19 +146,19 @@
             <!-- Dropdown preenchido via API -->
           </select>
         </div>
-        <!-- Toggle container para Tipo -->
+        <!-- Toggle com rótulos para Tipo -->
         <div class="toggle-container">
-          <p class="toggle-label">Encomenda</p>
+          <span class="toggle-label">Encomenda</span>
           <div class="form-check form-switch">
             <input class="form-check-input" type="checkbox" id="prodTipoSwitch">
           </div>
-          <p class="toggle-label">Pronta Entrega</p>
+          <span class="toggle-label">Pronta Entrega</span>
         </div>
         <div class="mb-3">
           <label for="prodDescricao" class="form-label">Descrição (Opcional)</label>
           <textarea id="prodDescricao" class="form-control" rows="3"></textarea>
         </div>
-        <button type="submit" class="btn btn-success">Incluir Produto</button>
+        <button type="submit" class="btn btn-success" id="btnProdutoSubmit">Incluir Produto</button>
       </form>
     </div>
   </div>
@@ -206,6 +207,7 @@
   // Array local para armazenar produtos
   let allProductsAdm = [];
   
+  // Função para validar login
   function validarLogin() {
     const login = document.getElementById("loginInput").value;
     const senha = document.getElementById("senhaInput").value;
@@ -224,6 +226,7 @@
     }
   }
   
+  // Navegação do ADM
   document.querySelectorAll("#adminNav .nav-link").forEach(link => {
     link.addEventListener("click", function() {
       document.querySelectorAll("#adminNav .nav-link").forEach(l => l.classList.remove("active"));
@@ -232,11 +235,15 @@
       document.querySelectorAll(".section").forEach(sec => sec.classList.remove("active"));
       document.getElementById(section).classList.add("active");
       if (section === "editarProduto") {
-        renderizarListaProdutos(); // Usa a lista local
+        renderizarListaProdutos();
       } else if (section === "editarCategoria") {
         carregarCategoriasAdmin();
       } else if (section === "incluirProduto") {
         preencherDropdownCategorias();
+        // Garanta que o formulário esteja em modo de inclusão
+        document.getElementById("formTitulo").innerText = "Incluir Produto";
+        document.getElementById("btnProdutoSubmit").innerText = "Incluir Produto";
+        document.getElementById("formIncluirProduto").onsubmit = incluirProduto;
       }
     });
   });
@@ -273,11 +280,10 @@
     return await response.json();
   }
   
-  // PRODUTOS
+  // Produtos – Carregar e Armazenar localmente
   async function carregarProdutosAdmin() {
     try {
       const produtos = await apiGet("produtos");
-      // Converter array de arrays em objetos
       if (!produtos || produtos.length < 2) {
         allProductsAdm = [];
       } else {
@@ -307,7 +313,7 @@
       div.innerHTML = `
         <div>
           <strong>${prod.Nome}</strong> - R$ ${parseFloat(prod.Valor).toFixed(2)}<br>
-          Categoria: ${prod.Categoria} <br>
+          Categoria: ${prod.Categoria}<br>
           ${prod.Descricao ? prod.Descricao : ""}
         </div>
         <div>
@@ -321,7 +327,6 @@
   
   async function incluirProduto(event) {
     event.preventDefault();
-    // Pega o valor do switch: se marcado => Pronta Entrega, se não => Encomenda
     const tipoSwitch = document.getElementById("prodTipoSwitch").checked;
     const produto = {
       Nome: document.getElementById("prodNome").value,
@@ -336,9 +341,8 @@
       if (result.result === "success") {
         alert("Produto incluído com sucesso!");
         document.getElementById("formIncluirProduto").reset();
-        // Restaura o switch
+        // Restaura o switch para o padrão (opcional: definir como Encomenda)
         document.getElementById("prodTipoSwitch").checked = false;
-        // Recarrega a lista local
         await carregarProdutosAdmin();
         renderizarListaProdutos();
       } else {
@@ -350,20 +354,24 @@
   }
   
   function prepararEdicaoProduto(id) {
-    // Ao invés de GET ?action=produto&id=..., busca local no array
     const prod = allProductsAdm.find(p => p.ID == id);
     if (!prod) {
       alert("Produto não encontrado localmente.");
       return;
     }
-    // Preenche o formulário
+    // Preenche os campos do formulário para edição
     document.getElementById("prodNome").value = prod.Nome;
     document.getElementById("prodValor").value = prod.Valor;
     document.getElementById("prodImagem").value = prod.Imagem;
     document.getElementById("prodCategoria").value = prod.Categoria;
     document.getElementById("prodTipoSwitch").checked = (prod.Tipo === "Pronta Entrega");
     document.getElementById("prodDescricao").value = prod.Descricao || "";
-    // Altera o comportamento do submit
+    
+    // Altera o título e o texto do botão para edição
+    document.getElementById("formTitulo").innerText = "Editar Produto";
+    document.getElementById("btnProdutoSubmit").innerText = "Salvar Alterações";
+    
+    // Muda o comportamento do submit para atualizar o produto
     document.getElementById("formIncluirProduto").onsubmit = async function(e) {
       e.preventDefault();
       const updatedProduto = {
@@ -379,16 +387,15 @@
       if (res.result === "success") {
         alert("Produto atualizado com sucesso!");
         document.getElementById("formIncluirProduto").reset();
-        // Restaura o submit original
+        // Restaura o comportamento original de inclusão
         document.getElementById("formIncluirProduto").onsubmit = incluirProduto;
-        // Recarrega a lista local
         await carregarProdutosAdmin();
         renderizarListaProdutos();
       } else {
         alert("Erro ao atualizar: " + res.error);
       }
     };
-    // Muda a aba para "Incluir Produto" (que agora serve como "Editar")
+    // Alterna para a aba de Incluir Produto (que agora está em modo edição)
     document.querySelectorAll("#adminNav .nav-link").forEach(l => l.classList.remove("active"));
     document.querySelector('[data-section="incluirProduto"]').classList.add("active");
     document.querySelectorAll(".section").forEach(sec => sec.classList.remove("active"));
