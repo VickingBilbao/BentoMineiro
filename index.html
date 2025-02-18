@@ -138,7 +138,6 @@
     }
     .tag-pronta { background-color: #28a745; }    /* Verde para Pronta Entrega */
     .tag-encomenda { background-color: #007bff; } /* Azul para Encomenda */
-    
     .modal-header, .modal-footer {
       border: none;
     }
@@ -176,9 +175,7 @@
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#fff" viewBox="0 0 24 24">
       <path d="M7 18c-1.105 0-2 .895-2 2s.895 2 2 2c1.105 
                0 2-.895 2-2s-.895-2-2-2zm10 0c-1.105 0-2 
-               .895-2 2s.895 2 2 2c1.105 0 2-.895 
-               2-2s-.895-2-2-2zm-13.364-16l3.364 6h10.364l3-6h-16.728zm-1.636-2h20l-4 
-               8h-12l-4-8z"/>
+               .895-2 2s.895 2 2 2c1.105 0 2-.895 2-2s-.895-2-2-2zm-13.364-16l3.364 6h10.364l3-6h-16.728zm-1.636-2h20l-4 8h-12l-4-8z"/>
     </svg>
     <span id="cartCount" class="cart-count">0</span>
   </div>
@@ -267,30 +264,42 @@
 <!-- Bootstrap JS (Bundle com Popper) -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-  // Nova URL do Apps Script
+  // URL do Apps Script – atualize conforme o novo endpoint
   const API_BASE_URL = "https://script.google.com/macros/s/AKfycby_dAOyS0cMlgnqElZw4wYijk9SK84AB2yD32duWOEAuH25RCDhF0OTqBIYXawYaFIw/exec";
   const CACHE_KEY = "bentoMineiroProdutos";
   const CACHE_TIMESTAMP_KEY = "bentoMineiroProdutosTimestamp";
   const CACHE_EXPIRATION = 10 * 60 * 1000; // 10 minutos
-
+  
   let allProducts = [];
   let cart = {};
   let userData = {};
 
+  // Função para salvar o estado do carrinho no localStorage
+  function salvarCart() {
+    localStorage.setItem("bentoMineiroCart", JSON.stringify(cart));
+  }
+  
+  // Função para carregar o carrinho do localStorage
+  function carregarCart() {
+    const data = localStorage.getItem("bentoMineiroCart");
+    cart = data ? JSON.parse(data) : {};
+    atualizarCartCount();
+  }
+  
   document.addEventListener("DOMContentLoaded", async () => {
     carregarUserData();
+    carregarCart();
     mostrarCarregando(true);
     try {
       const data = await fetchProdutosCache();
       allProducts = transformarDados(data);
-      // Ao carregar, exibimos somente os Destaques
+      // Ao carregar, exibe apenas os Destaques
       filtrarCategoria("Destaques");
     } catch (error) {
       console.error("Erro ao carregar produtos:", error);
     } finally {
       mostrarCarregando(false);
     }
-    // Auto-complete de endereço via CEP
     document.getElementById("cepDados").addEventListener("blur", async function() {
       const cep = this.value.replace(/\D/g, '');
       if (cep.length === 8) {
@@ -308,19 +317,17 @@
       }
     });
   });
-
+  
   function transformarDados(data) {
     if (!Array.isArray(data) || data.length < 2) return [];
     const headers = data[0];
     return data.slice(1).map(row => {
       let obj = {};
-      headers.forEach((header, index) => {
-        obj[header] = row[index];
-      });
+      headers.forEach((header, index) => { obj[header] = row[index]; });
       return obj;
     });
   }
-
+  
   async function fetchProdutosCache() {
     const now = Date.now();
     const cachedData = localStorage.getItem(CACHE_KEY);
@@ -335,12 +342,12 @@
       return produtos;
     }
   }
-
+  
   function exibirProdutos(produtos) {
     const container = document.getElementById("productsContainer");
     container.innerHTML = "";
     produtos.forEach(prod => {
-      // Define a cor da tag de acordo com o tipo
+      // Define a classe para a tag de tipo
       const tagClass = (prod.Tipo === "Pronta Entrega") ? "tag-pronta" : "tag-encomenda";
       const col = document.createElement("div");
       col.className = "col-6 col-md-4 col-lg-3";
@@ -362,24 +369,19 @@
       container.appendChild(col);
     });
   }
-
+  
   function filtrarCategoria(cat) {
     if (cat === "Destaques") {
-      // Exibe um produto de cada categoria principal
-      const categoriasPrincipais = ["Queijos", "Doces", "Café da Tarde", "Outros"];
-      let destaques = [];
-      categoriasPrincipais.forEach(c => {
-        const found = allProducts.find(p => p.Categoria === c);
-        if (found) destaques.push(found);
-      });
+      // Filtra produtos marcados como destaque na coluna "Destaque"
+      const destaques = allProducts.filter(p => p.Destaque && p.Destaque.toString().toLowerCase() === "sim");
       exibirProdutos(destaques);
     } else {
-      // Filtra pela categoria
+      // Filtra produtos pela categoria definida
       const filtrados = allProducts.filter(p => p.Categoria === cat);
       exibirProdutos(filtrados);
     }
   }
-
+  
   function alterarQuantidade(productID, delta) {
     let item = cart[productID];
     if (!item) {
@@ -392,8 +394,9 @@
     if (item.quantidade < 0) item.quantidade = 0;
     document.getElementById(`qty-${productID}`).textContent = item.quantidade;
     atualizarCartCount();
+    salvarCart();
   }
-
+  
   function atualizarCartCount() {
     let totalItens = 0;
     for (const pid in cart) {
@@ -401,7 +404,7 @@
     }
     document.getElementById("cartCount").textContent = totalItens;
   }
-
+  
   function verCarrinho() {
     const cartItemsEl = document.getElementById("cartItems");
     const cartTotalEl = document.getElementById("cartTotal");
@@ -424,9 +427,10 @@
     const modalEl = new bootstrap.Modal(document.getElementById("cartModal"));
     modalEl.show();
   }
-
+  
   function limparCarrinho() {
     cart = {};
+    localStorage.removeItem("bentoMineiroCart");
     document.getElementById("cartItems").innerHTML = "";
     document.getElementById("cartTotal").textContent = "R$ 0,00";
     allProducts.forEach(p => {
@@ -435,7 +439,7 @@
     });
     atualizarCartCount();
   }
-
+  
   function mostrarFormularioDados() {
     const cartModal = bootstrap.Modal.getInstance(document.getElementById("cartModal"));
     cartModal.hide();
@@ -449,7 +453,7 @@
     const dadosModal = new bootstrap.Modal(document.getElementById("dadosModal"));
     dadosModal.show();
   }
-
+  
   function finalizarPedidoWhatsApp() {
     userData.nome = document.getElementById("nomeDados").value;
     userData.telefone = document.getElementById("telefoneDados").value;
@@ -459,9 +463,9 @@
     userData.complemento = document.getElementById("complementoDados").value;
     userData.obs = document.getElementById("observacoesDados").value;
     salvarUserData();
-
+  
     const cupom = document.getElementById("cupomDados").value.trim().toUpperCase();
-
+  
     let msg = "*Pedido Bento Mineiro*\n\n";
     msg += `*Nome:* ${userData.nome}\n`;
     msg += `*Telefone:* ${userData.telefone}\n`;
@@ -469,7 +473,7 @@
     msg += `*Endereço:* ${userData.endereco}\n`;
     msg += `*Número:* ${userData.numero}\n`;
     msg += `*Complemento:* ${userData.complemento}\n\n`;
-
+  
     let categoriasCarrinho = {};
     for (const pid in cart) {
       const item = cart[pid];
@@ -481,7 +485,7 @@
         categoriasCarrinho[cat].push(item);
       }
     }
-
+  
     let totalGeral = 0;
     for (const cat in categoriasCarrinho) {
       msg += `*${cat}*\n`;
@@ -491,13 +495,14 @@
         subtotalCat += subtotal;
         msg += `- ${item.produto.Nome} (x${item.quantidade}) = R$ ${subtotal.toFixed(2)}\n`;
       });
+      // Se a categoria for "Encomenda", acrescenta o aviso
       if (cat === "Encomenda") {
         msg += "_(Consulte a agenda de entrega de encomendas na hora de finalizar o pagamento)_\n";
       }
       msg += `Subtotal ${cat}: R$ ${subtotalCat.toFixed(2)}\n\n`;
       totalGeral += subtotalCat;
     }
-
+  
     let desconto = 0;
     if (cupom === "TESTE10") {
       desconto = totalGeral * 0.10;
@@ -507,12 +512,12 @@
     msg += `*Total Geral:* R$ ${totalFinal.toFixed(2)}\n\n`;
     msg += `*Observações:* ${userData.obs}\n\n`;
     msg += "_Valor total sem frete - Consulte o valor de frete na hora de finalizar o pagamento_\n";
-
-    // Novo número de WhatsApp
+  
+    // Novo número de WhatsApp: +55 11 91742-0830
     const url = "https://wa.me/5511917420830?text=" + encodeURIComponent(msg);
     window.open(url, "_blank");
   }
-
+  
   function salvarUserData() {
     localStorage.setItem("bentoMineiroUserData", JSON.stringify(userData));
   }
@@ -520,7 +525,17 @@
     const data = localStorage.getItem("bentoMineiroUserData");
     userData = data ? JSON.parse(data) : {};
   }
-
+  
+  function salvarCart() {
+    localStorage.setItem("bentoMineiroCart", JSON.stringify(cart));
+  }
+  
+  function carregarCart() {
+    const data = localStorage.getItem("bentoMineiroCart");
+    cart = data ? JSON.parse(data) : {};
+    atualizarCartCount();
+  }
+  
   function mostrarCarregando(status) {
     document.getElementById("loadingIndicator").style.display = status ? "block" : "none";
   }
