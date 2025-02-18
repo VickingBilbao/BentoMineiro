@@ -59,6 +59,18 @@
     .btn-space {
       margin-right: 10px;
     }
+    /* Toggle container para Tipo */
+    .toggle-container {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .toggle-label {
+      font-weight: 500;
+      color: #555;
+      margin: 0;
+    }
   </style>
 </head>
 <body>
@@ -133,10 +145,13 @@
             <!-- Dropdown preenchido via API -->
           </select>
         </div>
-        <!-- Switch para selecionar o Tipo -->
-        <div class="form-check form-switch mb-3">
-          <input class="form-check-input" type="checkbox" id="prodTipoSwitch">
-          <label class="form-check-label" for="prodTipoSwitch">Pronta Entrega</label>
+        <!-- Toggle container para Tipo -->
+        <div class="toggle-container">
+          <p class="toggle-label">Encomenda</p>
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="prodTipoSwitch">
+          </div>
+          <p class="toggle-label">Pronta Entrega</p>
         </div>
         <div class="mb-3">
           <label for="prodDescricao" class="form-label">Descrição (Opcional)</label>
@@ -181,12 +196,15 @@
 <!-- Bootstrap JS (Bundle com Popper) -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-  // Nova URL do Apps Script
+  // URL do Apps Script
   const API_BASE_URL = "https://script.google.com/macros/s/AKfycbzEOzXHQmYR_RXJLi3-E3FR7mll6N1Se9FAqoIEshgfN40wBaGLa7UQD7oOaKlP7GjlrQ/exec";
   
   // LOGIN
   const ADMIN_USER = "BentoMineiro2025!";
   const ADMIN_PASS = "SantoBento2025!#";
+  
+  // Array local para armazenar produtos
+  let allProductsAdm = [];
   
   function validarLogin() {
     const login = document.getElementById("loginInput").value;
@@ -214,7 +232,7 @@
       document.querySelectorAll(".section").forEach(sec => sec.classList.remove("active"));
       document.getElementById(section).classList.add("active");
       if (section === "editarProduto") {
-        carregarProdutosAdmin();
+        renderizarListaProdutos(); // Usa a lista local
       } else if (section === "editarCategoria") {
         carregarCategoriasAdmin();
       } else if (section === "incluirProduto") {
@@ -224,9 +242,8 @@
   });
   
   // Funções de API
-  async function apiGet(type, id = "") {
-    let url = API_BASE_URL + "?action=" + type;
-    if (id) url += "&id=" + id;
+  async function apiGet(type) {
+    const url = API_BASE_URL + "?action=" + type;
     const response = await fetch(url);
     return await response.json();
   }
@@ -260,32 +277,37 @@
   async function carregarProdutosAdmin() {
     try {
       const produtos = await apiGet("produtos");
-      renderizarListaProdutos(produtos);
+      // Converter array de arrays em objetos
+      if (!produtos || produtos.length < 2) {
+        allProductsAdm = [];
+      } else {
+        const headers = produtos[0];
+        allProductsAdm = produtos.slice(1).map(row => {
+          let obj = {};
+          headers.forEach((h, i) => { obj[h] = row[i]; });
+          return obj;
+        });
+      }
     } catch (error) {
       console.error("Erro ao carregar produtos:", error);
+      allProductsAdm = [];
     }
   }
   
-  function renderizarListaProdutos(produtos) {
+  function renderizarListaProdutos() {
     const container = document.getElementById("listaProdutosAdmin");
     container.innerHTML = "";
-    if (!produtos || produtos.length < 2) {
+    if (!allProductsAdm || allProductsAdm.length === 0) {
       container.innerHTML = "<p>Nenhum produto cadastrado.</p>";
       return;
     }
-    const headers = produtos[0];
-    const lista = produtos.slice(1).map(row => {
-      let obj = {};
-      headers.forEach((h, i) => { obj[h] = row[i]; });
-      return obj;
-    });
-    lista.forEach(prod => {
+    allProductsAdm.forEach(prod => {
       const div = document.createElement("div");
       div.className = "d-flex justify-content-between align-items-center border-bottom py-2";
       div.innerHTML = `
         <div>
           <strong>${prod.Nome}</strong> - R$ ${parseFloat(prod.Valor).toFixed(2)}<br>
-          Categoria: ${prod.Categoria}<br>
+          Categoria: ${prod.Categoria} <br>
           ${prod.Descricao ? prod.Descricao : ""}
         </div>
         <div>
@@ -299,7 +321,7 @@
   
   async function incluirProduto(event) {
     event.preventDefault();
-    // Obtenha o valor do switch: se estiver marcado, é "Pronta Entrega", caso contrário, "Encomenda"
+    // Pega o valor do switch: se marcado => Pronta Entrega, se não => Encomenda
     const tipoSwitch = document.getElementById("prodTipoSwitch").checked;
     const produto = {
       Nome: document.getElementById("prodNome").value,
@@ -314,9 +336,11 @@
       if (result.result === "success") {
         alert("Produto incluído com sucesso!");
         document.getElementById("formIncluirProduto").reset();
-        // Após reset, garanta que o switch volte ao padrão (ligado)
-        document.getElementById("prodTipoSwitch").checked = true;
-        carregarProdutosAdmin();
+        // Restaura o switch
+        document.getElementById("prodTipoSwitch").checked = false;
+        // Recarrega a lista local
+        await carregarProdutosAdmin();
+        renderizarListaProdutos();
       } else {
         alert("Erro ao incluir produto: " + result.error);
       }
@@ -325,45 +349,50 @@
     }
   }
   
-  async function prepararEdicaoProduto(id) {
-    try {
-      const prod = await apiGet("produto", id);
-      if (!prod || prod.error) {
-        alert("Produto não encontrado.");
-        return;
-      }
-      document.getElementById("prodNome").value = prod.Nome;
-      document.getElementById("prodValor").value = prod.Valor;
-      document.getElementById("prodImagem").value = prod.Imagem;
-      document.getElementById("prodCategoria").value = prod.Categoria;
-      // Configure o switch: se o tipo for "Pronta Entrega", marque; caso contrário, desmarque.
-      document.getElementById("prodTipoSwitch").checked = (prod.Tipo === "Pronta Entrega");
-      document.getElementById("prodDescricao").value = prod.Descricao || "";
-      document.getElementById("formIncluirProduto").onsubmit = async function(e) {
-        e.preventDefault();
-        const updatedProduto = {
-          id: id,
-          Nome: document.getElementById("prodNome").value,
-          Valor: parseFloat(document.getElementById("prodValor").value),
-          Imagem: document.getElementById("prodImagem").value,
-          Categoria: document.getElementById("prodCategoria").value,
-          Tipo: document.getElementById("prodTipoSwitch").checked ? "Pronta Entrega" : "Encomenda",
-          Descricao: document.getElementById("prodDescricao").value
-        };
-        const res = await apiPut("produto", updatedProduto);
-        if (res.result === "success") {
-          alert("Produto atualizado com sucesso!");
-          document.getElementById("formIncluirProduto").reset();
-          // Restaure o comportamento padrão do formulário
-          document.getElementById("formIncluirProduto").onsubmit = incluirProduto;
-          carregarProdutosAdmin();
-        } else {
-          alert("Erro ao atualizar: " + res.error);
-        }
-      };
-    } catch (error) {
-      console.error("Erro ao preparar edição:", error);
+  function prepararEdicaoProduto(id) {
+    // Ao invés de GET ?action=produto&id=..., busca local no array
+    const prod = allProductsAdm.find(p => p.ID == id);
+    if (!prod) {
+      alert("Produto não encontrado localmente.");
+      return;
     }
+    // Preenche o formulário
+    document.getElementById("prodNome").value = prod.Nome;
+    document.getElementById("prodValor").value = prod.Valor;
+    document.getElementById("prodImagem").value = prod.Imagem;
+    document.getElementById("prodCategoria").value = prod.Categoria;
+    document.getElementById("prodTipoSwitch").checked = (prod.Tipo === "Pronta Entrega");
+    document.getElementById("prodDescricao").value = prod.Descricao || "";
+    // Altera o comportamento do submit
+    document.getElementById("formIncluirProduto").onsubmit = async function(e) {
+      e.preventDefault();
+      const updatedProduto = {
+        id: id,
+        Nome: document.getElementById("prodNome").value,
+        Valor: parseFloat(document.getElementById("prodValor").value),
+        Imagem: document.getElementById("prodImagem").value,
+        Categoria: document.getElementById("prodCategoria").value,
+        Tipo: document.getElementById("prodTipoSwitch").checked ? "Pronta Entrega" : "Encomenda",
+        Descricao: document.getElementById("prodDescricao").value
+      };
+      const res = await apiPut("produto", updatedProduto);
+      if (res.result === "success") {
+        alert("Produto atualizado com sucesso!");
+        document.getElementById("formIncluirProduto").reset();
+        // Restaura o submit original
+        document.getElementById("formIncluirProduto").onsubmit = incluirProduto;
+        // Recarrega a lista local
+        await carregarProdutosAdmin();
+        renderizarListaProdutos();
+      } else {
+        alert("Erro ao atualizar: " + res.error);
+      }
+    };
+    // Muda a aba para "Incluir Produto" (que agora serve como "Editar")
+    document.querySelectorAll("#adminNav .nav-link").forEach(l => l.classList.remove("active"));
+    document.querySelector('[data-section="incluirProduto"]').classList.add("active");
+    document.querySelectorAll(".section").forEach(sec => sec.classList.remove("active"));
+    document.getElementById("incluirProduto").classList.add("active");
   }
   
   async function excluirProduto(id) {
@@ -371,7 +400,8 @@
       const res = await apiDelete("produto", id);
       if (res.result === "success") {
         alert("Produto excluído com sucesso!");
-        carregarProdutosAdmin();
+        await carregarProdutosAdmin();
+        renderizarListaProdutos();
       } else {
         alert("Erro ao excluir produto: " + res.error);
       }
@@ -384,28 +414,32 @@
   async function carregarCategoriasAdmin() {
     try {
       const categorias = await apiGet("categorias");
-      allCategories = categorias;
-      renderizarListaCategorias(categorias);
+      if (!categorias || categorias.length < 2) {
+        allCategories = [];
+      } else {
+        const headers = categorias[0];
+        allCategories = categorias.slice(1).map(row => {
+          let obj = {};
+          headers.forEach((h, i) => { obj[h] = row[i]; });
+          return obj;
+        });
+      }
+      renderizarListaCategorias();
       preencherDropdownCategorias();
     } catch (error) {
       console.error("Erro ao carregar categorias:", error);
+      allCategories = [];
     }
   }
   
-  function renderizarListaCategorias(categorias) {
+  function renderizarListaCategorias() {
     const container = document.getElementById("listaCategoriasAdmin");
     container.innerHTML = "";
-    if (!categorias || categorias.length < 2) {
+    if (allCategories.length === 0) {
       container.innerHTML = "<p>Nenhuma categoria cadastrada.</p>";
       return;
     }
-    const headers = categorias[0];
-    const lista = categorias.slice(1).map(row => {
-      let obj = {};
-      headers.forEach((h, i) => { obj[h] = row[i]; });
-      return obj;
-    });
-    lista.forEach(cat => {
+    allCategories.forEach(cat => {
       const div = document.createElement("div");
       div.className = "d-flex justify-content-between align-items-center border-bottom py-2";
       div.innerHTML = `
@@ -419,6 +453,21 @@
     });
   }
   
+  function preencherDropdownCategorias() {
+    const dropdown = document.getElementById("prodCategoria");
+    dropdown.innerHTML = "";
+    if (allCategories.length > 0) {
+      allCategories.forEach(cat => {
+        const option = document.createElement("option");
+        option.value = cat.Nome;
+        option.innerText = cat.Nome;
+        dropdown.appendChild(option);
+      });
+    } else {
+      dropdown.innerHTML = `<option value="">Nenhuma categoria cadastrada</option>`;
+    }
+  }
+  
   async function incluirCategoria(event) {
     event.preventDefault();
     const categoria = { Nome: document.getElementById("catNome").value };
@@ -427,7 +476,7 @@
       if (res.result === "success") {
         alert("Categoria incluída com sucesso!");
         document.getElementById("formIncluirCategoria").reset();
-        carregarCategoriasAdmin();
+        await carregarCategoriasAdmin();
       } else {
         alert("Erro ao incluir categoria: " + res.error);
       }
@@ -443,7 +492,7 @@
       const res = await apiPut("categoria", catAtualizada);
       if (res.result === "success") {
         alert("Categoria atualizada com sucesso!");
-        carregarCategoriasAdmin();
+        await carregarCategoriasAdmin();
       } else {
         alert("Erro ao atualizar categoria: " + res.error);
       }
@@ -455,55 +504,17 @@
       const res = await apiDelete("categoria", id);
       if (res.result === "success") {
         alert("Categoria excluída com sucesso!");
-        carregarCategoriasAdmin();
+        await carregarCategoriasAdmin();
       } else {
         alert("Erro ao excluir categoria: " + res.error);
       }
     }
   }
   
-  function preencherDropdownCategorias() {
-    const dropdown = document.getElementById("prodCategoria");
-    dropdown.innerHTML = "";
-    if (allCategories && allCategories.length > 1) {
-      const headers = allCategories[0];
-      const lista = allCategories.slice(1).map(row => {
-        let obj = {};
-        headers.forEach((h, i) => { obj[h] = row[i]; });
-        return obj;
-      });
-      lista.forEach(cat => {
-        const option = document.createElement("option");
-        option.value = cat.Nome;
-        option.innerText = cat.Nome;
-        dropdown.appendChild(option);
-      });
-    } else {
-      dropdown.innerHTML = `<option value="">Nenhuma categoria cadastrada</option>`;
-    }
-  }
-  
-  function validarLogin() {
-    const login = document.getElementById("loginInput").value;
-    const senha = document.getElementById("senhaInput").value;
-    if (login === "BentoMineiro2025!" && senha === "SantoBento2025!#") {
-      document.getElementById("loginSection").style.display = "none";
-      document.getElementById("adminSection").style.display = "block";
-      inicializarAdmin();
-    } else {
-      alert("Credenciais incorretas!");
-    }
-  }
-  
-  function logout() {
-    if (confirm("Deseja sair do painel?")) {
-      window.location.reload();
-    }
-  }
-  
-  function inicializarAdmin() {
-    carregarProdutosAdmin();
-    carregarCategoriasAdmin();
+  async function inicializarAdmin() {
+    await carregarProdutosAdmin();
+    renderizarListaProdutos();
+    await carregarCategoriasAdmin();
   }
   
   // Registra formulários
