@@ -2,31 +2,130 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Bento Mineiro - Nova Loja</title>
+  <title>Empório Bento Mineiro</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <!-- Google Fonts e Bootstrap CSS -->
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
-    body { font-family: 'Poppins', sans-serif; background-color: #f7f7f7; margin: 0; padding: 0; }
-    .header-bar { background-color: #a56347; color: #fff; padding: 10px; display: flex; align-items: center; justify-content: space-between; }
-    .header-left { display: flex; align-items: center; gap: 10px; }
-    .header-left img { max-height: 50px; }
-    .header-left h2 { font-size: 1rem; margin: 0; font-weight: 500; }
-    .cart-icon { position: relative; cursor: pointer; color: #fff; }
-    .cart-count { position: absolute; top: -6px; right: -6px; background-color: #dc3545; color: #fff; font-size: 0.7rem; padding: 2px 5px; border-radius: 50%; }
-    .category-chips { display: flex; gap: 10px; overflow-x: auto; padding: 10px; background-color: #fff; }
-    .category-chip { flex: 0 0 auto; background-color: #fff; border: 1px solid #ddd; border-radius: 20px; padding: 8px 16px; font-weight: 500; cursor: pointer; transition: background-color 0.2s; white-space: nowrap; color: #a56347; }
-    .category-chip:hover { background-color: #ffe6cc; }
-    #loadingIndicator { display: none; text-align: center; margin: 20px 0; }
-    .product-card { border: none; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); overflow: hidden; margin-bottom: 20px; background-color: #fff; }
-    .product-card img { width: 100%; aspect-ratio: 4 / 1; object-fit: cover; }
-    .product-body { padding: 10px; }
-    .product-title { font-size: 1rem; font-weight: 600; margin-bottom: 5px; }
-    .product-price { color: #8B4513; font-weight: 500; margin-bottom: 8px; }
-    .qty-controls { display: flex; align-items: center; gap: 10px; }
-    .qty-btn { background-color: #fff; border: 1px solid #ff6600; color: #ff6600; font-weight: 600; width: 30px; height: 30px; border-radius: 6px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-    .qty-value { min-width: 20px; text-align: center; font-weight: 500; }
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #f7f7f7;
+      margin: 0;
+      padding: 0;
+    }
+    .header-bar {
+      background-color: #a56347;
+      color: #fff;
+      padding: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .header-left img {
+      max-height: 50px;
+    }
+    .header-left h2 {
+      font-size: 1rem;
+      margin: 0;
+      font-weight: 500;
+    }
+    .cart-icon {
+      position: relative;
+      cursor: pointer;
+      color: #fff;
+    }
+    .cart-count {
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      background-color: #dc3545;
+      color: #fff;
+      font-size: 0.7rem;
+      padding: 2px 5px;
+      border-radius: 50%;
+    }
+    .category-chips {
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      padding: 10px;
+      background-color: #fff;
+    }
+    .category-chip {
+      flex: 0 0 auto;
+      background-color: #fff;
+      border: 1px solid #ddd;
+      border-radius: 20px;
+      padding: 8px 16px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      white-space: nowrap;
+      color: #a56347;
+    }
+    .category-chip:hover {
+      background-color: #ffe6cc;
+    }
+    #loadingIndicator {
+      display: none;
+      text-align: center;
+      margin: 20px 0;
+    }
+    .product-card {
+      border: none;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      overflow: hidden;
+      margin-bottom: 20px;
+      background-color: #fff;
+    }
+    .product-card img {
+      width: 100%;
+      aspect-ratio: 4 / 1;
+      object-fit: cover;
+    }
+    .product-body {
+      padding: 10px;
+    }
+    .product-title {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 5px;
+    }
+    .product-price {
+      color: #8B4513;
+      font-weight: 500;
+      margin-bottom: 8px;
+    }
+    .qty-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .qty-btn {
+      background-color: #fff;
+      border: 1px solid #ff6600;
+      color: #ff6600;
+      font-weight: 600;
+      width: 30px;
+      height: 30px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    .qty-value {
+      min-width: 20px;
+      text-align: center;
+      font-weight: 500;
+    }
     /* Tag para Tipo – caixa arredondada com cores distintas */
     .product-tag {
       display: inline-block;
@@ -39,11 +138,27 @@
     }
     .tag-pronta { background-color: #28a745; }    /* Verde para Pronta Entrega */
     .tag-encomenda { background-color: #007bff; } /* Azul para Encomenda */
-    .modal-header, .modal-footer { border: none; }
-    .modal-body .cart-item { display: flex; justify-content: space-between; margin-bottom: 10px; }
-    .modal-body .form-control { margin-bottom: 10px; }
-    footer { margin-top: 30px; padding: 10px; text-align: center; color: #888; font-size: 0.9rem; }
-    @media (max-width: 576px) { .header-left h2 { font-size: 0.9rem; } }
+    .modal-header, .modal-footer {
+      border: none;
+    }
+    .modal-body .cart-item {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .modal-body .form-control {
+      margin-bottom: 10px;
+    }
+    footer {
+      margin-top: 30px;
+      padding: 10px;
+      text-align: center;
+      color: #888;
+      font-size: 0.9rem;
+    }
+    @media (max-width: 576px) {
+      .header-left h2 { font-size: 0.9rem; }
+    }
   </style>
 </head>
 <body>
@@ -58,7 +173,10 @@
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#fff" viewBox="0 0 24 24">
       <path d="M7 18c-1.105 0-2 .895-2 2s.895 2 2 2c1.105 
                0 2-.895 2-2s-.895-2-2-2zm10 0c-1.105 0-2 
-               .895-2 2s.895 2 2 2c1.105 0 2-.895 2-2s-.895-2-2-2zm-13.364-16l3.364 6h10.364l3-6h-16.728zm-1.636-2h20l-4 8h-12l-4-8z"/>
+               .895-2 2s.895 2 2 2c1.105 0 2-.895 
+               2-2s-.895-2-2-2zm-13.364-16l3.364 
+               6h10.364l3-6h-16.728zm-1.636-2h20l-4 
+               8h-12l-4-8z"/>
     </svg>
     <span id="cartCount" class="cart-count">0</span>
   </div>
@@ -148,7 +266,7 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
   // URL do Apps Script
-  const API_BASE_URL = "https://script.google.com/macros/s/AKfycbzEOzXHQmYR_RXJLi3-E3FR7mll6N1Se9FAqoIEshgfN40wBaGLa7UQD7oOaKlP7GjlrQ/exec";
+  const API_BASE_URL = "https://script.google.com/macros/s/AKfycby_dAOyS0cMlgnqElZw4wYijk9SK84AB2yD32duWOEAuH25RCDhF0OTqBIYXawYaFIw/exec";
   const CACHE_KEY = "bentoMineiroProdutos";
   const CACHE_TIMESTAMP_KEY = "bentoMineiroProdutosTimestamp";
   const CACHE_EXPIRATION = 10 * 60 * 1000; // 10 minutos
@@ -156,21 +274,25 @@
   let allProducts = [];
   let cart = {};
   let userData = {};
-  // Variável para manter a categoria atual selecionada
   let currentCategory = localStorage.getItem("bentoMineiroCurrentCategory") || "Destaques";
 
-  // Carrega o carrinho do localStorage e atualiza os seletors de quantidade
+  // Carrega o carrinho do localStorage e atualiza as quantidades
   function carregarCart() {
     const data = localStorage.getItem("bentoMineiroCart");
     cart = data ? JSON.parse(data) : {};
     atualizarCartCount();
-    // Atualiza as quantidades nos elementos, se os produtos já foram renderizados
+    // Se os produtos já foram renderizados, atualiza as quantidades
     for (const pid in cart) {
       const el = document.getElementById(`qty-${pid}`);
       if (el) {
         el.textContent = cart[pid].quantidade;
       }
     }
+  }
+
+  // Salva a categoria atual no localStorage
+  function salvarCategoria(cat) {
+    localStorage.setItem("bentoMineiroCurrentCategory", cat);
   }
 
   document.addEventListener("DOMContentLoaded", async () => {
@@ -180,7 +302,6 @@
     try {
       const data = await fetchProdutosCache();
       allProducts = transformarDados(data);
-      // Exibe a categoria salva, se houver; caso contrário, "Destaques"
       filtrarCategoria(currentCategory);
     } catch (error) {
       console.error("Erro ao carregar produtos:", error);
@@ -234,7 +355,10 @@
     const container = document.getElementById("productsContainer");
     container.innerHTML = "";
     produtos.forEach(prod => {
-      const tagClass = (prod.Tipo === "Pronta Entrega") ? "tag-pronta" : "tag-encomenda";
+      // Normaliza Tipo
+      const tipoNormalized = prod.Tipo ? prod.Tipo.toString().trim().toLowerCase() : "";
+      const tagClass = (tipoNormalized === "pronta entrega") ? "tag-pronta" : "tag-encomenda";
+      
       const col = document.createElement("div");
       col.className = "col-6 col-md-4 col-lg-3";
       col.innerHTML = `
@@ -248,13 +372,13 @@
               <div class="qty-value" id="qty-${prod.ID}">0</div>
               <div class="qty-btn" onclick="alterarQuantidade('${prod.ID}', 1)">+</div>
             </div>
-            <div class="product-tag ${tagClass}">${prod.Tipo}</div>
+            <div class="product-tag ${tagClass}">${prod.Tipo || ""}</div>
           </div>
         </div>
       `;
       container.appendChild(col);
     });
-    // Após renderizar, atualiza as quantidades a partir do carrinho
+    // Após renderizar, atualiza as quantidades conforme o carrinho
     for (const pid in cart) {
       const el = document.getElementById(`qty-${pid}`);
       if (el) {
@@ -266,12 +390,25 @@
   function filtrarCategoria(cat) {
     currentCategory = cat;
     localStorage.setItem("bentoMineiroCurrentCategory", cat);
-    if (cat === "Destaques") {
-      // Filtra produtos marcados como destaque (coluna "Destaque" = "Sim")
-      const destaques = allProducts.filter(p => p.Destaque && p.Destaque.toString().toLowerCase() === "sim");
+
+    // Normaliza a string da categoria para comparar
+    const catNormalized = cat.trim().toLowerCase();
+
+    if (catNormalized === "destaques") {
+      // Destaques => filtra col "Destaque" = "Sim" (ignorando maiúsculas/esp)
+      const destaques = allProducts.filter(p => {
+        if (!p.Destaque) return false;
+        const d = p.Destaque.toString().trim().toLowerCase();
+        return d === "sim";
+      });
       exibirProdutos(destaques);
     } else {
-      const filtrados = allProducts.filter(p => p.Categoria === cat);
+      // Filtra a coluna "Categoria" ignorando variações
+      const filtrados = allProducts.filter(p => {
+        if (!p.Categoria) return false;
+        const c = p.Categoria.toString().trim().toLowerCase();
+        return c === catNormalized;
+      });
       exibirProdutos(filtrados);
     }
   }
@@ -307,7 +444,7 @@
     for (const pid in cart) {
       const item = cart[pid];
       if (item.quantidade > 0) {
-        const subtotal = parseFloat(item.produto.Valor) * item.quantidade;
+        const subtotal = parseFloat(item.produto.Valor).toFixed(2) * item.quantidade;
         total += subtotal;
         cartItemsEl.innerHTML += `
           <div class="cart-item">
@@ -357,9 +494,9 @@
     userData.complemento = document.getElementById("complementoDados").value;
     userData.obs = document.getElementById("observacoesDados").value;
     salvarUserData();
-  
+
     const cupom = document.getElementById("cupomDados").value.trim().toUpperCase();
-  
+
     let msg = "*Pedido Bento Mineiro*\n\n";
     msg += `*Nome:* ${userData.nome}\n`;
     msg += `*Telefone:* ${userData.telefone}\n`;
@@ -367,20 +504,21 @@
     msg += `*Endereço:* ${userData.endereco}\n`;
     msg += `*Número:* ${userData.numero}\n`;
     msg += `*Complemento:* ${userData.complemento}\n\n`;
-  
+
     let categoriasCarrinho = {};
+    let totalGeral = 0;
     for (const pid in cart) {
       const item = cart[pid];
       if (item.quantidade > 0) {
-        const cat = item.produto.Categoria || "Outros";
-        if (!categoriasCarrinho[cat]) {
-          categoriasCarrinho[cat] = [];
+        const catRaw = item.produto.Categoria || "Outros";
+        // Normaliza a categoria
+        const catNorm = catRaw.toString().trim() || "Outros";
+        if (!categoriasCarrinho[catNorm]) {
+          categoriasCarrinho[catNorm] = [];
         }
-        categoriasCarrinho[cat].push(item);
+        categoriasCarrinho[catNorm].push(item);
       }
     }
-  
-    let totalGeral = 0;
     for (const cat in categoriasCarrinho) {
       msg += `*${cat}*\n`;
       let subtotalCat = 0;
@@ -389,13 +527,13 @@
         subtotalCat += subtotal;
         msg += `- ${item.produto.Nome} (x${item.quantidade}) = R$ ${subtotal.toFixed(2)}\n`;
       });
-      if (cat === "Encomenda") {
+      if (cat.toLowerCase() === "encomendas" || cat.toLowerCase() === "encomenda") {
         msg += "_(Consulte a agenda de entrega de encomendas na hora de finalizar o pagamento)_\n";
       }
       msg += `Subtotal ${cat}: R$ ${subtotalCat.toFixed(2)}\n\n`;
       totalGeral += subtotalCat;
     }
-  
+
     let desconto = 0;
     if (cupom === "TESTE10") {
       desconto = totalGeral * 0.10;
@@ -405,12 +543,12 @@
     msg += `*Total Geral:* R$ ${totalFinal.toFixed(2)}\n\n`;
     msg += `*Observações:* ${userData.obs}\n\n`;
     msg += "_Valor total sem frete - Consulte o valor de frete na hora de finalizar o pagamento_\n";
-  
-    // Novo número de WhatsApp: +55 11 91742-0830
+
+    // Número de WhatsApp: +55 11 91742-0830
     const url = "https://wa.me/5511917420830?text=" + encodeURIComponent(msg);
     window.open(url, "_blank");
   }
-  
+
   function salvarUserData() {
     localStorage.setItem("bentoMineiroUserData", JSON.stringify(userData));
   }
@@ -418,7 +556,11 @@
     const data = localStorage.getItem("bentoMineiroUserData");
     userData = data ? JSON.parse(data) : {};
   }
-  
+
+  function salvarCart() {
+    localStorage.setItem("bentoMineiroCart", JSON.stringify(cart));
+  }
+
   function mostrarCarregando(status) {
     document.getElementById("loadingIndicator").style.display = status ? "block" : "none";
   }
