@@ -11,7 +11,7 @@
     body {
       font-family: 'Poppins', sans-serif;
       background-color: #f7f7f7;
-      margin: 0;
+      margin: 0; 
       padding: 0;
     }
     .header-bar {
@@ -34,21 +34,6 @@
       font-size: 1rem;
       margin: 0;
       font-weight: 500;
-    }
-    .cart-icon {
-      position: relative;
-      cursor: pointer;
-      color: #fff;
-    }
-    .cart-count {
-      position: absolute;
-      top: -6px;
-      right: -6px;
-      background-color: #dc3545;
-      color: #fff;
-      font-size: 0.7rem;
-      padding: 2px 5px;
-      border-radius: 50%;
     }
     .category-chips {
       display: flex;
@@ -103,53 +88,6 @@
       font-weight: 500;
       margin-bottom: 8px;
     }
-    .qty-controls {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .qty-btn {
-      background-color: #fff;
-      border: 1px solid #ff6600;
-      color: #ff6600;
-      font-weight: 600;
-      width: 30px;
-      height: 30px;
-      border-radius: 6px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-    }
-    .qty-value {
-      min-width: 20px;
-      text-align: center;
-      font-weight: 500;
-    }
-    /* Tag para Tipo – caixa arredondada com cores distintas */
-    .product-tag {
-      display: inline-block;
-      padding: 2px 8px;
-      border-radius: 12px;
-      font-size: 0.75rem;
-      font-weight: 500;
-      color: #fff;
-      margin-top: 6px;
-    }
-    .tag-pronta { background-color: #28a745; }    /* Verde para Pronta Entrega */
-    .tag-encomenda { background-color: #007bff; } /* Azul para Encomenda */
-    
-    .modal-header, .modal-footer {
-      border: none;
-    }
-    .modal-body .cart-item {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 10px;
-    }
-    .modal-body .form-control {
-      margin-bottom: 10px;
-    }
     footer {
       margin-top: 30px;
       padding: 10px;
@@ -158,9 +96,7 @@
       font-size: 0.9rem;
     }
     @media (max-width: 576px) {
-      .header-left h2 {
-        font-size: 0.9rem;
-      }
+      .header-left h2 { font-size: 0.9rem; }
     }
   </style>
 </head>
@@ -171,16 +107,6 @@
   <div class="header-left">
     <img src="https://i.imgur.com/NVldFUa.png" alt="Logo Bento Mineiro">
     <h2>Seja bem vindo em nossa loja!</h2>
-  </div>
-  <div class="cart-icon" onclick="verCarrinho()">
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#fff" viewBox="0 0 24 24">
-      <path d="M7 18c-1.105 0-2 .895-2 2s.895 2 2 2c1.105 
-               0 2-.895 2-2s-.895-2-2-2zm10 0c-1.105 0-2 
-               .895-2 2s.895 2 2 2c1.105 0 2-.895 
-               2-2s-.895-2-2-2zm-13.364-16l3.364 6h10.364l3-6h-16.728zm-1.636-2h20l-4 
-               8h-12l-4-8z"/>
-    </svg>
-    <span id="cartCount" class="cart-count">0</span>
   </div>
 </div>
 
@@ -208,58 +134,6 @@
   </div>
 </div>
 
-<!-- Modal do Carrinho -->
-<div class="modal fade" id="cartModal" tabindex="-1" aria-labelledby="cartModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-scrollable">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Carrinho</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
-      </div>
-      <div class="modal-body">
-        <div id="cartItems"></div>
-        <hr>
-        <div class="d-flex justify-content-between">
-          <strong>Total:</strong>
-          <span id="cartTotal">R$ 0,00</span>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-danger" onclick="limparCarrinho()">Limpar Carrinho</button>
-        <button class="btn btn-success" onclick="mostrarFormularioDados()">Finalizar Pedido</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Modal Formulário de Dados -->
-<div class="modal fade" id="dadosModal" tabindex="-1" aria-labelledby="dadosModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Seus Dados</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
-      </div>
-      <div class="modal-body">
-        <form id="formDados">
-          <input type="text" class="form-control" id="nomeDados" placeholder="Nome" required>
-          <input type="text" class="form-control" id="telefoneDados" placeholder="Telefone" required>
-          <input type="text" class="form-control" id="cepDados" placeholder="CEP (ex: 00000-000)" required>
-          <input type="text" class="form-control" id="enderecoDados" placeholder="Endereço" required>
-          <input type="text" class="form-control" id="numeroDados" placeholder="Número" required>
-          <input type="text" class="form-control" id="complementoDados" placeholder="Complemento">
-          <textarea class="form-control" id="observacoesDados" rows="3" placeholder="Observações"></textarea>
-          <input type="text" class="form-control" id="cupomDados" placeholder="Cupom de Desconto (ex: TESTE10)">
-        </form>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-secondary" data-bs-dismiss="modal">Voltar</button>
-        <button class="btn btn-success" onclick="finalizarPedidoWhatsApp()">Finalizar no WhatsApp</button>
-      </div>
-    </div>
-  </div>
-</div>
-
 <footer>
   &copy; 2025 Bento Mineiro. Todos os direitos reservados.
 </footer>
@@ -267,105 +141,40 @@
 <!-- Bootstrap JS (Bundle com Popper) -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-  // Nova URL do Apps Script
   const API_BASE_URL = "https://script.google.com/macros/s/AKfycbzyuFcVWYK1-wByJd1sogjCIyv_VYeN65EH1LT9-fbPef3dFY65C0-0v3AJSiIMLTErgQ/exec";
-  const CACHE_KEY = "bentoMineiroProdutos";
-  const CACHE_TIMESTAMP_KEY = "bentoMineiroProdutosTimestamp";
-  const CACHE_EXPIRATION = 10 * 60 * 1000; // 10 minutos
-
+  
   let allProducts = [];
-  let cart = {};
-  let userData = {};
 
   document.addEventListener("DOMContentLoaded", async () => {
-    carregarUserData();
     mostrarCarregando(true);
     try {
-      const data = await fetchProdutosCache();
+      const data = await fetchProdutos();
       allProducts = transformarDados(data);
-      // Ao carregar, exibimos somente os Destaques
       filtrarCategoria("Destaques");
     } catch (error) {
       console.error("Erro ao carregar produtos:", error);
     } finally {
       mostrarCarregando(false);
     }
-    // Auto-complete de endereço via CEP
-    document.getElementById("cepDados").addEventListener("blur", async function() {
-      const cep = this.value.replace(/\D/g, '');
-      if (cep.length === 8) {
-        try {
-          const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
-          const data = await response.json();
-          if (!data.erro) {
-            document.getElementById("enderecoDados").value = `${data.logradouro}, ${data.bairro}, ${data.localidade} - ${data.uf}`;
-          } else {
-            alert("CEP não encontrado.");
-          }
-        } catch (error) {
-          console.error("Erro ao buscar CEP:", error);
-        }
-      }
-    });
   });
+
+  async function fetchProdutos() {
+    const response = await fetch(API_BASE_URL + "?action=produtos");
+    return await response.json();
+  }
 
   function transformarDados(data) {
     if (!Array.isArray(data) || data.length < 2) return [];
     const headers = data[0];
     return data.slice(1).map(row => {
       let obj = {};
-      headers.forEach((header, index) => {
-        obj[header] = row[index];
-      });
+      headers.forEach((header, index) => { obj[header] = row[index]; });
       return obj;
-    });
-  }
-
-  async function fetchProdutosCache() {
-    const now = Date.now();
-    const cachedData = localStorage.getItem(CACHE_KEY);
-    const cachedTimestamp = localStorage.getItem(CACHE_TIMESTAMP_KEY);
-    if (cachedData && cachedTimestamp && (now - cachedTimestamp < CACHE_EXPIRATION)) {
-      return JSON.parse(cachedData);
-    } else {
-      const response = await fetch(API_BASE_URL + "?action=produtos");
-      const produtos = await response.json();
-      localStorage.setItem(CACHE_KEY, JSON.stringify(produtos));
-      localStorage.setItem(CACHE_TIMESTAMP_KEY, now);
-      return produtos;
-    }
-  }
-
-  function exibirProdutos(produtos) {
-    const container = document.getElementById("productsContainer");
-    container.innerHTML = "";
-    produtos.forEach(prod => {
-      // Define a cor da tag de acordo com o tipo
-      const tagClass = (prod.Tipo === "Pronta Entrega") ? "tag-pronta" : "tag-encomenda";
-      const col = document.createElement("div");
-      col.className = "col-6 col-md-4 col-lg-3";
-      col.innerHTML = `
-        <div class="product-card p-2">
-          <img src="${prod.Imagem}" alt="${prod.Nome}">
-          <div class="product-body">
-            <div class="product-title">${prod.Nome}</div>
-            <div class="product-price">R$ ${parseFloat(prod.Valor).toFixed(2)}</div>
-            <div class="qty-controls" data-id="${prod.ID}">
-              <div class="qty-btn" onclick="alterarQuantidade('${prod.ID}', -1)">-</div>
-              <div class="qty-value" id="qty-${prod.ID}">0</div>
-              <div class="qty-btn" onclick="alterarQuantidade('${prod.ID}', 1)">+</div>
-            </div>
-            <div class="product-tag ${tagClass}">${prod.Tipo}</div>
-          </div>
-        </div>
-      `;
-      container.appendChild(col);
     });
   }
 
   function filtrarCategoria(cat) {
     if (cat === "Destaques") {
-      // Exibe um produto de cada categoria principal
       const categoriasPrincipais = ["Queijos", "Doces", "Café da Tarde", "Outros"];
       let destaques = [];
       categoriasPrincipais.forEach(c => {
@@ -374,151 +183,28 @@
       });
       exibirProdutos(destaques);
     } else {
-      // Filtra pela categoria
       const filtrados = allProducts.filter(p => p.Categoria === cat);
       exibirProdutos(filtrados);
     }
   }
 
-  function alterarQuantidade(productID, delta) {
-    let item = cart[productID];
-    if (!item) {
-      const produto = allProducts.find(p => p.ID == productID);
-      if (!produto) return;
-      cart[productID] = { produto, quantidade: 0 };
-      item = cart[productID];
-    }
-    item.quantidade += delta;
-    if (item.quantidade < 0) item.quantidade = 0;
-    document.getElementById(`qty-${productID}`).textContent = item.quantidade;
-    atualizarCartCount();
-  }
-
-  function atualizarCartCount() {
-    let totalItens = 0;
-    for (const pid in cart) {
-      totalItens += cart[pid].quantidade;
-    }
-    document.getElementById("cartCount").textContent = totalItens;
-  }
-
-  function verCarrinho() {
-    const cartItemsEl = document.getElementById("cartItems");
-    const cartTotalEl = document.getElementById("cartTotal");
-    cartItemsEl.innerHTML = "";
-    let total = 0;
-    for (const pid in cart) {
-      const item = cart[pid];
-      if (item.quantidade > 0) {
-        const subtotal = parseFloat(item.produto.Valor) * item.quantidade;
-        total += subtotal;
-        cartItemsEl.innerHTML += `
-          <div class="cart-item">
-            <span>${item.produto.Nome} (x${item.quantidade})</span>
-            <strong>R$ ${subtotal.toFixed(2)}</strong>
+  function exibirProdutos(produtos) {
+    const container = document.getElementById("productsContainer");
+    container.innerHTML = "";
+    produtos.forEach(prod => {
+      const col = document.createElement("div");
+      col.className = "col-6 col-md-4 col-lg-3";
+      col.innerHTML = `
+        <div class="product-card p-2">
+          <img src="${prod.Imagem}" alt="${prod.Nome}">
+          <div class="product-body">
+            <div class="product-title">${prod.Nome}</div>
+            <div class="product-price">R$ ${parseFloat(prod.Valor || 0).toFixed(2)}</div>
           </div>
-        `;
-      }
-    }
-    cartTotalEl.textContent = "R$ " + total.toFixed(2);
-    const modalEl = new bootstrap.Modal(document.getElementById("cartModal"));
-    modalEl.show();
-  }
-
-  function limparCarrinho() {
-    cart = {};
-    document.getElementById("cartItems").innerHTML = "";
-    document.getElementById("cartTotal").textContent = "R$ 0,00";
-    allProducts.forEach(p => {
-      const el = document.getElementById(`qty-${p.ID}`);
-      if (el) el.textContent = "0";
+        </div>
+      `;
+      container.appendChild(col);
     });
-    atualizarCartCount();
-  }
-
-  function mostrarFormularioDados() {
-    const cartModal = bootstrap.Modal.getInstance(document.getElementById("cartModal"));
-    cartModal.hide();
-    document.getElementById("nomeDados").value = userData.nome || "";
-    document.getElementById("telefoneDados").value = userData.telefone || "";
-    document.getElementById("cepDados").value = userData.cep || "";
-    document.getElementById("enderecoDados").value = userData.endereco || "";
-    document.getElementById("numeroDados").value = userData.numero || "";
-    document.getElementById("complementoDados").value = userData.complemento || "";
-    document.getElementById("observacoesDados").value = userData.obs || "";
-    const dadosModal = new bootstrap.Modal(document.getElementById("dadosModal"));
-    dadosModal.show();
-  }
-
-  function finalizarPedidoWhatsApp() {
-    userData.nome = document.getElementById("nomeDados").value;
-    userData.telefone = document.getElementById("telefoneDados").value;
-    userData.cep = document.getElementById("cepDados").value;
-    userData.endereco = document.getElementById("enderecoDados").value;
-    userData.numero = document.getElementById("numeroDados").value;
-    userData.complemento = document.getElementById("complementoDados").value;
-    userData.obs = document.getElementById("observacoesDados").value;
-    salvarUserData();
-
-    const cupom = document.getElementById("cupomDados").value.trim().toUpperCase();
-
-    let msg = "*Pedido Bento Mineiro*\n\n";
-    msg += `*Nome:* ${userData.nome}\n`;
-    msg += `*Telefone:* ${userData.telefone}\n`;
-    msg += `*CEP:* ${userData.cep}\n`;
-    msg += `*Endereço:* ${userData.endereco}\n`;
-    msg += `*Número:* ${userData.numero}\n`;
-    msg += `*Complemento:* ${userData.complemento}\n\n`;
-
-    let categoriasCarrinho = {};
-    for (const pid in cart) {
-      const item = cart[pid];
-      if (item.quantidade > 0) {
-        const cat = item.produto.Categoria || "Outros";
-        if (!categoriasCarrinho[cat]) {
-          categoriasCarrinho[cat] = [];
-        }
-        categoriasCarrinho[cat].push(item);
-      }
-    }
-
-    let totalGeral = 0;
-    for (const cat in categoriasCarrinho) {
-      msg += `*${cat}*\n`;
-      let subtotalCat = 0;
-      categoriasCarrinho[cat].forEach(item => {
-        const subtotal = parseFloat(item.produto.Valor) * item.quantidade;
-        subtotalCat += subtotal;
-        msg += `- ${item.produto.Nome} (x${item.quantidade}) = R$ ${subtotal.toFixed(2)}\n`;
-      });
-      if (cat === "Encomenda") {
-        msg += "_(Consulte a agenda de entrega de encomendas na hora de finalizar o pagamento)_\n";
-      }
-      msg += `Subtotal ${cat}: R$ ${subtotalCat.toFixed(2)}\n\n`;
-      totalGeral += subtotalCat;
-    }
-
-    let desconto = 0;
-    if (cupom === "TESTE10") {
-      desconto = totalGeral * 0.10;
-      msg += `*Cupom TESTE10 aplicado: -R$ ${desconto.toFixed(2)}*\n\n`;
-    }
-    let totalFinal = totalGeral - desconto;
-    msg += `*Total Geral:* R$ ${totalFinal.toFixed(2)}\n\n`;
-    msg += `*Observações:* ${userData.obs}\n\n`;
-    msg += "_Valor total sem frete - Consulte o valor de frete na hora de finalizar o pagamento_\n";
-
-    // Novo número de WhatsApp
-    const url = "https://wa.me/5511917420830?text=" + encodeURIComponent(msg);
-    window.open(url, "_blank");
-  }
-
-  function salvarUserData() {
-    localStorage.setItem("bentoMineiroUserData", JSON.stringify(userData));
-  }
-  function carregarUserData() {
-    const data = localStorage.getItem("bentoMineiroUserData");
-    userData = data ? JSON.parse(data) : {};
   }
 
   function mostrarCarregando(status) {
