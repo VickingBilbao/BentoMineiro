@@ -27,8 +27,19 @@
     .qty-controls { display: flex; align-items: center; gap: 10px; }
     .qty-btn { background-color: #fff; border: 1px solid #ff6600; color: #ff6600; font-weight: 600; width: 30px; height: 30px; border-radius: 6px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
     .qty-value { min-width: 20px; text-align: center; font-weight: 500; }
-    /* Tag de Tipo */
-    .product-type { font-size: 0.8rem; color: #555; margin-top: 4px; }
+    /* Tag para Tipo – caixa arredondada sem texto "Tipo:" */
+    .product-tag {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: #fff;
+      margin-top: 6px;
+    }
+    /* Cores para cada tipo */
+    .tag-pronta { background-color: #28a745; }
+    .tag-encomenda { background-color: #007bff; }
     .modal-header, .modal-footer { border: none; }
     .modal-body .cart-item { display: flex; justify-content: space-between; margin-bottom: 10px; }
     .modal-body .form-control { margin-bottom: 10px; }
@@ -134,7 +145,7 @@
 <!-- Bootstrap JS (Bundle com Popper) -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-  // Use a nova URL do Apps Script
+  // Nova URL do Apps Script
   const API_BASE_URL = "https://script.google.com/macros/s/AKfycbzEOzXHQmYR_RXJLi3-E3FR7mll6N1Se9FAqoIEshgfN40wBaGLa7UQD7oOaKlP7GjlrQ/exec";
   const CACHE_KEY = "bentoMineiroProdutos";
   const CACHE_TIMESTAMP_KEY = "bentoMineiroProdutosTimestamp";
@@ -150,7 +161,7 @@
     try {
       const data = await fetchProdutosCache();
       allProducts = transformarDados(data);
-      // Ao carregar, exiba apenas os destaques (filtrarCategoria faz a filtragem)
+      // Ao carregar, exiba somente os destaques
       filtrarCategoria("Destaques");
     } catch (error) {
       console.error("Erro ao carregar produtos:", error);
@@ -206,6 +217,8 @@
     produtos.forEach(prod => {
       const col = document.createElement("div");
       col.className = "col-6 col-md-4 col-lg-3";
+      // Define a classe da tag com base no Tipo
+      const tagClass = prod.Tipo === "Pronta Entrega" ? "tag-pronta" : "tag-encomenda";
       col.innerHTML = `
         <div class="product-card p-2">
           <img src="${prod.Imagem}" alt="${prod.Nome}">
@@ -217,7 +230,7 @@
               <div class="qty-value" id="qty-${prod.ID}">0</div>
               <div class="qty-btn" onclick="alterarQuantidade('${prod.ID}', 1)">+</div>
             </div>
-            <div class="product-type">Tipo: ${prod.Tipo}</div>
+            <div class="product-tag ${tagClass}">${prod.Tipo}</div>
           </div>
         </div>
       `;
@@ -227,18 +240,18 @@
 
   function filtrarCategoria(cat) {
     if (cat === "Destaques") {
-      // Seleciona um produto de cada uma das categorias principais
-      const categorias = [
+      // Exibe um produto de cada categoria principal para os destaques
+      const categoriasPrincipais = [
         "Pronta Entrega",
         "Encomendas",
         "Produtos Especiais - Queijos Premiados Boníssimo"
       ];
-      let destaqueProds = [];
-      categorias.forEach(c => {
+      let destaques = [];
+      categoriasPrincipais.forEach(c => {
         const found = allProducts.find(p => p.Categoria === c);
-        if (found) destaqueProds.push(found);
+        if (found) destaques.push(found);
       });
-      exibirProdutos(destaqueProds);
+      exibirProdutos(destaques);
     } else {
       const filtrados = allProducts.filter(p => p.Categoria === cat);
       exibirProdutos(filtrados);
