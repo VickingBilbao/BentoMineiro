@@ -11,10 +11,8 @@
     body {
       font-family: 'Poppins', sans-serif;
       background-color: #f7f7f7;
-      margin: 0;
       padding: 20px;
     }
-    /* Header */
     .header {
       background-color: #a56347;
       color: #fff;
@@ -186,14 +184,7 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
   /***************** CONFIGURAÇÕES GLOBAIS ******************/
-  const API_BASE_URL = "https://script.google.com/macros/s/AKfycbzoRWay1-1W0C5weOZcISg1AfYPJ8SHtfrOoZhoxIrbZDC3MrrsIIyRnrnHjqdyKc8u/exec";
-  const CACHE_KEY = "bentoMineiroProdutos";
-  const CACHE_TIMESTAMP_KEY = "bentoMineiroProdutosTimestamp";
-  const CACHE_EXPIRATION = 10 * 60 * 1000; // 10 minutos
-
-  let allProducts = [];
-  let allCategories = [];
-  let userData = {};
+  const API_BASE_URL = "https://script.google.com/macros/s/AKfycbwnfUKLoIn6vUukA2Pb38zajwlMX8DcWTDBX3_BA1XkHv_kwcyA2NDt3RSi_uMMrDlcQA/exec";
   
   /***************** LOGIN ******************/
   const ADMIN_USER = "BentoMineiro2025!";
@@ -225,13 +216,11 @@
       const section = this.getAttribute("data-section");
       document.querySelectorAll(".section").forEach(sec => sec.classList.remove("active"));
       document.getElementById(section).classList.add("active");
-      // Se for a seção de editar produto ou editar categoria, recarrega a lista
       if (section === "editarProduto") {
         carregarProdutosAdmin();
       } else if (section === "editarCategoria") {
         carregarCategoriasAdmin();
       } else if (section === "incluirProduto") {
-        // Preenche o dropdown de categorias
         preencherDropdownCategorias();
       }
     });
@@ -270,27 +259,7 @@
     return await response.json();
   }
   
-  /***************** FUNÇÕES DE CACHE E BUSCA DE PRODUTOS/CATEGORIAS ******************/
-  async function fetchProdutosCache() {
-    const now = Date.now();
-    const cachedData = localStorage.getItem(CACHE_KEY);
-    const cachedTimestamp = localStorage.getItem(CACHE_TIMESTAMP_KEY);
-    if (cachedData && cachedTimestamp && (now - cachedTimestamp < CACHE_EXPIRATION)) {
-      return JSON.parse(cachedData);
-    } else {
-      const response = await apiGet("produtos");
-      localStorage.setItem(CACHE_KEY, JSON.stringify(response));
-      localStorage.setItem(CACHE_TIMESTAMP_KEY, now);
-      return response;
-    }
-  }
-  
-  async function fetchCategorias() {
-    const response = await apiGet("categorias");
-    return response;
-  }
-  
-  /***************** FUNÇÕES ADMIN PRODUTOS ******************/
+  /***************** PRODUTOS ******************/
   async function carregarProdutosAdmin() {
     try {
       const produtos = await apiGet("produtos");
@@ -349,7 +318,6 @@
     }
   }
   
-  // Para edição, preenche os campos do formulário e altera o comportamento para PUT
   async function prepararEdicaoProduto(id) {
     try {
       const prod = await apiGet("produto", id);
@@ -357,14 +325,12 @@
         alert("Produto não encontrado.");
         return;
       }
-      // Preenche o formulário de inclusão com os dados do produto
       document.getElementById("prodNome").value = prod.Nome;
       document.getElementById("prodValor").value = prod.Valor;
       document.getElementById("prodImagem").value = prod.Imagem;
       document.getElementById("prodCategoria").value = prod.Categoria;
       document.getElementById("prodTipo").value = prod.Tipo || "Pronta Entrega";
       document.getElementById("prodDescricao").value = prod.Descricao || "";
-      // Muda o submit para atualização
       document.getElementById("formIncluirProduto").onsubmit = async function(e) {
         e.preventDefault();
         const produtoAtualizado = {
@@ -403,11 +369,11 @@
     }
   }
   
-  /***************** FUNÇÕES ADMIN CATEGORIAS ******************/
+  /***************** CATEGORIAS ******************/
   async function carregarCategoriasAdmin() {
     try {
       const categorias = await apiGet("categorias");
-      allCategories = categorias; // Salva globalmente
+      allCategories = categorias;
       renderizarListaCategorias(categorias);
       preencherDropdownCategorias();
     } catch (error) {
@@ -480,7 +446,6 @@
   }
   
   function preencherDropdownCategorias() {
-    // Preenche o dropdown de categorias no formulário de incluir produto
     const dropdown = document.getElementById("prodCategoria");
     dropdown.innerHTML = "";
     if (allCategories && allCategories.length > 0) {
