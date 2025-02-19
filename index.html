@@ -158,10 +158,25 @@
     @media (max-width: 576px) {
       .header-left h2 { font-size: 0.9rem; }
     }
-    /* Feedback de cupom */
+    /* Feedback de Cupom */
     #cupomFeedback {
       font-size: 0.9rem;
       margin-top: 5px;
+    }
+    /* Estilos para o resumo do pedido */
+    #orderSummary {
+      background-color: #f0f0f0;
+      padding: 10px;
+      border-radius: 8px;
+      margin-top: 10px;
+      max-height: 200px;
+      overflow-y: auto;
+      font-size: 0.9rem;
+      line-height: 1.3;
+    }
+    #orderTotal {
+      font-weight: bold;
+      margin-top: 10px;
     }
   </style>
 </head>
@@ -175,7 +190,9 @@
   </div>
   <div class="cart-icon" onclick="verCarrinho()">
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#fff" viewBox="0 0 24 24">
-      <path d="M7 18c-1.105 0-2 .895-2 2s.895 2 2 2c1.105 0 2-.895 2-2s-.895-2-2-2zm10 0c-1.105 0-2 .895-2 2s.895 2 2 2c1.105 0 2-.895 2-2s-.895-2-2-2zm-13.364-16l3.364 6h10.364l3-6h-16.728zm-1.636-2h20l-4 8h-12l-4-8z"/>
+      <path d="M7 18c-1.105 0-2 .895-2 2s.895 2 2 2c1.105 
+               0 2-.895 2-2s-.895-2-2-2zm10 0c-1.105 0-2 
+               .895-2 2s.895 2 2 2c1.105 0 2-.895 2-2s-.895-2-2-2zm-13.364-16l3.364 6h10.364l3-6h-16.728zm-1.636-2h20l-4 8h-12l-4-8z"/>
     </svg>
     <span id="cartCount" class="cart-count">0</span>
   </div>
@@ -203,59 +220,7 @@
   <div class="row" id="productsContainer"></div>
 </div>
 
-<!-- Modal: Dados do Cliente -->
-<div class="modal fade" id="dadosModal" tabindex="-1" aria-labelledby="dadosModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Seus Dados</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
-      </div>
-      <div class="modal-body">
-        <form id="formDados">
-          <input type="text" class="form-control" id="nomeDados" placeholder="Nome" required>
-          <input type="text" class="form-control" id="telefoneDados" placeholder="Telefone" required>
-          <input type="text" class="form-control" id="cepDados" placeholder="CEP (ex: 00000-000)" required>
-          <input type="text" class="form-control" id="enderecoDados" placeholder="Endereço" required>
-          <input type="text" class="form-control" id="numeroDados" placeholder="Número" required>
-          <input type="text" class="form-control" id="complementoDados" placeholder="Complemento">
-          <textarea class="form-control" id="observacoesDados" rows="3" placeholder="Observações"></textarea>
-        </form>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <button class="btn btn-primary" onclick="avancarParaResumo()">Avançar</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Modal: Resumo do Pedido e Cupom -->
-<div class="modal fade" id="resumoModal" tabindex="-1" aria-labelledby="resumoModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-scrollable">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Resumo do Pedido</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
-      </div>
-      <div class="modal-body">
-        <div id="resumoPedido"></div>
-        <hr>
-        <div class="mb-3">
-          <input type="text" class="form-control" id="cupomDados" placeholder="Digite o cupom">
-        </div>
-        <div id="cupomFeedback"></div>
-        <button class="btn btn-info" onclick="aplicarCupom()">Aplicar Cupom</button>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-secondary" onclick="voltarParaDados()">Voltar</button>
-        <button class="btn btn-success" onclick="finalizarPedidoWhatsApp()">Finalizar no WhatsApp</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Modal: Carrinho -->
+<!-- Modal do Carrinho -->
 <div class="modal fade" id="cartModal" tabindex="-1" aria-labelledby="cartModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-scrollable">
     <div class="modal-content">
@@ -273,7 +238,46 @@
       </div>
       <div class="modal-footer">
         <button class="btn btn-danger" onclick="limparCarrinho()">Limpar Carrinho</button>
-        <button class="btn btn-success" onclick="mostrarFormularioDados()">Fechar Pedido</button>
+        <button class="btn btn-success" onclick="mostrarFormularioDados()">Finalizar Pedido</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Dados e Resumo -->
+<div class="modal fade" id="dadosModal" tabindex="-1" aria-labelledby="dadosModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Seus Dados e Resumo do Pedido</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <div class="modal-body">
+        <!-- Dados do Cliente -->
+        <form id="formDados">
+          <input type="text" class="form-control" id="nomeDados" placeholder="Nome" required>
+          <input type="text" class="form-control" id="telefoneDados" placeholder="Telefone" required>
+          <input type="text" class="form-control" id="cepDados" placeholder="CEP (ex: 00000-000)" required>
+          <input type="text" class="form-control" id="enderecoDados" placeholder="Endereço" required>
+          <input type="text" class="form-control" id="numeroDados" placeholder="Número" required>
+          <input type="text" class="form-control" id="complementoDados" placeholder="Complemento">
+          <textarea class="form-control" id="observacoesDados" rows="3" placeholder="Observações"></textarea>
+        </form>
+        <hr>
+        <!-- Resumo do Pedido -->
+        <div id="orderSummary"></div>
+        <div id="orderTotal"></div>
+        <hr>
+        <!-- Cupom de Desconto -->
+        <div class="mb-2">
+          <input type="text" class="form-control" id="cupomDados" placeholder="Cupom de Desconto">
+          <button class="btn btn-primary btn-sm mt-2" onclick="aplicarCupom()">Aplicar Cupom</button>
+          <div id="cupomFeedback"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Voltar</button>
+        <button class="btn btn-success" onclick="finalizarPedidoWhatsApp()">Finalizar Pedido</button>
       </div>
     </div>
   </div>
@@ -283,11 +287,11 @@
   &copy; 2025 Bento Mineiro. Todos os direitos reservados.
 </footer>
 
-<!-- Bootstrap JS -->
+<!-- Bootstrap JS (Bundle com Popper) -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
   // URL do Apps Script
-  const API_BASE_URL = "https://script.google.com/macros/s/AKfycby_dAOyS0cMlgnqElZw4wYijk9SK84AB2yD32duWOEAuH25RCDhF0OTqBIYXawYaFIw/exec";
+  const API_BASE_URL = "https://script.google.com/macros/s/AKfycbw8aho5WzXL8_x4ygTgu31MD9-c4xdpmfltlj61iLzHiRyxSw14GGJqWqe_Uhn9Pq7U/exec";
   // Cache de 1 minuto
   const CACHE_KEY = "bentoMineiroProdutos";
   const CACHE_TIMESTAMP_KEY = "bentoMineiroProdutosTimestamp";
@@ -298,7 +302,7 @@
   let userData = {};
   let currentCategory = localStorage.getItem("bentoMineiroCurrentCategory") || "Destaques";
   let allCupons = [];
-  let descontoAplicado = 0;
+  let cupomAplicado = null; // Armazena o cupom aplicado e o desconto
 
   function salvarCart() {
     localStorage.setItem("bentoMineiroCart", JSON.stringify(cart));
@@ -500,8 +504,91 @@
     atualizarCartCount();
   }
 
-  // Modal Dados: Avança para o resumo
-  function avancarParaResumo() {
+  function mostrarFormularioDados() {
+    const cartModal = bootstrap.Modal.getInstance(document.getElementById("cartModal"));
+    cartModal.hide();
+    document.getElementById("nomeDados").value = userData.nome || "";
+    document.getElementById("telefoneDados").value = userData.telefone || "";
+    document.getElementById("cepDados").value = userData.cep || "";
+    document.getElementById("enderecoDados").value = userData.endereco || "";
+    document.getElementById("numeroDados").value = userData.numero || "";
+    document.getElementById("complementoDados").value = userData.complemento || "";
+    document.getElementById("observacoesDados").value = userData.obs || "";
+    // Limpa cupom e feedback antes de exibir
+    document.getElementById("cupomDados").value = "";
+    document.getElementById("cupomFeedback").textContent = "";
+    // Exibe o resumo do pedido atualizado
+    exibirResumoPedido();
+    const dadosModal = new bootstrap.Modal(document.getElementById("dadosModal"));
+    dadosModal.show();
+  }
+
+  // Função para montar e exibir o resumo do pedido no modal
+  function exibirResumoPedido() {
+    let resumo = "";
+    let totalGeral = 0;
+    let categoriasCarrinho = {};
+    for (const pid in cart) {
+      const item = cart[pid];
+      if (item.quantidade > 0) {
+        const catRaw = item.produto.Categoria || "Outros";
+        const catNorm = catRaw.toString().trim() || "Outros";
+        if (!categoriasCarrinho[catNorm]) {
+          categoriasCarrinho[catNorm] = [];
+        }
+        categoriasCarrinho[catNorm].push(item);
+      }
+    }
+    for (const cat in categoriasCarrinho) {
+      resumo += `<strong>${cat}</strong><br>`;
+      let subtotalCat = 0;
+      categoriasCarrinho[cat].forEach(item => {
+        const subtotal = parseFloat(item.produto.Valor) * item.quantidade;
+        subtotalCat += subtotal;
+        resumo += `- ${item.produto.Nome} (x${item.quantidade}) = R$ ${subtotal.toFixed(2)}<br>`;
+      });
+      resumo += `Subtotal ${cat}: R$ ${subtotalCat.toFixed(2)}<br><br>`;
+      totalGeral += subtotalCat;
+    }
+    resumo += `<strong>Total Geral: R$ ${totalGeral.toFixed(2)}</strong>`;
+    document.getElementById("orderSummary").innerHTML = resumo;
+    document.getElementById("orderTotal").textContent = "";
+    // Armazena o total para uso na aplicação do cupom
+    document.getElementById("orderSummary").dataset.total = totalGeral;
+  }
+
+  // Função para aplicar o cupom e atualizar o resumo
+  function aplicarCupom() {
+    const cupomDigitado = document.getElementById("cupomDados").value.trim().toUpperCase();
+    const cupomFeedbackEl = document.getElementById("cupomFeedback");
+    const totalGeral = parseFloat(document.getElementById("orderSummary").dataset.total || "0");
+    let desconto = 0;
+    let foundCupom = allCupons.find(c => 
+      c.Codigo && c.Codigo.toString().trim().toUpperCase() === cupomDigitado
+    );
+    if (cupomDigitado && !foundCupom) {
+      cupomFeedbackEl.textContent = "Cupom inválido";
+      cupomFeedbackEl.style.color = "#d9534f"; // vermelho
+      cupomAplicado = null;
+    } else if (foundCupom) {
+      desconto = converterDesconto(foundCupom.Desconto, totalGeral);
+      cupomFeedbackEl.textContent = `Cupom ${foundCupom.Codigo} aplicado! Desconto: R$ ${desconto.toFixed(2)}`;
+      cupomFeedbackEl.style.color = "#28a745"; // verde
+      cupomAplicado = { cupom: foundCupom.Codigo, desconto };
+    } else {
+      cupomFeedbackEl.textContent = "";
+      cupomAplicado = null;
+    }
+    // Atualiza o total exibido, se houver desconto
+    if (desconto > 0) {
+      const totalFinal = totalGeral - desconto;
+      document.getElementById("orderTotal").innerHTML = `<strong>Total com Desconto: R$ ${totalFinal.toFixed(2)}</strong>`;
+    } else {
+      document.getElementById("orderTotal").textContent = "";
+    }
+  }
+
+  function finalizarPedidoWhatsApp() {
     userData.nome = document.getElementById("nomeDados").value;
     userData.telefone = document.getElementById("telefoneDados").value;
     userData.cep = document.getElementById("cepDados").value;
@@ -510,40 +597,22 @@
     userData.complemento = document.getElementById("complementoDados").value;
     userData.obs = document.getElementById("observacoesDados").value;
     salvarUserData();
-    var dadosModalEl = document.getElementById("dadosModal");
-    var dadosModalInstance = bootstrap.Modal.getInstance(dadosModalEl);
-    if (!dadosModalInstance) {
-      dadosModalInstance = new bootstrap.Modal(dadosModalEl);
-    }
-    dadosModalInstance.hide();
-    gerarResumo();
-    var resumoModalEl = document.getElementById("resumoModal");
-    var resumoModalInstance = bootstrap.Modal.getInstance(resumoModalEl);
-    if (!resumoModalInstance) {
-      resumoModalInstance = new bootstrap.Modal(resumoModalEl);
-    }
-    resumoModalInstance.show();
-  }
   
-  // Volta do resumo para os dados
-  function voltarParaDados() {
-    var resumoModalEl = document.getElementById("resumoModal");
-    var resumoModalInstance = bootstrap.Modal.getInstance(resumoModalEl);
-    if (!resumoModalInstance) {
-      resumoModalInstance = new bootstrap.Modal(resumoModalEl);
+    const totalGeral = parseFloat(document.getElementById("orderSummary").dataset.total || "0");
+    let desconto = 0;
+    if (cupomAplicado) {
+      desconto = cupomAplicado.desconto;
     }
-    resumoModalInstance.hide();
-    var dadosModalEl = document.getElementById("dadosModal");
-    var dadosModalInstance = bootstrap.Modal.getInstance(dadosModalEl);
-    if (!dadosModalInstance) {
-      dadosModalInstance = new bootstrap.Modal(dadosModalEl);
-    }
-    dadosModalInstance.show();
-  }
+    let totalFinal = totalGeral - desconto;
   
-  function gerarResumo() {
-    let msg = "";
-    let totalGeral = 0;
+    let msg = "*Pedido Bento Mineiro*\n\n";
+    msg += `*Nome:* ${userData.nome}\n`;
+    msg += `*Telefone:* ${userData.telefone}\n`;
+    msg += `*CEP:* ${userData.cep}\n`;
+    msg += `*Endereço:* ${userData.endereco}\n`;
+    msg += `*Número:* ${userData.numero}\n`;
+    msg += `*Complemento:* ${userData.complemento}\n\n`;
+  
     let categoriasCarrinho = {};
     for (const pid in cart) {
       const item = cart[pid];
@@ -568,57 +637,19 @@
         msg += "_(Consulte a agenda de entrega de encomendas na hora de finalizar o pagamento)_\n";
       }
       msg += `Subtotal ${cat}: R$ ${subtotalCat.toFixed(2)}\n\n`;
-      totalGeral += subtotalCat;
     }
-    userData.resumoPedido = msg;
-    userData.totalGeral = totalGeral;
-    document.getElementById("resumoPedido").innerText = msg + `Total: R$ ${totalGeral.toFixed(2)}`;
-  }
-
-  // Aplica cupom no resumo
-  function aplicarCupom() {
-    const cupomDigitado = document.getElementById("cupomDados").value.trim().toUpperCase();
-    const cupomFeedbackEl = document.getElementById("cupomFeedback");
-    cupomFeedbackEl.textContent = "";
-    cupomFeedbackEl.style.color = "#000";
-    if (!cupomDigitado) return;
-    const foundCupom = allCupons.find(c => 
-      c.Codigo && c.Codigo.toString().trim().toUpperCase() === cupomDigitado
-    );
-    if (!foundCupom) {
-      cupomFeedbackEl.textContent = "Cupom inválido";
-      cupomFeedbackEl.style.color = "#d9534f";
-      descontoAplicado = 0;
-    } else {
-      descontoAplicado = converterDesconto(foundCupom.Desconto, userData.totalGeral);
-      cupomFeedbackEl.textContent = `Cupom ${foundCupom.Codigo} aplicado! Desconto: R$ ${descontoAplicado.toFixed(2)}`;
-      cupomFeedbackEl.style.color = "#28a745";
+  
+    if (cupomAplicado) {
+      msg += `*Cupom ${cupomAplicado.cupom} aplicado: -R$ ${cupomAplicado.desconto.toFixed(2)}*\n\n`;
     }
-    let totalFinal = userData.totalGeral - descontoAplicado;
-    document.getElementById("resumoPedido").innerText = userData.resumoPedido + `\nDesconto: R$ ${descontoAplicado.toFixed(2)}\nTotal Final: R$ ${totalFinal.toFixed(2)}`;
-  }
-
-  function finalizarPedidoWhatsApp() {
-    let desconto = descontoAplicado || 0;
-    let totalFinal = userData.totalGeral - desconto;
-    let msg = "*Pedido Bento Mineiro*\n\n";
-    msg += `*Nome:* ${userData.nome}\n`;
-    msg += `*Telefone:* ${userData.telefone}\n`;
-    msg += `*CEP:* ${userData.cep}\n`;
-    msg += `*Endereço:* ${userData.endereco}\n`;
-    msg += `*Número:* ${userData.numero}\n`;
-    msg += `*Complemento:* ${userData.complemento}\n\n`;
-    msg += userData.resumoPedido;
-    if (desconto > 0) {
-      msg += `*Cupom aplicado:* -R$ ${desconto.toFixed(2)}\n`;
-    }
-    msg += `*Total Final:* R$ ${totalFinal.toFixed(2)}\n\n`;
+    msg += `*Total Geral:* R$ ${totalFinal.toFixed(2)}\n\n`;
     msg += `*Observações:* ${userData.obs}\n\n`;
     msg += "_Valor total sem frete - Consulte o valor de frete na hora de finalizar o pagamento_\n";
+  
     const url = "https://wa.me/5511917420830?text=" + encodeURIComponent(msg);
     window.open(url, "_blank");
   }
-
+  
   function converterDesconto(desc, valorTotal) {
     const d = desc.toString().trim();
     let num = parseFloat(d.replace("%", ""));
@@ -628,7 +659,7 @@
       return valorTotal * num;
     }
   }
-
+  
   function salvarUserData() {
     localStorage.setItem("bentoMineiroUserData", JSON.stringify(userData));
   }
@@ -636,7 +667,7 @@
     const data = localStorage.getItem("bentoMineiroUserData");
     userData = data ? JSON.parse(data) : {};
   }
-
+  
   function mostrarCarregando(status) {
     document.getElementById("loadingIndicator").style.display = status ? "block" : "none";
   }
