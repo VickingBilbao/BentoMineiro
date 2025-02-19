@@ -173,10 +173,7 @@
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#fff" viewBox="0 0 24 24">
       <path d="M7 18c-1.105 0-2 .895-2 2s.895 2 2 2c1.105 
                0 2-.895 2-2s-.895-2-2-2zm10 0c-1.105 0-2 
-               .895-2 2s.895 2 2 2c1.105 0 2-.895 
-               2-2s-.895-2-2-2zm-13.364-16l3.364 
-               6h10.364l3-6h-16.728zm-1.636-2h20l-4 
-               8h-12l-4-8z"/>
+               .895-2 2s.895 2 2 2c1.105 0 2-.895 2-2s-.895-2-2-2zm-13.364-16l3.364 6h10.364l3-6h-16.728zm-1.636-2h20l-4 8h-12l-4-8z"/>
     </svg>
     <span id="cartCount" class="cart-count">0</span>
   </div>
@@ -247,7 +244,7 @@
           <input type="text" class="form-control" id="numeroDados" placeholder="Número" required>
           <input type="text" class="form-control" id="complementoDados" placeholder="Complemento">
           <textarea class="form-control" id="observacoesDados" rows="3" placeholder="Observações"></textarea>
-          <input type="text" class="form-control" id="cupomDados" placeholder="Cupom de Desconto">
+          <input type="text" class="form-control" id="cupomDados" placeholder="Cupom de Desconto (ex: TESTE10)">
         </form>
       </div>
       <div class="modal-footer">
@@ -265,34 +262,58 @@
 <!-- Bootstrap JS (Bundle com Popper) -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-  // URL do Apps Script
+  // URL do Apps Script (novo endpoint)
   const API_BASE_URL = "https://script.google.com/macros/s/AKfycby_dAOyS0cMlgnqElZw4wYijk9SK84AB2yD32duWOEAuH25RCDhF0OTqBIYXawYaFIw/exec";
+  // Cache atualizado para 1 minuto (60.000 ms)
   const CACHE_KEY = "bentoMineiroProdutos";
   const CACHE_TIMESTAMP_KEY = "bentoMineiroProdutosTimestamp";
-  const CACHE_EXPIRATION = 10 * 60 * 1000; // 10 minutos
+  const CACHE_EXPIRATION = 60000; // 1 minuto
 
   let allProducts = [];
   let cart = {};
   let userData = {};
   let currentCategory = localStorage.getItem("bentoMineiroCurrentCategory") || "Destaques";
+  let allCupons = [];
 
-  // Carrega o carrinho do localStorage e atualiza as quantidades
+  // Função para salvar o carrinho no localStorage
+  function salvarCart() {
+    localStorage.setItem("bentoMineiroCart", JSON.stringify(cart));
+  }
+  
+  // Carrega o carrinho do localStorage e atualiza os seletors
   function carregarCart() {
     const data = localStorage.getItem("bentoMineiroCart");
     cart = data ? JSON.parse(data) : {};
     atualizarCartCount();
-    // Se os produtos já foram renderizados, atualiza as quantidades
     for (const pid in cart) {
       const el = document.getElementById(`qty-${pid}`);
-      if (el) {
-        el.textContent = cart[pid].quantidade;
-      }
+      if (el) el.textContent = cart[pid].quantidade;
     }
   }
-
-  // Salva a categoria atual no localStorage
+  
+  // Salva a categoria atual
   function salvarCategoria(cat) {
     localStorage.setItem("bentoMineiroCurrentCategory", cat);
+  }
+
+  // Função para buscar cupons
+  async function fetchCupons() {
+    try {
+      const response = await fetch(API_BASE_URL + "?action=cupons");
+      const cupons = await response.json();
+      if (!Array.isArray(cupons) || cupons.length < 2) {
+        return [];
+      }
+      const headers = cupons[0];
+      return cupons.slice(1).map(row => {
+        let obj = {};
+        headers.forEach((h, i) => obj[h] = row[i]);
+        return obj;
+      });
+    } catch (error) {
+      console.error("Erro ao buscar cupons:", error);
+      return [];
+    }
   }
 
   document.addEventListener("DOMContentLoaded", async () => {
@@ -302,6 +323,8 @@
     try {
       const data = await fetchProdutosCache();
       allProducts = transformarDados(data);
+      // Carrega cupons
+      allCupons = await fetchCupons();
       filtrarCategoria(currentCategory);
     } catch (error) {
       console.error("Erro ao carregar produtos:", error);
@@ -355,10 +378,8 @@
     const container = document.getElementById("productsContainer");
     container.innerHTML = "";
     produtos.forEach(prod => {
-      // Normaliza Tipo
       const tipoNormalized = prod.Tipo ? prod.Tipo.toString().trim().toLowerCase() : "";
       const tagClass = (tipoNormalized === "pronta entrega") ? "tag-pronta" : "tag-encomenda";
-      
       const col = document.createElement("div");
       col.className = "col-6 col-md-4 col-lg-3";
       col.innerHTML = `
@@ -378,36 +399,28 @@
       `;
       container.appendChild(col);
     });
-    // Após renderizar, atualiza as quantidades conforme o carrinho
+    // Atualiza as quantidades conforme o carrinho
     for (const pid in cart) {
       const el = document.getElementById(`qty-${pid}`);
-      if (el) {
-        el.textContent = cart[pid].quantidade;
-      }
+      if (el) el.textContent = cart[pid].quantidade;
     }
   }
 
   function filtrarCategoria(cat) {
     currentCategory = cat;
     localStorage.setItem("bentoMineiroCurrentCategory", cat);
-
-    // Normaliza a string da categoria para comparar
     const catNormalized = cat.trim().toLowerCase();
-
     if (catNormalized === "destaques") {
-      // Destaques => filtra col "Destaque" = "Sim" (ignorando maiúsculas/esp)
+      // Filtra produtos com Destaque = "sim"
       const destaques = allProducts.filter(p => {
         if (!p.Destaque) return false;
-        const d = p.Destaque.toString().trim().toLowerCase();
-        return d === "sim";
+        return p.Destaque.toString().trim().toLowerCase() === "sim";
       });
       exibirProdutos(destaques);
     } else {
-      // Filtra a coluna "Categoria" ignorando variações
       const filtrados = allProducts.filter(p => {
         if (!p.Categoria) return false;
-        const c = p.Categoria.toString().trim().toLowerCase();
-        return c === catNormalized;
+        return p.Categoria.toString().trim().toLowerCase() === catNormalized;
       });
       exibirProdutos(filtrados);
     }
@@ -444,7 +457,7 @@
     for (const pid in cart) {
       const item = cart[pid];
       if (item.quantidade > 0) {
-        const subtotal = parseFloat(item.produto.Valor).toFixed(2) * item.quantidade;
+        const subtotal = parseFloat(item.produto.Valor) * item.quantidade;
         total += subtotal;
         cartItemsEl.innerHTML += `
           <div class="cart-item">
@@ -495,8 +508,9 @@
     userData.obs = document.getElementById("observacoesDados").value;
     salvarUserData();
 
-    const cupom = document.getElementById("cupomDados").value.trim().toUpperCase();
-
+    const cupomDigitado = document.getElementById("cupomDados").value.trim().toUpperCase();
+    let desconto = 0;
+    let totalGeral = 0;
     let msg = "*Pedido Bento Mineiro*\n\n";
     msg += `*Nome:* ${userData.nome}\n`;
     msg += `*Telefone:* ${userData.telefone}\n`;
@@ -506,12 +520,10 @@
     msg += `*Complemento:* ${userData.complemento}\n\n`;
 
     let categoriasCarrinho = {};
-    let totalGeral = 0;
     for (const pid in cart) {
       const item = cart[pid];
       if (item.quantidade > 0) {
         const catRaw = item.produto.Categoria || "Outros";
-        // Normaliza a categoria
         const catNorm = catRaw.toString().trim() || "Outros";
         if (!categoriasCarrinho[catNorm]) {
           categoriasCarrinho[catNorm] = [];
@@ -527,26 +539,42 @@
         subtotalCat += subtotal;
         msg += `- ${item.produto.Nome} (x${item.quantidade}) = R$ ${subtotal.toFixed(2)}\n`;
       });
-      if (cat.toLowerCase() === "encomendas" || cat.toLowerCase() === "encomenda") {
+      if (cat.toLowerCase() === "encomenda" || cat.toLowerCase() === "encomendas") {
         msg += "_(Consulte a agenda de entrega de encomendas na hora de finalizar o pagamento)_\n";
       }
       msg += `Subtotal ${cat}: R$ ${subtotalCat.toFixed(2)}\n\n`;
       totalGeral += subtotalCat;
     }
 
-    let desconto = 0;
-    if (cupom === "TESTE10") {
-      desconto = totalGeral * 0.10;
-      msg += `*Cupom TESTE10 aplicado: -R$ ${desconto.toFixed(2)}*\n\n`;
+    // Procura cupom nos cupons cadastrados
+    const foundCupom = allCupons.find(c => 
+      c.Codigo && c.Codigo.toString().trim().toUpperCase() === cupomDigitado
+    );
+    if (foundCupom) {
+      desconto = converterDesconto(foundCupom.Desconto, totalGeral);
+      msg += `*Cupom ${foundCupom.Codigo} aplicado: -R$ ${desconto.toFixed(2)}*\n\n`;
     }
+
     let totalFinal = totalGeral - desconto;
     msg += `*Total Geral:* R$ ${totalFinal.toFixed(2)}\n\n`;
     msg += `*Observações:* ${userData.obs}\n\n`;
     msg += "_Valor total sem frete - Consulte o valor de frete na hora de finalizar o pagamento_\n";
 
-    // Número de WhatsApp: +55 11 91742-0830
+    // Número de WhatsApp atualizado: +55 11 91742-0830
     const url = "https://wa.me/5511917420830?text=" + encodeURIComponent(msg);
     window.open(url, "_blank");
+  }
+
+  function converterDesconto(desc, valorTotal) {
+    // Converte a string de desconto para um número
+    // Exemplo: "10%" ou "0.10"
+    const d = desc.toString().trim();
+    let num = parseFloat(d.replace("%", ""));
+    if (d.includes("%")) {
+      return valorTotal * (num / 100);
+    } else {
+      return valorTotal * num;
+    }
   }
 
   function salvarUserData() {
@@ -557,10 +585,269 @@
     userData = data ? JSON.parse(data) : {};
   }
 
-  function salvarCart() {
-    localStorage.setItem("bentoMineiroCart", JSON.stringify(cart));
+  function mostrarCarregando(status) {
+    document.getElementById("loadingIndicator").style.display = status ? "block" : "none";
   }
 
+  // Função para buscar cupons
+  async function fetchCupons() {
+    try {
+      const response = await fetch(API_BASE_URL + "?action=cupons");
+      const cuponsRaw = await response.json();
+      if (!Array.isArray(cuponsRaw) || cuponsRaw.length < 2) return [];
+      const headers = cuponsRaw[0];
+      return cuponsRaw.slice(1).map(row => {
+        let obj = {};
+        headers.forEach((h, i) => { obj[h] = row[i]; });
+        return obj;
+      });
+    } catch (error) {
+      console.error("Erro ao carregar cupons:", error);
+      return [];
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", async () => {
+    // Já carregado: userData e carrinho
+    carregarUserData();
+    carregarCart();
+    mostrarCarregando(true);
+    try {
+      const data = await fetchProdutosCache();
+      allProducts = transformarDados(data);
+      // Carrega cupons
+      allCupons = await fetchCupons();
+      filtrarCategoria(currentCategory);
+    } catch (error) {
+      console.error("Erro ao carregar produtos:", error);
+    } finally {
+      mostrarCarregando(false);
+    }
+    document.getElementById("cepDados").addEventListener("blur", async function() {
+      const cep = this.value.replace(/\D/g, '');
+      if (cep.length === 8) {
+        try {
+          const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+          const data = await response.json();
+          if (!data.erro) {
+            document.getElementById("enderecoDados").value = `${data.logradouro}, ${data.bairro}, ${data.localidade} - ${data.uf}`;
+          } else {
+            alert("CEP não encontrado.");
+          }
+        } catch (error) {
+          console.error("Erro ao buscar CEP:", error);
+        }
+      }
+    });
+  });
+
+  function exibirProdutos(produtos) {
+    const container = document.getElementById("productsContainer");
+    container.innerHTML = "";
+    produtos.forEach(prod => {
+      const tipoNormalized = prod.Tipo ? prod.Tipo.toString().trim().toLowerCase() : "";
+      const tagClass = (tipoNormalized === "pronta entrega") ? "tag-pronta" : "tag-encomenda";
+      const col = document.createElement("div");
+      col.className = "col-6 col-md-4 col-lg-3";
+      col.innerHTML = `
+        <div class="product-card p-2">
+          <img src="${prod.Imagem}" alt="${prod.Nome}">
+          <div class="product-body">
+            <div class="product-title">${prod.Nome}</div>
+            <div class="product-price">R$ ${parseFloat(prod.Valor).toFixed(2)}</div>
+            <div class="qty-controls" data-id="${prod.ID}">
+              <div class="qty-btn" onclick="alterarQuantidade('${prod.ID}', -1)">-</div>
+              <div class="qty-value" id="qty-${prod.ID}">0</div>
+              <div class="qty-btn" onclick="alterarQuantidade('${prod.ID}', 1)">+</div>
+            </div>
+            <div class="product-tag ${tagClass}">${prod.Tipo || ""}</div>
+          </div>
+        </div>
+      `;
+      container.appendChild(col);
+    });
+    // Atualiza quantidades dos produtos já salvos no carrinho
+    for (const pid in cart) {
+      const el = document.getElementById(`qty-${pid}`);
+      if (el) el.textContent = cart[pid].quantidade;
+    }
+  }
+
+  function filtrarCategoria(cat) {
+    currentCategory = cat;
+    localStorage.setItem("bentoMineiroCurrentCategory", cat);
+    const catNormalized = cat.trim().toLowerCase();
+    if (catNormalized === "destaques") {
+      const destaques = allProducts.filter(p => {
+        if (!p.Destaque) return false;
+        return p.Destaque.toString().trim().toLowerCase() === "sim";
+      });
+      exibirProdutos(destaques);
+    } else {
+      const filtrados = allProducts.filter(p => {
+        if (!p.Categoria) return false;
+        return p.Categoria.toString().trim().toLowerCase() === catNormalized;
+      });
+      exibirProdutos(filtrados);
+    }
+  }
+
+  function alterarQuantidade(productID, delta) {
+    let item = cart[productID];
+    if (!item) {
+      const produto = allProducts.find(p => p.ID == productID);
+      if (!produto) return;
+      cart[productID] = { produto, quantidade: 0 };
+      item = cart[productID];
+    }
+    item.quantidade += delta;
+    if (item.quantidade < 0) item.quantidade = 0;
+    document.getElementById(`qty-${productID}`).textContent = item.quantidade;
+    atualizarCartCount();
+    salvarCart();
+  }
+
+  function atualizarCartCount() {
+    let totalItens = 0;
+    for (const pid in cart) {
+      totalItens += cart[pid].quantidade;
+    }
+    document.getElementById("cartCount").textContent = totalItens;
+  }
+
+  function verCarrinho() {
+    const cartItemsEl = document.getElementById("cartItems");
+    const cartTotalEl = document.getElementById("cartTotal");
+    cartItemsEl.innerHTML = "";
+    let total = 0;
+    for (const pid in cart) {
+      const item = cart[pid];
+      if (item.quantidade > 0) {
+        const subtotal = parseFloat(item.produto.Valor) * item.quantidade;
+        total += subtotal;
+        cartItemsEl.innerHTML += `
+          <div class="cart-item">
+            <span>${item.produto.Nome} (x${item.quantidade})</span>
+            <strong>R$ ${subtotal.toFixed(2)}</strong>
+          </div>
+        `;
+      }
+    }
+    cartTotalEl.textContent = "R$ " + total.toFixed(2);
+    const modalEl = new bootstrap.Modal(document.getElementById("cartModal"));
+    modalEl.show();
+  }
+
+  function limparCarrinho() {
+    cart = {};
+    localStorage.removeItem("bentoMineiroCart");
+    document.getElementById("cartItems").innerHTML = "";
+    document.getElementById("cartTotal").textContent = "R$ 0,00";
+    allProducts.forEach(p => {
+      const el = document.getElementById(`qty-${p.ID}`);
+      if (el) el.textContent = "0";
+    });
+    atualizarCartCount();
+  }
+
+  function mostrarFormularioDados() {
+    const cartModal = bootstrap.Modal.getInstance(document.getElementById("cartModal"));
+    cartModal.hide();
+    document.getElementById("nomeDados").value = userData.nome || "";
+    document.getElementById("telefoneDados").value = userData.telefone || "";
+    document.getElementById("cepDados").value = userData.cep || "";
+    document.getElementById("enderecoDados").value = userData.endereco || "";
+    document.getElementById("numeroDados").value = userData.numero || "";
+    document.getElementById("complementoDados").value = userData.complemento || "";
+    document.getElementById("observacoesDados").value = userData.obs || "";
+    const dadosModal = new bootstrap.Modal(document.getElementById("dadosModal"));
+    dadosModal.show();
+  }
+
+  function finalizarPedidoWhatsApp() {
+    userData.nome = document.getElementById("nomeDados").value;
+    userData.telefone = document.getElementById("telefoneDados").value;
+    userData.cep = document.getElementById("cepDados").value;
+    userData.endereco = document.getElementById("enderecoDados").value;
+    userData.numero = document.getElementById("numeroDados").value;
+    userData.complemento = document.getElementById("complementoDados").value;
+    userData.obs = document.getElementById("observacoesDados").value;
+    salvarUserData();
+  
+    const cupomDigitado = document.getElementById("cupomDados").value.trim().toUpperCase();
+    let desconto = 0;
+    let totalGeral = 0;
+    let msg = "*Pedido Bento Mineiro*\n\n";
+    msg += `*Nome:* ${userData.nome}\n`;
+    msg += `*Telefone:* ${userData.telefone}\n`;
+    msg += `*CEP:* ${userData.cep}\n`;
+    msg += `*Endereço:* ${userData.endereco}\n`;
+    msg += `*Número:* ${userData.numero}\n`;
+    msg += `*Complemento:* ${userData.complemento}\n\n`;
+  
+    let categoriasCarrinho = {};
+    for (const pid in cart) {
+      const item = cart[pid];
+      if (item.quantidade > 0) {
+        const catRaw = item.produto.Categoria || "Outros";
+        const catNorm = catRaw.toString().trim() || "Outros";
+        if (!categoriasCarrinho[catNorm]) {
+          categoriasCarrinho[catNorm] = [];
+        }
+        categoriasCarrinho[catNorm].push(item);
+      }
+    }
+    for (const cat in categoriasCarrinho) {
+      msg += `*${cat}*\n`;
+      let subtotalCat = 0;
+      categoriasCarrinho[cat].forEach(item => {
+        const subtotal = parseFloat(item.produto.Valor) * item.quantidade;
+        subtotalCat += subtotal;
+        msg += `- ${item.produto.Nome} (x${item.quantidade}) = R$ ${subtotal.toFixed(2)}\n`;
+      });
+      if (cat.toLowerCase() === "encomenda" || cat.toLowerCase() === "encomendas") {
+        msg += "_(Consulte a agenda de entrega de encomendas na hora de finalizar o pagamento)_\n";
+      }
+      msg += `Subtotal ${cat}: R$ ${subtotalCat.toFixed(2)}\n\n`;
+      totalGeral += subtotalCat;
+    }
+  
+    // Procura o cupom nos cupons cadastrados
+    const foundCupom = allCupons.find(c => c.Codigo && c.Codigo.toString().trim().toUpperCase() === cupomDigitado);
+    if (foundCupom) {
+      desconto = converterDesconto(foundCupom.Desconto, totalGeral);
+      msg += `*Cupom ${foundCupom.Codigo} aplicado: -R$ ${desconto.toFixed(2)}*\n\n`;
+    }
+  
+    let totalFinal = totalGeral - desconto;
+    msg += `*Total Geral:* R$ ${totalFinal.toFixed(2)}\n\n`;
+    msg += `*Observações:* ${userData.obs}\n\n`;
+    msg += "_Valor total sem frete - Consulte o valor de frete na hora de finalizar o pagamento_\n";
+  
+    // Número de WhatsApp atualizado: +55 11 91742-0830
+    const url = "https://wa.me/5511917420830?text=" + encodeURIComponent(msg);
+    window.open(url, "_blank");
+  }
+  
+  function converterDesconto(desc, valorTotal) {
+    const d = desc.toString().trim();
+    let num = parseFloat(d.replace("%", ""));
+    if (d.includes("%")) {
+      return valorTotal * (num / 100);
+    } else {
+      return valorTotal * num;
+    }
+  }
+  
+  function salvarUserData() {
+    localStorage.setItem("bentoMineiroUserData", JSON.stringify(userData));
+  }
+  
+  function carregarUserData() {
+    const data = localStorage.getItem("bentoMineiroUserData");
+    userData = data ? JSON.parse(data) : {};
+  }
+  
   function mostrarCarregando(status) {
     document.getElementById("loadingIndicator").style.display = status ? "block" : "none";
   }
