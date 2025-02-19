@@ -126,6 +126,7 @@
       text-align: center;
       font-weight: 500;
     }
+    /* Tag para Tipo – caixa arredondada com cores distintas */
     .product-tag {
       display: inline-block;
       padding: 2px 8px;
@@ -202,9 +203,7 @@
 
 <!-- Lista de Produtos -->
 <div class="container">
-  <div class="row" id="productsContainer">
-    <!-- Cards de produto gerados dinamicamente -->
-  </div>
+  <div class="row" id="productsContainer"></div>
 </div>
 
 <!-- Modal: Dados do Cliente -->
@@ -243,10 +242,8 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
       </div>
       <div class="modal-body">
-        <!-- Resumo gerado dinamicamente -->
         <div id="resumoPedido"></div>
         <hr>
-        <!-- Cupom: campo e botão -->
         <div class="mb-3">
           <input type="text" class="form-control" id="cupomDados" placeholder="Digite o cupom">
         </div>
@@ -279,7 +276,8 @@
       </div>
       <div class="modal-footer">
         <button class="btn btn-danger" onclick="limparCarrinho()">Limpar Carrinho</button>
-        <button class="btn btn-primary" onclick="mostrarFormularioDados()">Editar Dados</button>
+        <!-- Botão atualizado: "Fechar Pedido" que abre a tela de dados -->
+        <button class="btn btn-success" onclick="mostrarFormularioDados()">Fechar Pedido</button>
       </div>
     </div>
   </div>
@@ -304,14 +302,11 @@
   let userData = {};
   let currentCategory = localStorage.getItem("bentoMineiroCurrentCategory") || "Destaques";
   let allCupons = [];
-  // Variável para armazenar o desconto aplicado
   let descontoAplicado = 0;
 
-  // Função para salvar o carrinho
   function salvarCart() {
     localStorage.setItem("bentoMineiroCart", JSON.stringify(cart));
   }
-  // Carrega o carrinho e atualiza as quantidades
   function carregarCart() {
     const data = localStorage.getItem("bentoMineiroCart");
     cart = data ? JSON.parse(data) : {};
@@ -509,9 +504,8 @@
     atualizarCartCount();
   }
 
-  // Modal Dados: Salva os dados e avança para o resumo
+  // Modal Dados: Avança para o resumo
   function avancarParaResumo() {
-    // Salva os dados do formulário de cliente
     userData.nome = document.getElementById("nomeDados").value;
     userData.telefone = document.getElementById("telefoneDados").value;
     userData.cep = document.getElementById("cepDados").value;
@@ -520,7 +514,6 @@
     userData.complemento = document.getElementById("complementoDados").value;
     userData.obs = document.getElementById("observacoesDados").value;
     salvarUserData();
-    // Fecha o modal de dados e abre o modal de resumo
     const dadosModal = bootstrap.Modal.getInstance(document.getElementById("dadosModal"));
     dadosModal.hide();
     gerarResumo();
@@ -536,7 +529,6 @@
     dadosModal.show();
   }
   
-  // Gera o resumo do pedido (sem cupom aplicado ainda)
   function gerarResumo() {
     let msg = "";
     let totalGeral = 0;
@@ -566,14 +558,12 @@
       msg += `Subtotal ${cat}: R$ ${subtotalCat.toFixed(2)}\n\n`;
       totalGeral += subtotalCat;
     }
-    // Armazena o resumo e o total para uso na finalização
     userData.resumoPedido = msg;
     userData.totalGeral = totalGeral;
-    // Exibe o resumo na tela
     document.getElementById("resumoPedido").innerText = msg + `Total: R$ ${totalGeral.toFixed(2)}`;
   }
 
-  // Aplica cupom: ao clicar no botão "Aplicar Cupom"
+  // Aplica cupom no resumo
   function aplicarCupom() {
     const cupomDigitado = document.getElementById("cupomDados").value.trim().toUpperCase();
     const cupomFeedbackEl = document.getElementById("cupomFeedback");
@@ -592,12 +582,10 @@
       cupomFeedbackEl.textContent = `Cupom ${foundCupom.Codigo} aplicado! Desconto: R$ ${descontoAplicado.toFixed(2)}`;
       cupomFeedbackEl.style.color = "#28a745";
     }
-    // Atualiza o resumo com o desconto aplicado
     let totalFinal = userData.totalGeral - descontoAplicado;
     document.getElementById("resumoPedido").innerText = userData.resumoPedido + `\nDesconto: R$ ${descontoAplicado.toFixed(2)}\nTotal Final: R$ ${totalFinal.toFixed(2)}`;
   }
 
-  // Finaliza o pedido enviando mensagem via WhatsApp
   function finalizarPedidoWhatsApp() {
     let desconto = descontoAplicado || 0;
     let totalFinal = userData.totalGeral - desconto;
@@ -615,7 +603,6 @@
     msg += `*Total Final:* R$ ${totalFinal.toFixed(2)}\n\n`;
     msg += `*Observações:* ${userData.obs}\n\n`;
     msg += "_Valor total sem frete - Consulte o valor de frete na hora de finalizar o pagamento_\n";
-  
     const url = "https://wa.me/5511917420830?text=" + encodeURIComponent(msg);
     window.open(url, "_blank");
   }
@@ -637,7 +624,6 @@
     const data = localStorage.getItem("bentoMineiroUserData");
     userData = data ? JSON.parse(data) : {};
   }
-
   function mostrarCarregando(status) {
     document.getElementById("loadingIndicator").style.display = status ? "block" : "none";
   }
