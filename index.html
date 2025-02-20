@@ -9,12 +9,15 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
   <style>
+    /* ===== Reset & Base ===== */
     body {
       font-family: 'Poppins', sans-serif;
       background-color: #f7f7f7;
       margin: 0;
       padding: 0;
     }
+
+    /* ===== Header ===== */
     .header-bar {
       background-color: #a56347;
       color: #fff;
@@ -52,6 +55,7 @@
       border-radius: 50%;
     }
 
+    /* ===== Category Chips ===== */
     .category-chips {
       display: flex;
       gap: 10px;
@@ -75,12 +79,14 @@
       background-color: #ffe6cc;
     }
 
+    /* ===== Loading Indicator ===== */
     #loadingIndicator {
       display: none;
       text-align: center;
       margin: 20px 0;
     }
 
+    /* ===== Product Cards ===== */
     .product-card {
       border: none;
       border-radius: 8px;
@@ -108,24 +114,25 @@
       margin-bottom: 8px;
       display: flex;
       align-items: center;
-      gap: 6px; /* espaço entre preço e etiqueta */
-    }
-    /* Etiqueta pequena ao lado do preço */
-    .product-type-label {
-      padding: 2px 6px;
-      font-size: 0.7rem; /* menor */
-      font-weight: 500;
-      border-radius: 12px; /* mais arredondado */
-      color: #fff;
-    }
-    /* Variações de marrom */
-    .tag-pronta {
-      background-color: #a56347; /* marrom mais claro */
-    }
-    .tag-encomenda {
-      background-color: #6f3d2a; /* marrom mais escuro */
+      gap: 6px;
     }
 
+    /* ===== Minimal Tag for Type (Pronta Entrega/Encomendas) ===== */
+    .product-type-label {
+      padding: 1px 5px;
+      font-size: 0.65rem;
+      font-weight: 500;
+      border-radius: 10px;
+      color: #fff;
+    }
+    .tag-pronta {
+      background-color: #00a44f; /* Verde vivo */
+    }
+    .tag-encomenda {
+      background-color: #007bff; /* Azul vivo */
+    }
+
+    /* ===== Quantity Controls ===== */
     .qty-controls {
       display: flex;
       align-items: center;
@@ -151,17 +158,18 @@
       font-weight: 500;
     }
 
-    /* Botão ADICIONAR em marrom */
+    /* ===== Custom Brown Button for "ADICIONAR" ===== */
     .btn-brown {
       background-color: #8B4513;
       border-color: #8B4513;
       color: #fff;
     }
     .btn-brown:hover {
-      background-color: #7a3d11; /* hover mais escuro */
+      background-color: #7a3d11;
       border-color: #7a3d11;
     }
 
+    /* ===== Modal & Footer ===== */
     .modal-header, .modal-footer {
       border: none;
     }
@@ -173,7 +181,6 @@
     .modal-body .form-control {
       margin-bottom: 10px;
     }
-
     footer {
       margin-top: 30px;
       padding: 10px;
@@ -183,7 +190,9 @@
     }
 
     @media (max-width: 576px) {
-      .header-left h2 { font-size: 0.9rem; }
+      .header-left h2 {
+        font-size: 0.9rem;
+      }
     }
   </style>
 </head>
@@ -197,15 +206,18 @@
   </div>
   <div class="cart-icon" onclick="verCarrinho()">
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#fff" viewBox="0 0 24 24">
-      <path d="M7 18c-1.105 0-2 .895-2 2s.895 2 2 2c1.105 
-               0 2-.895 2-2s-.895-2-2-2zm10 0c-1.105 0-2 
-               .895-2 2s.895 2 2 2c1.105 0 2-.895 2-2s-.895-2-2-2zm-13.364-16l3.364 6h10.364l3-6h-16.728zm-1.636-2h20l-4 8h-12l-4-8z"/>
+      <path d="M7 18c-1.105 0-2 .895-2 2s.895 2 2 
+               2c1.105 0 2-.895 2-2s-.895-2-2-2zm10 
+               0c-1.105 0-2 .895-2 2s.895 2 2 
+               2c1.105 0 2-.895 2-2s-.895-2-2-2zm-13.364 
+               -16l3.364 6h10.364l3-6h-16.728zm-1.636 
+               -2h20l-4 8h-12l-4-8z"/>
     </svg>
     <span id="cartCount" class="cart-count">0</span>
   </div>
 </div>
 
-<!-- Chips de Categoria -->
+<!-- Category Chips -->
 <div class="category-chips">
   <div class="category-chip" onclick="salvarCategoria('Destaques'); filtrarCategoria('Destaques')">Destaques</div>
   <div class="category-chip" onclick="salvarCategoria('Queijos'); filtrarCategoria('Queijos')">Queijos</div>
@@ -214,7 +226,7 @@
   <div class="category-chip" onclick="salvarCategoria('Outros'); filtrarCategoria('Outros')">Outros</div>
 </div>
 
-<!-- Indicador de Carregamento -->
+<!-- Loading Indicator -->
 <div id="loadingIndicator">
   <div class="spinner-border" role="status">
     <span class="visually-hidden">Carregando...</span>
@@ -222,12 +234,12 @@
   <p>Carregando produtos...</p>
 </div>
 
-<!-- Lista de Produtos -->
+<!-- Products Container -->
 <div class="container">
   <div class="row" id="productsContainer"></div>
 </div>
 
-<!-- Modal do Carrinho -->
+<!-- Modal Carrinho -->
 <div class="modal fade" id="cartModal" tabindex="-1" aria-labelledby="cartModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-scrollable">
     <div class="modal-content">
@@ -251,7 +263,7 @@
   </div>
 </div>
 
-<!-- Modal de Dados, Resumo e Cupom -->
+<!-- Modal Dados & Cupom -->
 <div class="modal fade" id="dadosModal" tabindex="-1" aria-labelledby="dadosModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -260,7 +272,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
       </div>
       <div class="modal-body">
-        <!-- Dados do Cliente -->
+        <!-- Form Dados Cliente -->
         <form id="formDados">
           <input type="text" class="form-control" id="nomeDados" placeholder="Nome" required>
           <input type="text" class="form-control" id="telefoneDados" placeholder="Telefone" required>
@@ -271,11 +283,11 @@
           <textarea class="form-control" id="observacoesDados" rows="3" placeholder="Observações"></textarea>
         </form>
         <hr>
-        <!-- Resumo do Pedido -->
+        <!-- Resumo Pedido -->
         <div id="orderSummary"></div>
         <div id="orderTotal"></div>
         <hr>
-        <!-- Cupom de Desconto -->
+        <!-- Cupom -->
         <div class="mb-2">
           <input type="text" class="form-control" id="cupomDados" placeholder="Cupom de Desconto">
           <button class="btn btn-primary btn-sm mt-2" onclick="aplicarCupom()">Aplicar Cupom</button>
@@ -294,12 +306,13 @@
   &copy; 2025 Bento Mineiro. Todos os direitos reservados.
 </footer>
 
-<!-- Bootstrap JS (Bundle com Popper) -->
+<!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-  // URL do Apps Script
+  /* ==============================
+     CONFIG & GLOBAL VARS
+  ============================== */
   const API_BASE_URL = "https://script.google.com/macros/s/AKfycbw8aho5WzXL8_x4ygTgu31MD9-c4xdpmfltlj61iLzHiRyxSw14GGJqWqe_Uhn9Pq7U/exec";
-  // Cache de 1 minuto
   const CACHE_KEY = "bentoMineiroProdutos";
   const CACHE_TIMESTAMP_KEY = "bentoMineiroProdutosTimestamp";
   const CACHE_EXPIRATION = 60000; // 1 minuto
@@ -309,9 +322,11 @@
   let userData = {};
   let currentCategory = localStorage.getItem("bentoMineiroCurrentCategory") || "Destaques";
   let allCupons = [];
-  let cupomAplicado = null; // Armazena o cupom aplicado
+  let cupomAplicado = null;
 
-  // Salvar e carregar carrinho do localStorage
+  /* ==============================
+     CART & CATEGORY FUNCTIONS
+  ============================== */
   function salvarCart() {
     localStorage.setItem("bentoMineiroCart", JSON.stringify(cart));
   }
@@ -319,18 +334,14 @@
     const data = localStorage.getItem("bentoMineiroCart");
     cart = data ? JSON.parse(data) : {};
     atualizarCartCount();
-    for (const pid in cart) {
-      const el = document.getElementById(`qty-${pid}`);
-      if (el) el.textContent = cart[pid].quantidade;
-    }
   }
-
-  // Salvar categoria atual
   function salvarCategoria(cat) {
     localStorage.setItem("bentoMineiroCurrentCategory", cat);
   }
 
-  // Buscar cupons
+  /* ==============================
+     FETCH CUpons
+  ============================== */
   async function fetchCupons() {
     try {
       const response = await fetch(API_BASE_URL + "?action=cupons");
@@ -348,7 +359,9 @@
     }
   }
 
-  // Ao carregar a página
+  /* ==============================
+     ON LOAD
+  ============================== */
   document.addEventListener("DOMContentLoaded", async () => {
     carregarUserData();
     carregarCart();
@@ -363,6 +376,7 @@
     } finally {
       mostrarCarregando(false);
     }
+
     // CEP autocomplete
     document.getElementById("cepDados").addEventListener("blur", async function() {
       const cep = this.value.replace(/\D/g, '');
@@ -371,7 +385,8 @@
           const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
           const data = await response.json();
           if (!data.erro) {
-            document.getElementById("enderecoDados").value = `${data.logradouro}, ${data.bairro}, ${data.localidade} - ${data.uf}`;
+            document.getElementById("enderecoDados").value = 
+              `${data.logradouro}, ${data.bairro}, ${data.localidade} - ${data.uf}`;
           } else {
             alert("CEP não encontrado.");
           }
@@ -382,18 +397,9 @@
     });
   });
 
-  // Transformar dados da planilha (array de arrays) em array de objetos
-  function transformarDados(data) {
-    if (!Array.isArray(data) || data.length < 2) return [];
-    const headers = data[0];
-    return data.slice(1).map(row => {
-      let obj = {};
-      headers.forEach((header, index) => { obj[header] = row[index]; });
-      return obj;
-    });
-  }
-
-  // Buscar produtos com cache
+  /* ==============================
+     FETCH & TRANSFORM PRODUCTS
+  ============================== */
   async function fetchProdutosCache() {
     const now = Date.now();
     const cachedData = localStorage.getItem(CACHE_KEY);
@@ -408,21 +414,31 @@
       return produtos;
     }
   }
+  function transformarDados(data) {
+    if (!Array.isArray(data) || data.length < 2) return [];
+    const headers = data[0];
+    return data.slice(1).map(row => {
+      let obj = {};
+      headers.forEach((header, index) => { obj[header] = row[index]; });
+      return obj;
+    });
+  }
 
-  // Exibir lista de produtos
+  /* ==============================
+     RENDER PRODUCTS
+  ============================== */
   function exibirProdutos(produtos) {
     const container = document.getElementById("productsContainer");
     container.innerHTML = "";
     produtos.forEach(prod => {
-      // Normaliza tipo
       const tipoNormalized = prod.Tipo ? prod.Tipo.toString().trim().toLowerCase() : "";
-      // Define classe de cor para a etiqueta
+      // Classe da tag
       const tagClass = (tipoNormalized === "pronta entrega") ? "tag-pronta" : "tag-encomenda";
 
       const col = document.createElement("div");
       col.className = "col-6 col-md-4 col-lg-3";
 
-      // Se o produto já está no carrinho, exibir seletor de quantidade; caso contrário, botão "ADICIONAR"
+      // Se já está no carrinho, mostrar seletor; senão, botão "ADICIONAR"
       let htmlControl = "";
       if (cart[prod.ID] && cart[prod.ID].quantidade > 0) {
         htmlControl = `
@@ -451,39 +467,25 @@
       `;
       container.appendChild(col);
     });
-    // Atualiza as quantidades nos seletores, se estiverem no carrinho
+    // Atualiza seletores do carrinho
     for (const pid in cart) {
       const el = document.getElementById(`qty-${pid}`);
       if (el) el.textContent = cart[pid].quantidade;
     }
   }
 
-  // Adicionar ao carrinho (inicializa com quantidade 1)
+  /* ==============================
+     ADD / REMOVE / UPDATE CART
+  ============================== */
   function adicionarAoCarrinho(productID) {
     const produto = allProducts.find(p => p.ID == productID);
     if (!produto) return;
     cart[productID] = { produto, quantidade: 1 };
     salvarCart();
     atualizarCartCount();
-    // Em vez de exibirProdutos(allProducts), chamamos filtrarCategoria para manter a mesma categoria
+    // Em vez de exibirProdutos(allProducts), chamamos filtrarCategoria
     filtrarCategoria(currentCategory);
   }
-
-  // Filtrar pela categoria atual
-  function filtrarCategoria(cat) {
-    currentCategory = cat;
-    localStorage.setItem("bentoMineiroCurrentCategory", cat);
-    const catNormalized = cat.trim().toLowerCase();
-    let filtrados = [];
-    if (catNormalized === "destaques") {
-      filtrados = allProducts.filter(p => p.Destaque && p.Destaque.toString().trim().toLowerCase() === "sim");
-    } else {
-      filtrados = allProducts.filter(p => p.Categoria && p.Categoria.toString().trim().toLowerCase() === catNormalized);
-    }
-    exibirProdutos(filtrados);
-  }
-
-  // Alterar quantidade (e permanecer na categoria atual)
   function alterarQuantidade(productID, delta) {
     let item = cart[productID];
     if (!item) {
@@ -501,11 +503,8 @@
     }
     salvarCart();
     atualizarCartCount();
-    // Refiltrar para não perder a categoria
     filtrarCategoria(currentCategory);
   }
-
-  // Atualiza contagem do carrinho no ícone
   function atualizarCartCount() {
     let totalItens = 0;
     for (const pid in cart) {
@@ -514,7 +513,25 @@
     document.getElementById("cartCount").textContent = totalItens;
   }
 
-  // Ver carrinho
+  /* ==============================
+     FILTER BY CATEGORY
+  ============================== */
+  function filtrarCategoria(cat) {
+    currentCategory = cat;
+    localStorage.setItem("bentoMineiroCurrentCategory", cat);
+    const catNormalized = cat.trim().toLowerCase();
+    let filtrados = [];
+    if (catNormalized === "destaques") {
+      filtrados = allProducts.filter(p => p.Destaque && p.Destaque.toString().trim().toLowerCase() === "sim");
+    } else {
+      filtrados = allProducts.filter(p => p.Categoria && p.Categoria.toString().trim().toLowerCase() === catNormalized);
+    }
+    exibirProdutos(filtrados);
+  }
+
+  /* ==============================
+     CARRINHO - MODAL
+  ============================== */
   function verCarrinho() {
     const cartItemsEl = document.getElementById("cartItems");
     const cartTotalEl = document.getElementById("cartTotal");
@@ -537,19 +554,18 @@
     const modalEl = new bootstrap.Modal(document.getElementById("cartModal"));
     modalEl.show();
   }
-
-  // Limpar carrinho
   function limparCarrinho() {
     cart = {};
     localStorage.removeItem("bentoMineiroCart");
     document.getElementById("cartItems").innerHTML = "";
     document.getElementById("cartTotal").textContent = "R$ 0,00";
     atualizarCartCount();
-    // Refiltrar a categoria atual para que todos voltem ao botão "ADICIONAR"
     filtrarCategoria(currentCategory);
   }
 
-  // Mostrar formulário de dados
+  /* ==============================
+     DADOS & CUPOM
+  ============================== */
   function mostrarFormularioDados() {
     const cartModal = bootstrap.Modal.getInstance(document.getElementById("cartModal"));
     cartModal.hide();
@@ -560,16 +576,14 @@
     document.getElementById("numeroDados").value = userData.numero || "";
     document.getElementById("complementoDados").value = userData.complemento || "";
     document.getElementById("observacoesDados").value = userData.obs || "";
-    // Limpa cupom e feedback antes de exibir
+    // Limpa cupom
     document.getElementById("cupomDados").value = "";
     document.getElementById("cupomFeedback").textContent = "";
-    // Exibe o resumo atualizado
     exibirResumoPedido();
     const dadosModal = new bootstrap.Modal(document.getElementById("dadosModal"));
     dadosModal.show();
   }
 
-  // Exibir resumo do pedido
   function exibirResumoPedido() {
     let resumo = "";
     let totalGeral = 0;
@@ -602,7 +616,6 @@
     document.getElementById("orderTotal").textContent = "";
   }
 
-  // Aplicar cupom
   function aplicarCupom() {
     const cupomDigitado = document.getElementById("cupomDados").value.trim().toUpperCase();
     const cupomFeedbackEl = document.getElementById("cupomFeedback");
@@ -631,7 +644,9 @@
     }
   }
 
-  // Finalizar pedido no WhatsApp
+  /* ==============================
+     FINALIZAR PEDIDO
+  ============================== */
   function finalizarPedidoWhatsApp() {
     userData.nome = document.getElementById("nomeDados").value;
     userData.telefone = document.getElementById("telefoneDados").value;
@@ -694,7 +709,9 @@
     window.open(url, "_blank");
   }
 
-  // Converter valor do desconto (ex.: "10%" ou "0.10")
+  /* ==============================
+     HELPER FUNCS
+  ============================== */
   function converterDesconto(desc, valorTotal) {
     const d = desc.toString().trim();
     let num = parseFloat(d.replace("%", ""));
@@ -704,8 +721,6 @@
       return valorTotal * num;
     }
   }
-
-  // Salvar e carregar dados do usuário
   function salvarUserData() {
     localStorage.setItem("bentoMineiroUserData", JSON.stringify(userData));
   }
@@ -713,7 +728,6 @@
     const data = localStorage.getItem("bentoMineiroUserData");
     userData = data ? JSON.parse(data) : {};
   }
-
   function mostrarCarregando(status) {
     document.getElementById("loadingIndicator").style.display = status ? "block" : "none";
   }
