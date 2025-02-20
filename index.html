@@ -78,6 +78,18 @@
     .category-chip:hover {
       background-color: #ffe6cc;
     }
+    /* Estado ativo para o chip selecionado */
+    .category-chip.active {
+      background-color: #ffe6cc;
+      border-color: #a56347;
+    }
+
+    /* ===== Separador Discreto ===== */
+    hr.separator-chips {
+      margin: 0;
+      border: none;
+      border-top: 1px solid #ddd;
+    }
 
     /* ===== Loading Indicator ===== */
     #loadingIndicator {
@@ -116,17 +128,15 @@
       align-items: center;
       gap: 6px;
     }
-
-    /* ===== Minimal text for Type (like iFood "Grátis") ===== */
+    /* ===== Minimal Tag for Type ===== */
     .product-type-label {
       font-size: 0.65rem;
       font-weight: 500;
-      color: #00a44f; /* default to green */
-      white-space: nowrap; /* evita quebrar linha */
+      white-space: nowrap;
+      color: #00a44f; /* Verde para Pronta Entrega */
     }
-    /* Cor específica se for Encomendas */
     .product-type-label.encomenda {
-      color: #007bff;
+      color: #007bff; /* Azul para Encomendas */
     }
 
     /* ===== Quantity Controls ===== */
@@ -203,12 +213,9 @@
   </div>
   <div class="cart-icon" onclick="verCarrinho()">
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#fff" viewBox="0 0 24 24">
-      <path d="M7 18c-1.105 0-2 .895-2 2s.895 
-               2 2 2c1.105 0 2-.895 2-2s-.895-2-2-2zm10 
-               0c-1.105 0-2 .895-2 2s.895 2 2 
-               2c1.105 0 2-.895 2-2s-.895-2-2-2zm-13.364
-               -16l3.364 6h10.364l3-6h-16.728zm-1.636
-               -2h20l-4 8h-12l-4-8z"/>
+      <path d="M7 18c-1.105 0-2 .895-2 2s.895 2 2 2c1.105 
+               0 2-.895 2-2s-.895-2-2-2zm10 0c-1.105 0-2 
+               .895-2 2s.895 2 2 2c1.105 0 2-.895 2-2s-.895-2-2-2zm-13.364-16l3.364 6h10.364l3-6h-16.728zm-1.636-2h20l-4 8h-12l-4-8z"/>
     </svg>
     <span id="cartCount" class="cart-count">0</span>
   </div>
@@ -216,12 +223,14 @@
 
 <!-- Category Chips -->
 <div class="category-chips">
-  <div class="category-chip" onclick="salvarCategoria('Destaques'); filtrarCategoria('Destaques')">Destaques</div>
+  <div class="category-chip active" onclick="salvarCategoria('Destaques'); filtrarCategoria('Destaques')">Destaques</div>
   <div class="category-chip" onclick="salvarCategoria('Queijos'); filtrarCategoria('Queijos')">Queijos</div>
   <div class="category-chip" onclick="salvarCategoria('Doces'); filtrarCategoria('Doces')">Doces</div>
   <div class="category-chip" onclick="salvarCategoria('Café da Tarde'); filtrarCategoria('Café da Tarde')">Café da Tarde</div>
   <div class="category-chip" onclick="salvarCategoria('Outros'); filtrarCategoria('Outros')">Outros</div>
 </div>
+<!-- Separador Discreto -->
+<hr class="separator-chips" />
 
 <!-- Loading Indicator -->
 <div id="loadingIndicator">
@@ -260,7 +269,7 @@
   </div>
 </div>
 
-<!-- Modal Dados & Cupom -->
+<!-- Modal Dados, Resumo e Cupom -->
 <div class="modal fade" id="dadosModal" tabindex="-1" aria-labelledby="dadosModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -269,7 +278,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
       </div>
       <div class="modal-body">
-        <!-- Form Dados Cliente -->
+        <!-- Formulário de Dados do Cliente -->
         <form id="formDados">
           <input type="text" class="form-control" id="nomeDados" placeholder="Nome" required>
           <input type="text" class="form-control" id="telefoneDados" placeholder="Telefone" required>
@@ -280,11 +289,15 @@
           <textarea class="form-control" id="observacoesDados" rows="3" placeholder="Observações"></textarea>
         </form>
         <hr>
-        <!-- Resumo Pedido -->
+        <!-- Resumo do Pedido -->
         <div id="orderSummary"></div>
         <div id="orderTotal"></div>
+        <!-- Texto informativo em itálico e menor -->
+        <p style="font-size: 0.75rem; font-style: italic; color: #555; margin-top: 10px;">
+          Ao finalizar, você será encaminhado ao WhatsApp para concluir seu pedido. Prazos de entrega e valores de frete serão combinados lá.
+        </p>
         <hr>
-        <!-- Cupom -->
+        <!-- Área de Cupom -->
         <div class="mb-2">
           <input type="text" class="form-control" id="cupomDados" placeholder="Cupom de Desconto">
           <button class="btn btn-primary btn-sm mt-2" onclick="aplicarCupom()">Aplicar Cupom</button>
@@ -310,9 +323,10 @@
      CONFIG & GLOBAL VARS
   ============================== */
   const API_BASE_URL = "https://script.google.com/macros/s/AKfycbw8aho5WzXL8_x4ygTgu31MD9-c4xdpmfltlj61iLzHiRyxSw14GGJqWqe_Uhn9Pq7U/exec";
+  /* Cache configurado para 5 minutos */
   const CACHE_KEY = "bentoMineiroProdutos";
   const CACHE_TIMESTAMP_KEY = "bentoMineiroProdutosTimestamp";
-  const CACHE_EXPIRATION = 60000; // 1 minuto
+  const CACHE_EXPIRATION = 5 * 60 * 1000; // 5 minutos
 
   let allProducts = [];
   let cart = {};
@@ -335,9 +349,19 @@
   function salvarCategoria(cat) {
     localStorage.setItem("bentoMineiroCurrentCategory", cat);
   }
+  // Destaca o chip ativo
+  function highlightChip(cat) {
+    document.querySelectorAll(".category-chip").forEach(chip => {
+      if (chip.textContent.trim().toLowerCase() === cat.toLowerCase()) {
+        chip.classList.add("active");
+      } else {
+        chip.classList.remove("active");
+      }
+    });
+  }
 
   /* ==============================
-     FETCH CUpons
+     FETCH CUPONS
   ============================== */
   async function fetchCupons() {
     try {
@@ -429,17 +453,13 @@
     container.innerHTML = "";
     produtos.forEach(prod => {
       const tipoNormalized = (prod.Tipo || "").toString().trim().toLowerCase();
-
-      // Se for "encomenda", trocamos a cor para azul. Caso contrário, verde (padrão).
       let extraClass = "";
-      if (tipoNormalized === "encomendas" || tipoNormalized === "encomenda") {
+      if (tipoNormalized === "encomenda" || tipoNormalized === "encomendas") {
         extraClass = "encomenda";
       }
-
       const col = document.createElement("div");
       col.className = "col-6 col-md-4 col-lg-3";
-
-      // Se já está no carrinho, exibir seletor; senão, botão "ADICIONAR"
+      
       let htmlControl = "";
       if (cart[prod.ID] && cart[prod.ID].quantidade > 0) {
         htmlControl = `
@@ -452,7 +472,7 @@
       } else {
         htmlControl = `<button class="btn btn-brown btn-sm" onclick="adicionarAoCarrinho('${prod.ID}')">ADICIONAR</button>`;
       }
-
+      
       col.innerHTML = `
         <div class="product-card p-2">
           <img src="${prod.Imagem}" alt="${prod.Nome}">
@@ -460,9 +480,7 @@
             <div class="product-title">${prod.Nome}</div>
             <div class="product-price">
               R$ ${parseFloat(prod.Valor).toFixed(2)}
-              <span class="product-type-label ${extraClass}">
-                ${prod.Tipo || ""}
-              </span>
+              <span class="product-type-label ${extraClass}">${prod.Tipo || ""}</span>
             </div>
             ${htmlControl}
           </div>
@@ -470,8 +488,6 @@
       `;
       container.appendChild(col);
     });
-
-    // Atualiza seletores do carrinho
     for (const pid in cart) {
       const el = document.getElementById(`qty-${pid}`);
       if (el) el.textContent = cart[pid].quantidade;
@@ -487,7 +503,6 @@
     cart[productID] = { produto, quantidade: 1 };
     salvarCart();
     atualizarCartCount();
-    // Em vez de exibirProdutos(allProducts), chamamos filtrarCategoria
     filtrarCategoria(currentCategory);
   }
   function alterarQuantidade(productID, delta) {
@@ -500,8 +515,6 @@
     }
     item.quantidade += delta;
     if (item.quantidade < 0) item.quantidade = 0;
-
-    // Se zerou, remove do carrinho
     if (item.quantidade === 0) {
       delete cart[productID];
     }
@@ -522,7 +535,7 @@
   ============================== */
   function filtrarCategoria(cat) {
     currentCategory = cat;
-    localStorage.setItem("bentoMineiroCurrentCategory", cat);
+    highlightChip(cat);
     const catNormalized = cat.trim().toLowerCase();
     let filtrados = [];
     if (catNormalized === "destaques") {
@@ -590,7 +603,6 @@
     const dadosModal = new bootstrap.Modal(document.getElementById("dadosModal"));
     dadosModal.show();
   }
-
   function exibirResumoPedido() {
     let resumo = "";
     let totalGeral = 0;
@@ -622,7 +634,6 @@
     document.getElementById("orderSummary").dataset.total = totalGeral;
     document.getElementById("orderTotal").textContent = "";
   }
-
   function aplicarCupom() {
     const cupomDigitado = document.getElementById("cupomDados").value.trim().toUpperCase();
     const cupomFeedbackEl = document.getElementById("cupomFeedback");
@@ -650,10 +661,6 @@
       document.getElementById("orderTotal").textContent = "";
     }
   }
-
-  /* ==============================
-     FINALIZAR PEDIDO
-  ============================== */
   function finalizarPedidoWhatsApp() {
     userData.nome = document.getElementById("nomeDados").value;
     userData.telefone = document.getElementById("telefoneDados").value;
@@ -710,14 +717,15 @@
     }
     msg += `*Total Geral:* R$ ${totalFinal.toFixed(2)}\n\n`;
     msg += `*Observações:* ${userData.obs}\n\n`;
-    msg += "_Valor total sem frete - Consulte o valor de frete na hora de finalizar o pagamento_\n";
+    const finalMsg = `***_O Bento Mineiro agradece seu contato UAI! Você vai ser atendido em breve e vamos combinar direitinho a entrega e o pagamento pra concluir seu pedido!_***\n\n`;
+    msg += finalMsg;
 
     const url = "https://wa.me/5511917420830?text=" + encodeURIComponent(msg);
     window.open(url, "_blank");
   }
 
   /* ==============================
-     HELPER FUNCS
+     HELPER FUNCTIONS
   ============================== */
   function converterDesconto(desc, valorTotal) {
     const d = desc.toString().trim();
