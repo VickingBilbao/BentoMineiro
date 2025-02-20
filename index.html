@@ -9,7 +9,7 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
   <style>
-    /* ===== Reset & Base ===== */
+    /* ===== Base Reset & Font ===== */
     body {
       font-family: 'Poppins', sans-serif;
       background-color: #f7f7f7;
@@ -117,19 +117,16 @@
       gap: 6px;
     }
 
-    /* ===== Minimal Tag for Type (Pronta Entrega/Encomendas) ===== */
+    /* ===== Minimal text for Type (like iFood "Grátis") ===== */
     .product-type-label {
-      padding: 1px 5px;
       font-size: 0.65rem;
       font-weight: 500;
-      border-radius: 10px;
-      color: #fff;
+      color: #00a44f; /* default to green */
+      white-space: nowrap; /* evita quebrar linha */
     }
-    .tag-pronta {
-      background-color: #00a44f; /* Verde vivo */
-    }
-    .tag-encomenda {
-      background-color: #007bff; /* Azul vivo */
+    /* Cor específica se for Encomendas */
+    .product-type-label.encomenda {
+      color: #007bff;
     }
 
     /* ===== Quantity Controls ===== */
@@ -206,11 +203,11 @@
   </div>
   <div class="cart-icon" onclick="verCarrinho()">
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#fff" viewBox="0 0 24 24">
-      <path d="M7 18c-1.105 0-2 .895-2 2s.895 2 2 
-               2c1.105 0 2-.895 2-2s-.895-2-2-2zm10 
+      <path d="M7 18c-1.105 0-2 .895-2 2s.895 
+               2 2 2c1.105 0 2-.895 2-2s-.895-2-2-2zm10 
                0c-1.105 0-2 .895-2 2s.895 2 2 
-               2c1.105 0 2-.895 2-2s-.895-2-2-2zm-13.364 
-               -16l3.364 6h10.364l3-6h-16.728zm-1.636 
+               2c1.105 0 2-.895 2-2s-.895-2-2-2zm-13.364
+               -16l3.364 6h10.364l3-6h-16.728zm-1.636
                -2h20l-4 8h-12l-4-8z"/>
     </svg>
     <span id="cartCount" class="cart-count">0</span>
@@ -431,14 +428,18 @@
     const container = document.getElementById("productsContainer");
     container.innerHTML = "";
     produtos.forEach(prod => {
-      const tipoNormalized = prod.Tipo ? prod.Tipo.toString().trim().toLowerCase() : "";
-      // Classe da tag
-      const tagClass = (tipoNormalized === "pronta entrega") ? "tag-pronta" : "tag-encomenda";
+      const tipoNormalized = (prod.Tipo || "").toString().trim().toLowerCase();
+
+      // Se for "encomenda", trocamos a cor para azul. Caso contrário, verde (padrão).
+      let extraClass = "";
+      if (tipoNormalized === "encomendas" || tipoNormalized === "encomenda") {
+        extraClass = "encomenda";
+      }
 
       const col = document.createElement("div");
       col.className = "col-6 col-md-4 col-lg-3";
 
-      // Se já está no carrinho, mostrar seletor; senão, botão "ADICIONAR"
+      // Se já está no carrinho, exibir seletor; senão, botão "ADICIONAR"
       let htmlControl = "";
       if (cart[prod.ID] && cart[prod.ID].quantidade > 0) {
         htmlControl = `
@@ -459,7 +460,9 @@
             <div class="product-title">${prod.Nome}</div>
             <div class="product-price">
               R$ ${parseFloat(prod.Valor).toFixed(2)}
-              <span class="product-type-label ${tagClass}">${prod.Tipo || ""}</span>
+              <span class="product-type-label ${extraClass}">
+                ${prod.Tipo || ""}
+              </span>
             </div>
             ${htmlControl}
           </div>
@@ -467,6 +470,7 @@
       `;
       container.appendChild(col);
     });
+
     // Atualiza seletores do carrinho
     for (const pid in cart) {
       const el = document.getElementById(`qty-${pid}`);
@@ -522,9 +526,13 @@
     const catNormalized = cat.trim().toLowerCase();
     let filtrados = [];
     if (catNormalized === "destaques") {
-      filtrados = allProducts.filter(p => p.Destaque && p.Destaque.toString().trim().toLowerCase() === "sim");
+      filtrados = allProducts.filter(p => 
+        p.Destaque && p.Destaque.toString().trim().toLowerCase() === "sim"
+      );
     } else {
-      filtrados = allProducts.filter(p => p.Categoria && p.Categoria.toString().trim().toLowerCase() === catNormalized);
+      filtrados = allProducts.filter(p => 
+        p.Categoria && p.Categoria.toString().trim().toLowerCase() === catNormalized
+      );
     }
     exibirProdutos(filtrados);
   }
@@ -576,7 +584,6 @@
     document.getElementById("numeroDados").value = userData.numero || "";
     document.getElementById("complementoDados").value = userData.complemento || "";
     document.getElementById("observacoesDados").value = userData.obs || "";
-    // Limpa cupom
     document.getElementById("cupomDados").value = "";
     document.getElementById("cupomFeedback").textContent = "";
     exibirResumoPedido();
