@@ -113,7 +113,7 @@
     }
     .product-body {
       padding: 10px;
-      text-align: left; /* Títulos e preços alinhados à esquerda */
+      text-align: left;
     }
     .product-title {
       font-size: 0.9rem; /* Tamanho um pouco menor */
@@ -128,19 +128,18 @@
       align-items: center;
       gap: 6px;
     }
-
-    /* ===== Minimal Tag for Type ===== */
+    /* ===== Tag Minimalista para Tipo ===== */
     .product-type-label {
       font-size: 0.65rem;
       font-weight: 500;
       white-space: nowrap;
-      color: #00a44f; /* Verde para Pronta Entrega */
+      color: #00a44f; /* Verde para Pronta Entrega (padrão) */
     }
     .product-type-label.encomenda {
       color: #007bff; /* Azul para Encomendas */
     }
 
-    /* ===== Quantity Controls & Button Container Centralizados ===== */
+    /* ===== Centralização dos Controles ===== */
     .control-container {
       text-align: center;
     }
@@ -180,7 +179,7 @@
       padding: 4px 10px;
       border-radius: 12px;
       display: inline-block;
-      margin: 0 auto; /* Centralizado */
+      margin: 0 auto;
     }
     .btn-orange:hover {
       background-color: #c9542e;
@@ -224,7 +223,9 @@
     </div>
     <div class="cart-icon" onclick="verCarrinho()">
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#fff" viewBox="0 0 24 24">
-        <path d="M7 18c-1.105 0-2 .895-2 2s.895 2 2 2c1.105 0 2-.895 2-2s-.895-2-2-2zm10 0c-1.105 0-2 .895-2 2s.895 2 2 2c1.105 0 2-.895 2-2s-.895-2-2-2zm-13.364-16l3.364 6h10.364l3-6h-16.728zm-1.636-2h20l-4 8h-12l-4-8z"/>
+        <path d="M7 18c-1.105 0-2 .895-2 2s.895 2 2 2c1.105 
+                 0 2-.895 2-2s-.895-2-2-2zm10 0c-1.105 0-2 
+                 .895-2 2s.895 2 2 2c1.105 0 2-.895 2-2s-.895-2-2-2zm-13.364-16l3.364 6h10.364l3-6h-16.728zm-1.636-2h20l-4 8h-12l-4-8z"/>
       </svg>
       <span id="cartCount" class="cart-count">0</span>
     </div>
@@ -301,7 +302,7 @@
           <!-- Resumo do Pedido -->
           <div id="orderSummary"></div>
           <div id="orderTotal"></div>
-          <!-- Texto informativo em itálico e menor -->
+          <!-- Texto informativo em itálico e menor, posicionado acima da área do cupom -->
           <p style="font-size: 0.75rem; font-style: italic; color: #555; margin-top: 10px;">
             Ao finalizar, você será encaminhado ao WhatsApp para concluir seu pedido. Prazos de entrega e valores de frete serão combinados lá.
           </p>
@@ -404,7 +405,6 @@
       } finally {
         mostrarCarregando(false);
       }
-
       // CEP autocomplete
       document.getElementById("cepDados").addEventListener("blur", async function() {
         const cep = this.value.replace(/\D/g, '');
@@ -501,7 +501,6 @@
         `;
         container.appendChild(col);
       });
-      // Atualiza as quantidades nos seletores
       for (const pid in cart) {
         const el = document.getElementById(`qty-${pid}`);
         if (el) el.textContent = cart[pid].quantidade;
@@ -660,10 +659,32 @@
         cupomFeedbackEl.style.color = "#d9534f";
         cupomAplicado = null;
       } else if (foundCupom) {
-        desconto = converterDesconto(foundCupom.Desconto, totalGeral);
-        cupomFeedbackEl.textContent = `Cupom ${foundCupom.Codigo} aplicado! Desconto: R$ ${desconto.toFixed(2)}`;
-        cupomFeedbackEl.style.color = "#28a745";
-        cupomAplicado = { cupom: foundCupom.Codigo, desconto };
+        // Se o cupom tiver um ProdutoID preenchido, aplica somente para aquele produto
+        if (foundCupom.ProdutoID && foundCupom.ProdutoID.toString().trim() !== "") {
+          let descontoEspecifico = 0;
+          for (const pid in cart) {
+            if (pid === foundCupom.ProdutoID.toString().trim()) {
+              const item = cart[pid];
+              descontoEspecifico += converterDesconto(foundCupom.Desconto, parseFloat(item.produto.Valor) * item.quantidade);
+            }
+          }
+          if (descontoEspecifico > 0) {
+            desconto = descontoEspecifico;
+            cupomFeedbackEl.textContent = `Cupom ${foundCupom.Codigo} aplicado para produto específico! Desconto: R$ ${desconto.toFixed(2)}`;
+            cupomFeedbackEl.style.color = "#28a745";
+            cupomAplicado = { cupom: foundCupom.Codigo, desconto, tipo: "especifico" };
+          } else {
+            cupomFeedbackEl.textContent = "Cupom específico não se aplica a nenhum item do seu pedido.";
+            cupomFeedbackEl.style.color = "#d9534f";
+            cupomAplicado = null;
+          }
+        } else {
+          // Cupom geral
+          desconto = converterDesconto(foundCupom.Desconto, totalGeral);
+          cupomFeedbackEl.textContent = `Cupom ${foundCupom.Codigo} aplicado! Desconto: R$ ${desconto.toFixed(2)}`;
+          cupomFeedbackEl.style.color = "#28a745";
+          cupomAplicado = { cupom: foundCupom.Codigo, desconto, tipo: "geral" };
+        }
       } else {
         cupomFeedbackEl.textContent = "";
         cupomAplicado = null;
