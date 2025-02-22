@@ -9,15 +9,13 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
   <style>
-    /* ===== Base & Font ===== */
     body {
       font-family: 'Poppins', sans-serif;
       background-color: #f7f7f7;
-      margin: 0;
+      margin: 0; 
       padding: 0;
     }
 
-    /* ===== Header ===== */
     .header-bar {
       background-color: #a56347;
       color: #fff;
@@ -55,7 +53,7 @@
       border-radius: 50%;
     }
 
-    /* ===== Category Chips ===== */
+    /* Container onde os chips serão gerados dinamicamente */
     .category-chips {
       display: flex;
       gap: 10px;
@@ -83,21 +81,18 @@
       border-color: #a56347;
     }
 
-    /* ===== Separador Discreto ===== */
     hr.separator-chips {
       margin: 0;
       border: none;
       border-top: 1px solid #ddd;
     }
 
-    /* ===== Loading Indicator ===== */
     #loadingIndicator {
       display: none;
       text-align: center;
       margin: 20px 0;
     }
 
-    /* ===== Product Card ===== */
     .product-card {
       border: none;
       border-radius: 8px;
@@ -116,7 +111,7 @@
       text-align: left;
     }
     .product-title {
-      font-size: 0.9rem; /* Tamanho um pouco menor */
+      font-size: 0.9rem; 
       font-weight: 600;
       margin-bottom: 5px;
     }
@@ -128,18 +123,16 @@
       align-items: center;
       gap: 6px;
     }
-    /* ===== Tag Minimalista para Tipo ===== */
     .product-type-label {
       font-size: 0.65rem;
       font-weight: 500;
       white-space: nowrap;
-      color: #00a44f; /* Verde para Pronta Entrega (padrão) */
+      color: #00a44f;
     }
     .product-type-label.encomenda {
-      color: #007bff; /* Azul para Encomendas */
+      color: #007bff;
     }
 
-    /* ===== Centralização dos Controles ===== */
     .control-container {
       text-align: center;
     }
@@ -170,7 +163,6 @@
       font-size: 0.9rem;
     }
 
-    /* ===== Botão "ADICIONAR" Customizado em Laranja ===== */
     .btn-orange {
       background-color: #e16438;
       border-color: #e16438;
@@ -186,7 +178,6 @@
       border-color: #c9542e;
     }
 
-    /* ===== Modal & Footer ===== */
     .modal-header, .modal-footer {
       border: none;
     }
@@ -223,23 +214,19 @@
     </div>
     <div class="cart-icon" onclick="verCarrinho()">
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#fff" viewBox="0 0 24 24">
-        <path d="M7 18c-1.105 0-2 .895-2 2s.895 2 2 2c1.105 
-                 0 2-.895 2-2s-.895-2-2-2zm10 0c-1.105 0-2 
-                 .895-2 2s.895 2 2 2c1.105 0 2-.895 2-2s-.895-2-2-2zm-13.364-16l3.364 6h10.364l3-6h-16.728zm-1.636-2h20l-4 8h-12l-4-8z"/>
+        <path d="M7 18c-1.105 0-2 .895-2 2s.895 
+                 2 2 2c1.105 0 2-.895 2-2s-.895-2-2-2zm10 
+                 0c-1.105 0-2 .895-2 2s.895 2 2 2c1.105 
+                 0 2-.895 2-2s-.895-2-2-2zm-13.364
+                 -16l3.364 6h10.364l3-6h-16.728zm-1.636
+                 -2h20l-4 8h-12l-4-8z"/>
       </svg>
       <span id="cartCount" class="cart-count">0</span>
     </div>
   </div>
 
-  <!-- Category Chips -->
-  <div class="category-chips">
-    <div class="category-chip active" onclick="salvarCategoria('Destaques'); filtrarCategoria('Destaques')">Destaques</div>
-    <div class="category-chip" onclick="salvarCategoria('Queijos'); filtrarCategoria('Queijos')">Queijos</div>
-    <div class="category-chip" onclick="salvarCategoria('Doces'); filtrarCategoria('Doces')">Doces</div>
-    <div class="category-chip" onclick="salvarCategoria('Café da Tarde'); filtrarCategoria('Café da Tarde')">Café da Tarde</div>
-    <div class="category-chip" onclick="salvarCategoria('Outros'); filtrarCategoria('Outros')">Outros</div>
-  </div>
-  <!-- Separador Discreto -->
+  <!-- Category Chips (dinâmico) -->
+  <div class="category-chips" id="chipsContainer"></div>
   <hr class="separator-chips" />
 
   <!-- Loading Indicator -->
@@ -302,7 +289,7 @@
           <!-- Resumo do Pedido -->
           <div id="orderSummary"></div>
           <div id="orderTotal"></div>
-          <!-- Texto informativo em itálico e menor, posicionado acima da área do cupom -->
+          <!-- Texto informativo em itálico e menor -->
           <p style="font-size: 0.75rem; font-style: italic; color: #555; margin-top: 10px;">
             Ao finalizar, você será encaminhado ao WhatsApp para concluir seu pedido. Prazos de entrega e valores de frete serão combinados lá.
           </p>
@@ -359,7 +346,8 @@
       localStorage.setItem("bentoMineiroCurrentCategory", cat);
     }
     function highlightChip(cat) {
-      document.querySelectorAll(".category-chip").forEach(chip => {
+      const chips = document.querySelectorAll(".category-chip");
+      chips.forEach(chip => {
         if (chip.textContent.trim().toLowerCase() === cat.toLowerCase()) {
           chip.classList.add("active");
         } else {
@@ -399,12 +387,19 @@
         const data = await fetchProdutosCache();
         allProducts = transformarDados(data);
         allCupons = await fetchCupons();
+
+        // 1) Gera os chips dinamicamente
+        gerarChipsDinamicos();
+
+        // 2) Filtra a categoria atual
         filtrarCategoria(currentCategory);
+
       } catch (error) {
         console.error("Erro ao carregar produtos:", error);
       } finally {
         mostrarCarregando(false);
       }
+
       // CEP autocomplete
       document.getElementById("cepDados").addEventListener("blur", async function() {
         const cep = this.value.replace(/\D/g, '');
@@ -424,6 +419,48 @@
         }
       });
     });
+
+    /* ==============================
+       DYNAMIC CHIPS GENERATION
+    ============================== */
+    function gerarChipsDinamicos() {
+      // Vamos criar um Set de categorias
+      const categorySet = new Set();
+      allProducts.forEach(prod => {
+        if (prod.Categoria && prod.Categoria.trim() !== "") {
+          categorySet.add(prod.Categoria.trim());
+        }
+      });
+
+      // Converte em array e ordena alfabeticamente, se quiser
+      const categoriesArray = Array.from(categorySet).sort();
+
+      // Montamos o HTML: 1) chip fixo "Destaques" + chips das categorias
+      const chipsContainer = document.getElementById("chipsContainer");
+      chipsContainer.innerHTML = ""; // limpa antes
+
+      // Chip de "Destaques"
+      const destaqueChip = document.createElement("div");
+      destaqueChip.className = "category-chip";
+      destaqueChip.textContent = "Destaques";
+      destaqueChip.addEventListener("click", () => {
+        salvarCategoria("Destaques");
+        filtrarCategoria("Destaques");
+      });
+      chipsContainer.appendChild(destaqueChip);
+
+      // Demais categorias vindas da planilha
+      categoriesArray.forEach(cat => {
+        const chip = document.createElement("div");
+        chip.className = "category-chip";
+        chip.textContent = cat;
+        chip.addEventListener("click", () => {
+          salvarCategoria(cat);
+          filtrarCategoria(cat);
+        });
+        chipsContainer.appendChild(chip);
+      });
+    }
 
     /* ==============================
        FETCH & TRANSFORM PRODUCTS
@@ -647,19 +684,23 @@
       document.getElementById("orderSummary").dataset.total = totalGeral;
       document.getElementById("orderTotal").textContent = "";
     }
+
+    /* Exemplo de cupom geral e específico */
     function aplicarCupom() {
       const cupomDigitado = document.getElementById("cupomDados").value.trim().toUpperCase();
       const cupomFeedbackEl = document.getElementById("cupomFeedback");
       const totalGeral = parseFloat(document.getElementById("orderSummary").dataset.total || "0");
       let desconto = 0;
-      let foundCupom = allCupons.find(c => c.Codigo && c.Codigo.toString().trim().toUpperCase() === cupomDigitado);
+      let foundCupom = allCupons.find(c => 
+        c.Codigo && c.Codigo.toString().trim().toUpperCase() === cupomDigitado
+      );
 
       if (cupomDigitado && !foundCupom) {
         cupomFeedbackEl.textContent = "Cupom inválido";
         cupomFeedbackEl.style.color = "#d9534f";
         cupomAplicado = null;
       } else if (foundCupom) {
-        // Se o cupom tiver um ProdutoID preenchido, aplica somente para aquele produto
+        // Se o cupom tiver um ProdutoID, aplica somente para aquele produto
         if (foundCupom.ProdutoID && foundCupom.ProdutoID.toString().trim() !== "") {
           let descontoEspecifico = 0;
           for (const pid in cart) {
@@ -696,6 +737,7 @@
         document.getElementById("orderTotal").textContent = "";
       }
     }
+
     function finalizarPedidoWhatsApp() {
       userData.nome = document.getElementById("nomeDados").value;
       userData.telefone = document.getElementById("telefoneDados").value;
