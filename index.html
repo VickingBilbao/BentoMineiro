@@ -12,10 +12,11 @@
   <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
   
-  <!-- Bootstrap CSS (ajuste integridade se necessário) -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" 
-        integrity="sha384-..." crossorigin="anonymous">
-
+  <!-- Bootstrap CSS -->
+  <!-- Removi/ajustei o integrity para evitar o erro “digest must be valid” -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+        crossorigin="anonymous">
+  
   <style>
     :root {
       --primary-color: #a56347;
@@ -212,7 +213,7 @@
       font-size: 0.9rem;
     }
 
-    /* ===== Botão "ADICIONAR" Customizado ===== */
+    /* ===== Botão "ADICIONAR" ===== */
     .btn-orange {
       background-color: var(--secondary-color);
       border: none;
@@ -275,7 +276,7 @@
     </div>
   </div>
 
-  <!-- Category Chips -->
+  <!-- Chips de Categoria -->
   <div class="category-chips" id="chipsContainer"></div>
   <hr class="separator-chips" />
 
@@ -287,7 +288,7 @@
     <p>Carregando produtos...</p>
   </div>
 
-  <!-- Products Container -->
+  <!-- Container de Produtos -->
   <div class="container">
     <div class="row" id="productsContainer"></div>
   </div>
@@ -325,7 +326,7 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <!-- Form de Dados -->
+          <!-- Formulário de Dados -->
           <form id="formDados">
             <input type="text" class="form-control" id="nomeDados" placeholder="Nome" required>
             <input type="tel" class="form-control" id="telefoneDados" placeholder="Telefone" required>
@@ -343,7 +344,7 @@
             Ao finalizar, você será encaminhado ao WhatsApp para concluir seu pedido. Prazos de entrega e valores de frete serão combinados lá.
           </p>
           <hr>
-          <!-- Cupom -->
+          <!-- Área de Cupom -->
           <div class="mb-2">
             <input type="text" class="form-control" id="cupomDados" placeholder="Cupom de Desconto">
             <button class="btn btn-primary btn-sm mt-2" onclick="aplicarCupom()">Aplicar Cupom</button>
@@ -363,10 +364,10 @@
   </footer>
 
   <!-- Bootstrap JS -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" 
-          integrity="sha384-..." crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
+          crossorigin="anonymous"></script>
   <script>
-    /* CONFIGURAÇÕES E VARIÁVEIS GLOBAIS */
+    /* CONFIG E VARIÁVEIS GLOBAIS */
     const API_BASE_URL = "https://script.google.com/macros/s/AKfycbw8aho5WzXL8_x4ygTgu31MD9-c4xdpmfltlj61iLzHiRyxSw14GGJqWqe_Uhn9Pq7U/exec";
     const CACHE_KEY = "bentoMineiroProdutos";
     const CACHE_TIMESTAMP_KEY = "bentoMineiroProdutosTimestamp";
@@ -379,9 +380,17 @@
     let allCupons = [];
     let cupomAplicado = null;
 
-    /* ==============================
-       FUNÇÕES DE CARRINHO E CATEGORIAS
-    ============================== */
+    /* highlightChip: reintroduzida para evitar erro ReferenceError */
+    function highlightChip(cat) {
+      document.querySelectorAll(".category-chip").forEach(chip => {
+        if (chip.textContent.trim().toLowerCase() === cat.toLowerCase()) {
+          chip.classList.add("active");
+        } else {
+          chip.classList.remove("active");
+        }
+      });
+    }
+
     function salvarCart() {
       localStorage.setItem("bentoMineiroCart", JSON.stringify(cart));
     }
@@ -401,9 +410,6 @@
       localStorage.setItem("bentoMineiroCurrentCategory", cat);
     }
 
-    /* ==============================
-       BUSCA DE CUPONS
-    ============================== */
     async function fetchCupons() {
       try {
         const response = await fetch(API_BASE_URL + "?action=cupons");
@@ -421,9 +427,6 @@
       }
     }
 
-    /* ==============================
-       ON LOAD
-    ============================== */
     document.addEventListener("DOMContentLoaded", async () => {
       carregarUserData();
       carregarCart();
@@ -459,9 +462,6 @@
       });
     });
 
-    /* ==============================
-       GERAÇÃO DINÂMICA DOS CHIPS
-    ============================== */
     function gerarChipsDinamicos() {
       const categorySet = new Set();
       allProducts.forEach(prod => {
@@ -472,7 +472,7 @@
       const categoriesArray = Array.from(categorySet).sort();
       const chipsContainer = document.getElementById("chipsContainer");
       chipsContainer.innerHTML = "";
-      // Adiciona chip fixo "Destaques"
+      // Chip "Destaques"
       const destaqueChip = document.createElement("div");
       destaqueChip.className = "category-chip";
       destaqueChip.textContent = "Destaques";
@@ -494,9 +494,6 @@
       });
     }
 
-    /* ==============================
-       FETCH & TRANSFORM PRODUCTS
-    ============================== */
     async function fetchProdutosCache() {
       const now = Date.now();
       const cachedData = localStorage.getItem(CACHE_KEY);
@@ -521,9 +518,6 @@
       });
     }
 
-    /* ==============================
-       RENDER PRODUCTS
-    ============================== */
     function exibirProdutos(produtos) {
       const container = document.getElementById("productsContainer");
       container.innerHTML = "";
@@ -576,9 +570,6 @@
       }
     }
 
-    /* ==============================
-       FUNÇÕES DO CARRINHO
-    ============================== */
     function adicionarAoCarrinho(productID) {
       const produto = allProducts.find(p => p.ID == productID);
       if (!produto) return;
@@ -605,12 +596,9 @@
       filtrarCategoria(currentCategory);
     }
 
-    /* ==============================
-       FILTRAR POR CATEGORIA
-    ============================== */
     function filtrarCategoria(cat) {
       currentCategory = cat;
-      highlightChip(cat);
+      highlightChip(cat); // <-- aqui chamamos highlightChip
       const catNormalized = cat.trim().toLowerCase();
       let filtrados = [];
       if (catNormalized === "destaques") {
@@ -625,9 +613,6 @@
       exibirProdutos(filtrados);
     }
 
-    /* ==============================
-       MODAL CARRINHO
-    ============================== */
     function verCarrinho() {
       const cartItemsEl = document.getElementById("cartItems");
       const cartTotalEl = document.getElementById("cartTotal");
@@ -659,9 +644,6 @@
       filtrarCategoria(currentCategory);
     }
 
-    /* ==============================
-       MODAL DADOS & CUPOM
-    ============================== */
     function mostrarFormularioDados() {
       const cartModal = bootstrap.Modal.getInstance(document.getElementById("cartModal"));
       cartModal.hide();
@@ -722,7 +704,6 @@
         cupomFeedbackEl.style.color = "#d9534f";
         cupomAplicado = null;
       } else if (foundCupom) {
-        // Cupom específico
         if (foundCupom.ProdutoID && foundCupom.ProdutoID.toString().trim() !== "") {
           let descontoEspecifico = 0;
           for (const pid in cart) {
@@ -742,7 +723,6 @@
             cupomAplicado = null;
           }
         } else {
-          // Cupom geral
           desconto = converterDesconto(foundCupom.Desconto, totalGeral);
           cupomFeedbackEl.textContent = `Cupom ${foundCupom.Codigo} aplicado! Desconto: R$ ${desconto.toFixed(2)}`;
           cupomFeedbackEl.style.color = "#28a745";
@@ -821,23 +801,6 @@
       window.open(url, "_blank");
     }
 
-    /* Funções de ajuda */
-    function converterDesconto(desc, valorTotal) {
-      const d = desc.toString().trim();
-      let num = parseFloat(d.replace("%", ""));
-      if (d.includes("%")) {
-        return valorTotal * (num / 100);
-      } else {
-        return valorTotal * num;
-      }
-    }
-    function salvarUserData() {
-      localStorage.setItem("bentoMineiroUserData", JSON.stringify(userData));
-    }
-    function carregarUserData() {
-      const data = localStorage.getItem("bentoMineiroUserData");
-      userData = data ? JSON.parse(data) : {};
-    }
     function mostrarCarregando(status) {
       document.getElementById("loadingIndicator").style.display = status ? "block" : "none";
     }
