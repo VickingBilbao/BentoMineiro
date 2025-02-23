@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <!-- Meta viewport otimizada -->
+  <!-- Meta viewport -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Empório Bento Mineiro</title>
   
@@ -12,10 +12,10 @@
   <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
   
-  <!-- Bootstrap CSS (com integridade de exemplo) -->
+  <!-- Bootstrap CSS (ajuste integridade se necessário) -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" 
         integrity="sha384-..." crossorigin="anonymous">
-  
+
   <style>
     :root {
       --primary-color: #a56347;
@@ -27,21 +27,21 @@
       --chip-border: #ddd;
       --text-gray: #555;
     }
-    
+
     /* Box-sizing global */
     *, *::before, *::after {
       box-sizing: border-box;
     }
-    
-    /* Background fixo com nova imagem */
+
+    /* Background fixo em 120% */
     body {
       font-family: 'Poppins', sans-serif;
       background: var(--light-bg) url("https://i.imgur.com/0fPHPGg.jpg") no-repeat center bottom fixed;
-      background-size: cover;
+      background-size: 120% auto;
       margin: 0;
       padding: 0;
     }
-    
+
     /* ===== Header ===== */
     .header-bar {
       background-color: var(--primary-color);
@@ -54,7 +54,7 @@
     .header-left {
       display: flex;
       align-items: center;
-      gap: 15px; /* espaçamento entre logo e frase */
+      gap: 15px;
     }
     .header-left img {
       max-height: 50px;
@@ -67,9 +67,8 @@
     .cart-icon {
       position: relative;
       cursor: pointer;
-      margin-right: 15px; /* Afasta um pouco do canto */
+      margin-right: 15px; 
     }
-    /* Aumento de 25% no ícone do carrinho */
     .cart-icon svg {
       width: 30px;
       height: 30px;
@@ -84,7 +83,7 @@
       padding: 2px 5px;
       border-radius: 50%;
     }
-    
+
     /* ===== Category Chips ===== */
     .category-chips {
       display: flex;
@@ -112,20 +111,20 @@
       background-color: var(--chip-bg-hover);
       border-color: var(--primary-color);
     }
-    
+
     hr.separator-chips {
       margin: 0;
       border: none;
       border-top: 1px solid var(--chip-border);
     }
-    
+
     /* ===== Loading Indicator ===== */
     #loadingIndicator {
       display: none;
       text-align: center;
       margin: 20px 0;
     }
-    
+
     /* ===== Product Card ===== */
     .product-card {
       border: none;
@@ -137,7 +136,6 @@
       display: flex;
       flex-direction: column;
       justify-content: flex-start;
-      /* altura menor que antes, para imagem maior */
       min-height: 220px; 
     }
     .product-card img {
@@ -157,14 +155,13 @@
       font-size: 0.9rem;
       font-weight: 600;
       margin-bottom: 5px;
-      /* Limita a 3 linhas */
       display: -webkit-box;
       -webkit-line-clamp: 3;
       -webkit-box-orient: vertical;
       overflow: hidden;
       text-overflow: ellipsis;
       line-height: 1.2;
-      max-height: 3.6em; /* 3 linhas x 1.2em */
+      max-height: 3.6em;
     }
     .product-price {
       color: #8B4513;
@@ -183,7 +180,7 @@
     .product-type-label.encomenda {
       color: var(--accent-blue);
     }
-    
+
     /* ===== Controles de Carrinho Centralizados ===== */
     .control-container {
       text-align: center;
@@ -214,7 +211,7 @@
       font-weight: 500;
       font-size: 0.9rem;
     }
-    
+
     /* ===== Botão "ADICIONAR" Customizado ===== */
     .btn-orange {
       background-color: var(--secondary-color);
@@ -229,7 +226,7 @@
     .btn-orange:hover {
       background-color: #c9542e;
     }
-    
+
     /* ===== Modal & Footer ===== */
     .modal-header, .modal-footer {
       border: none;
@@ -249,7 +246,7 @@
       color: #888;
       font-size: 0.9rem;
     }
-    
+
     @media (max-width: 576px) {
       .header-left h2 {
         font-size: 0.9rem;
@@ -278,7 +275,7 @@
     </div>
   </div>
 
-  <!-- Chips de Categoria Dinâmicos -->
+  <!-- Category Chips -->
   <div class="category-chips" id="chipsContainer"></div>
   <hr class="separator-chips" />
 
@@ -290,7 +287,7 @@
     <p>Carregando produtos...</p>
   </div>
 
-  <!-- Lista de Produtos -->
+  <!-- Products Container -->
   <div class="container">
     <div class="row" id="productsContainer"></div>
   </div>
@@ -328,7 +325,7 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <!-- Formulário de Dados do Cliente -->
+          <!-- Form de Dados -->
           <form id="formDados">
             <input type="text" class="form-control" id="nomeDados" placeholder="Nome" required>
             <input type="tel" class="form-control" id="telefoneDados" placeholder="Telefone" required>
@@ -342,7 +339,6 @@
           <!-- Resumo do Pedido -->
           <div id="orderSummary"></div>
           <div id="orderTotal"></div>
-          <!-- Texto informativo -->
           <p style="font-size: 0.75rem; font-style: italic; color: var(--text-gray); margin-top: 10px;">
             Ao finalizar, você será encaminhado ao WhatsApp para concluir seu pedido. Prazos de entrega e valores de frete serão combinados lá.
           </p>
@@ -370,7 +366,7 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" 
           integrity="sha384-..." crossorigin="anonymous"></script>
   <script>
-    /* ========== CONFIG E VARS GLOBAIS ========== */
+    /* CONFIGURAÇÕES E VARIÁVEIS GLOBAIS */
     const API_BASE_URL = "https://script.google.com/macros/s/AKfycbw8aho5WzXL8_x4ygTgu31MD9-c4xdpmfltlj61iLzHiRyxSw14GGJqWqe_Uhn9Pq7U/exec";
     const CACHE_KEY = "bentoMineiroProdutos";
     const CACHE_TIMESTAMP_KEY = "bentoMineiroProdutosTimestamp";
@@ -383,7 +379,9 @@
     let allCupons = [];
     let cupomAplicado = null;
 
-    /* Carrega e salva carrinho, conta itens, etc. */
+    /* ==============================
+       FUNÇÕES DE CARRINHO E CATEGORIAS
+    ============================== */
     function salvarCart() {
       localStorage.setItem("bentoMineiroCart", JSON.stringify(cart));
     }
@@ -403,7 +401,9 @@
       localStorage.setItem("bentoMineiroCurrentCategory", cat);
     }
 
-    /* ========== CUPONS ========== */
+    /* ==============================
+       BUSCA DE CUPONS
+    ============================== */
     async function fetchCupons() {
       try {
         const response = await fetch(API_BASE_URL + "?action=cupons");
@@ -421,7 +421,9 @@
       }
     }
 
-    /* ========== ON LOAD ========== */
+    /* ==============================
+       ON LOAD
+    ============================== */
     document.addEventListener("DOMContentLoaded", async () => {
       carregarUserData();
       carregarCart();
@@ -457,7 +459,9 @@
       });
     });
 
-    /* ========== GERAÇÃO DINÂMICA DOS CHIPS ========== */
+    /* ==============================
+       GERAÇÃO DINÂMICA DOS CHIPS
+    ============================== */
     function gerarChipsDinamicos() {
       const categorySet = new Set();
       allProducts.forEach(prod => {
@@ -490,7 +494,9 @@
       });
     }
 
-    /* ========== FETCH & TRANSFORM PRODUCTS ========== */
+    /* ==============================
+       FETCH & TRANSFORM PRODUCTS
+    ============================== */
     async function fetchProdutosCache() {
       const now = Date.now();
       const cachedData = localStorage.getItem(CACHE_KEY);
@@ -515,7 +521,9 @@
       });
     }
 
-    /* ========== RENDER PRODUCTS ========== */
+    /* ==============================
+       RENDER PRODUCTS
+    ============================== */
     function exibirProdutos(produtos) {
       const container = document.getElementById("productsContainer");
       container.innerHTML = "";
@@ -527,7 +535,7 @@
         }
         const col = document.createElement("div");
         col.className = "col-6 col-md-4 col-lg-3";
-        
+
         let htmlControl = "";
         if (cart[prod.ID] && cart[prod.ID].quantidade > 0) {
           htmlControl = `
@@ -546,7 +554,7 @@
             </div>
           `;
         }
-        
+
         col.innerHTML = `
           <div class="product-card p-2">
             <img src="${prod.Imagem}" alt="${prod.Nome}">
@@ -568,7 +576,9 @@
       }
     }
 
-    /* ========== CART FUNCTIONS ========== */
+    /* ==============================
+       FUNÇÕES DO CARRINHO
+    ============================== */
     function adicionarAoCarrinho(productID) {
       const produto = allProducts.find(p => p.ID == productID);
       if (!produto) return;
@@ -595,7 +605,9 @@
       filtrarCategoria(currentCategory);
     }
 
-    /* ========== FILTER BY CATEGORY ========== */
+    /* ==============================
+       FILTRAR POR CATEGORIA
+    ============================== */
     function filtrarCategoria(cat) {
       currentCategory = cat;
       highlightChip(cat);
@@ -613,7 +625,9 @@
       exibirProdutos(filtrados);
     }
 
-    /* ========== MODAL CARRINHO ========== */
+    /* ==============================
+       MODAL CARRINHO
+    ============================== */
     function verCarrinho() {
       const cartItemsEl = document.getElementById("cartItems");
       const cartTotalEl = document.getElementById("cartTotal");
@@ -645,7 +659,9 @@
       filtrarCategoria(currentCategory);
     }
 
-    /* ========== MODAL DADOS & CUPOM ========== */
+    /* ==============================
+       MODAL DADOS & CUPOM
+    ============================== */
     function mostrarFormularioDados() {
       const cartModal = bootstrap.Modal.getInstance(document.getElementById("cartModal"));
       cartModal.hide();
@@ -706,6 +722,7 @@
         cupomFeedbackEl.style.color = "#d9534f";
         cupomAplicado = null;
       } else if (foundCupom) {
+        // Cupom específico
         if (foundCupom.ProdutoID && foundCupom.ProdutoID.toString().trim() !== "") {
           let descontoEspecifico = 0;
           for (const pid in cart) {
@@ -725,6 +742,7 @@
             cupomAplicado = null;
           }
         } else {
+          // Cupom geral
           desconto = converterDesconto(foundCupom.Desconto, totalGeral);
           cupomFeedbackEl.textContent = `Cupom ${foundCupom.Codigo} aplicado! Desconto: R$ ${desconto.toFixed(2)}`;
           cupomFeedbackEl.style.color = "#28a745";
@@ -750,12 +768,14 @@
       userData.complemento = document.getElementById("complementoDados").value;
       userData.obs = document.getElementById("observacoesDados").value;
       salvarUserData();
+
       const totalGeral = parseFloat(document.getElementById("orderSummary").dataset.total || "0");
       let desconto = 0;
       if (cupomAplicado) {
         desconto = cupomAplicado.desconto;
       }
       let totalFinal = totalGeral - desconto;
+
       let msg = "*Pedido Bento Mineiro*\n\n";
       msg += `*Nome:* ${userData.nome}\n`;
       msg += `*Telefone:* ${userData.telefone}\n`;
@@ -763,6 +783,7 @@
       msg += `*Endereço:* ${userData.endereco}\n`;
       msg += `*Número:* ${userData.numero}\n`;
       msg += `*Complemento:* ${userData.complemento}\n\n`;
+
       let categoriasCarrinho = {};
       for (const pid in cart) {
         const item = cart[pid];
@@ -788,12 +809,14 @@
         }
         msg += `Subtotal ${cat}: R$ ${subtotalCat.toFixed(2)}\n\n`;
       }
+
       if (cupomAplicado) {
         msg += `*Cupom ${cupomAplicado.cupom} aplicado: -R$ ${cupomAplicado.desconto.toFixed(2)}*\n\n`;
       }
       msg += `*Total Geral:* R$ ${totalFinal.toFixed(2)}\n\n`;
       msg += `*Observações:* ${userData.obs}\n\n`;
       msg += `***_O Bento Mineiro agradece seu contato UAI! Você vai ser atendido em breve e vamos combinar direitinho a entrega e o pagamento pra concluir seu pedido!_***\n\n`;
+
       const url = "https://wa.me/5511917420830?text=" + encodeURIComponent(msg);
       window.open(url, "_blank");
     }
