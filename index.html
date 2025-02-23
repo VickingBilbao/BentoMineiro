@@ -2,52 +2,24 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <!-- Meta viewport -->
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Empório Bento Mineiro</title>
-  
-  <!-- Preconnect para Google Fonts -->
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  
-  <!-- Google Fonts -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Google Fonts e Bootstrap CSS -->
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-  
-  <!-- Bootstrap CSS -->
-  <!-- Removi/ajustei o integrity para evitar o erro “digest must be valid” -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-        crossorigin="anonymous">
-  
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
   <style>
-    :root {
-      --primary-color: #a56347;
-      --secondary-color: #e16438;
-      --light-bg: #f7f7f7;
-      --accent-green: #00a44f;
-      --accent-blue: #007bff;
-      --chip-bg-hover: #ffe6cc;
-      --chip-border: #ddd;
-      --text-gray: #555;
-    }
-
-    /* Box-sizing global */
-    *, *::before, *::after {
-      box-sizing: border-box;
-    }
-
-    /* Background fixo em 120% */
     body {
       font-family: 'Poppins', sans-serif;
-      background: var(--light-bg) url("https://i.imgur.com/0fPHPGg.jpg") no-repeat center bottom fixed;
-      background-size: 120% auto;
-      margin: 0;
+      background-color: #f7f7f7;
+      margin: 0; 
       padding: 0;
     }
 
-    /* ===== Header ===== */
     .header-bar {
-      background-color: var(--primary-color);
+      background-color: #a56347;
       color: #fff;
-      padding: 10px 20px;
+      padding: 10px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -55,7 +27,7 @@
     .header-left {
       display: flex;
       align-items: center;
-      gap: 15px;
+      gap: 10px;
     }
     .header-left img {
       max-height: 50px;
@@ -68,11 +40,7 @@
     .cart-icon {
       position: relative;
       cursor: pointer;
-      margin-right: 15px; 
-    }
-    .cart-icon svg {
-      width: 30px;
-      height: 30px;
+      color: #fff;
     }
     .cart-count {
       position: absolute;
@@ -85,7 +53,7 @@
       border-radius: 50%;
     }
 
-    /* ===== Category Chips ===== */
+    /* Container onde os chips serão gerados dinamicamente */
     .category-chips {
       display: flex;
       gap: 10px;
@@ -96,37 +64,35 @@
     .category-chip {
       flex: 0 0 auto;
       background-color: #fff;
-      border: 1px solid var(--chip-border);
+      border: 1px solid #ddd;
       border-radius: 20px;
       padding: 8px 16px;
       font-weight: 500;
       cursor: pointer;
       transition: background-color 0.2s;
       white-space: nowrap;
-      color: var(--primary-color);
+      color: #a56347;
     }
     .category-chip:hover {
-      background-color: var(--chip-bg-hover);
+      background-color: #ffe6cc;
     }
     .category-chip.active {
-      background-color: var(--chip-bg-hover);
-      border-color: var(--primary-color);
+      background-color: #ffe6cc;
+      border-color: #a56347;
     }
 
     hr.separator-chips {
       margin: 0;
       border: none;
-      border-top: 1px solid var(--chip-border);
+      border-top: 1px solid #ddd;
     }
 
-    /* ===== Loading Indicator ===== */
     #loadingIndicator {
       display: none;
       text-align: center;
       margin: 20px 0;
     }
 
-    /* ===== Product Card ===== */
     .product-card {
       border: none;
       border-radius: 8px;
@@ -134,10 +100,6 @@
       overflow: hidden;
       margin-bottom: 20px;
       background-color: #fff;
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-start;
-      min-height: 220px; 
     }
     .product-card img {
       width: 100%;
@@ -147,22 +109,11 @@
     .product-body {
       padding: 10px;
       text-align: left;
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-start;
     }
     .product-title {
-      font-size: 0.9rem;
+      font-size: 0.9rem; 
       font-weight: 600;
       margin-bottom: 5px;
-      display: -webkit-box;
-      -webkit-line-clamp: 3;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      line-height: 1.2;
-      max-height: 3.6em;
     }
     .product-price {
       color: #8B4513;
@@ -176,13 +127,12 @@
       font-size: 0.65rem;
       font-weight: 500;
       white-space: nowrap;
-      color: var(--accent-green);
+      color: #00a44f;
     }
     .product-type-label.encomenda {
-      color: var(--accent-blue);
+      color: #007bff;
     }
 
-    /* ===== Controles de Carrinho Centralizados ===== */
     .control-container {
       text-align: center;
     }
@@ -213,10 +163,9 @@
       font-size: 0.9rem;
     }
 
-    /* ===== Botão "ADICIONAR" ===== */
     .btn-orange {
-      background-color: var(--secondary-color);
-      border: none;
+      background-color: #e16438;
+      border-color: #e16438;
       color: #fff;
       font-size: 0.8rem;
       padding: 4px 10px;
@@ -226,9 +175,9 @@
     }
     .btn-orange:hover {
       background-color: #c9542e;
+      border-color: #c9542e;
     }
 
-    /* ===== Modal & Footer ===== */
     .modal-header, .modal-footer {
       border: none;
     }
@@ -264,7 +213,7 @@
       <h2>Seja bem vindo em nossa loja!</h2>
     </div>
     <div class="cart-icon" onclick="verCarrinho()">
-      <svg width="30" height="30" fill="#fff" viewBox="0 0 24 24">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#fff" viewBox="0 0 24 24">
         <path d="M7 18c-1.105 0-2 .895-2 2s.895 
                  2 2 2c1.105 0 2-.895 2-2s-.895-2-2-2zm10 
                  0c-1.105 0-2 .895-2 2s.895 2 2 2c1.105 
@@ -276,7 +225,7 @@
     </div>
   </div>
 
-  <!-- Chips de Categoria -->
+  <!-- Category Chips (dinâmico) -->
   <div class="category-chips" id="chipsContainer"></div>
   <hr class="separator-chips" />
 
@@ -288,7 +237,7 @@
     <p>Carregando produtos...</p>
   </div>
 
-  <!-- Container de Produtos -->
+  <!-- Products Container -->
   <div class="container">
     <div class="row" id="productsContainer"></div>
   </div>
@@ -299,7 +248,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title">Carrinho</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
         </div>
         <div class="modal-body">
           <div id="cartItems"></div>
@@ -323,13 +272,13 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title">Seus Dados e Resumo do Pedido</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
         </div>
         <div class="modal-body">
-          <!-- Formulário de Dados -->
+          <!-- Formulário de Dados do Cliente -->
           <form id="formDados">
             <input type="text" class="form-control" id="nomeDados" placeholder="Nome" required>
-            <input type="tel" class="form-control" id="telefoneDados" placeholder="Telefone" required>
+            <input type="text" class="form-control" id="telefoneDados" placeholder="Telefone" required>
             <input type="text" class="form-control" id="cepDados" placeholder="CEP (ex: 00000-000)" required>
             <input type="text" class="form-control" id="enderecoDados" placeholder="Endereço" required>
             <input type="text" class="form-control" id="numeroDados" placeholder="Número" required>
@@ -340,7 +289,8 @@
           <!-- Resumo do Pedido -->
           <div id="orderSummary"></div>
           <div id="orderTotal"></div>
-          <p style="font-size: 0.75rem; font-style: italic; color: var(--text-gray); margin-top: 10px;">
+          <!-- Texto informativo em itálico e menor -->
+          <p style="font-size: 0.75rem; font-style: italic; color: #555; margin-top: 10px;">
             Ao finalizar, você será encaminhado ao WhatsApp para concluir seu pedido. Prazos de entrega e valores de frete serão combinados lá.
           </p>
           <hr>
@@ -364,10 +314,11 @@
   </footer>
 
   <!-- Bootstrap JS -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
-          crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    /* CONFIG E VARIÁVEIS GLOBAIS */
+    /* ==============================
+       CONFIG & GLOBAL VARS
+    ============================== */
     const API_BASE_URL = "https://script.google.com/macros/s/AKfycbw8aho5WzXL8_x4ygTgu31MD9-c4xdpmfltlj61iLzHiRyxSw14GGJqWqe_Uhn9Pq7U/exec";
     const CACHE_KEY = "bentoMineiroProdutos";
     const CACHE_TIMESTAMP_KEY = "bentoMineiroProdutosTimestamp";
@@ -380,17 +331,9 @@
     let allCupons = [];
     let cupomAplicado = null;
 
-    /* highlightChip: reintroduzida para evitar erro ReferenceError */
-    function highlightChip(cat) {
-      document.querySelectorAll(".category-chip").forEach(chip => {
-        if (chip.textContent.trim().toLowerCase() === cat.toLowerCase()) {
-          chip.classList.add("active");
-        } else {
-          chip.classList.remove("active");
-        }
-      });
-    }
-
+    /* ==============================
+       CART & CATEGORY FUNCTIONS
+    ============================== */
     function salvarCart() {
       localStorage.setItem("bentoMineiroCart", JSON.stringify(cart));
     }
@@ -399,17 +342,23 @@
       cart = data ? JSON.parse(data) : {};
       atualizarCartCount();
     }
-    function atualizarCartCount() {
-      let totalItens = 0;
-      for (const pid in cart) {
-        totalItens += cart[pid].quantidade;
-      }
-      document.getElementById("cartCount").textContent = totalItens;
-    }
     function salvarCategoria(cat) {
       localStorage.setItem("bentoMineiroCurrentCategory", cat);
     }
+    function highlightChip(cat) {
+      const chips = document.querySelectorAll(".category-chip");
+      chips.forEach(chip => {
+        if (chip.textContent.trim().toLowerCase() === cat.toLowerCase()) {
+          chip.classList.add("active");
+        } else {
+          chip.classList.remove("active");
+        }
+      });
+    }
 
+    /* ==============================
+       FETCH CUPONS
+    ============================== */
     async function fetchCupons() {
       try {
         const response = await fetch(API_BASE_URL + "?action=cupons");
@@ -427,6 +376,9 @@
       }
     }
 
+    /* ==============================
+       ON LOAD
+    ============================== */
     document.addEventListener("DOMContentLoaded", async () => {
       carregarUserData();
       carregarCart();
@@ -435,13 +387,19 @@
         const data = await fetchProdutosCache();
         allProducts = transformarDados(data);
         allCupons = await fetchCupons();
+
+        // 1) Gera os chips dinamicamente
         gerarChipsDinamicos();
+
+        // 2) Filtra a categoria atual
         filtrarCategoria(currentCategory);
+
       } catch (error) {
         console.error("Erro ao carregar produtos:", error);
       } finally {
         mostrarCarregando(false);
       }
+
       // CEP autocomplete
       document.getElementById("cepDados").addEventListener("blur", async function() {
         const cep = this.value.replace(/\D/g, '');
@@ -462,17 +420,26 @@
       });
     });
 
+    /* ==============================
+       DYNAMIC CHIPS GENERATION
+    ============================== */
     function gerarChipsDinamicos() {
+      // Vamos criar um Set de categorias
       const categorySet = new Set();
       allProducts.forEach(prod => {
         if (prod.Categoria && prod.Categoria.trim() !== "") {
           categorySet.add(prod.Categoria.trim());
         }
       });
+
+      // Converte em array e ordena alfabeticamente, se quiser
       const categoriesArray = Array.from(categorySet).sort();
+
+      // Montamos o HTML: 1) chip fixo "Destaques" + chips das categorias
       const chipsContainer = document.getElementById("chipsContainer");
-      chipsContainer.innerHTML = "";
-      // Chip "Destaques"
+      chipsContainer.innerHTML = ""; // limpa antes
+
+      // Chip de "Destaques"
       const destaqueChip = document.createElement("div");
       destaqueChip.className = "category-chip";
       destaqueChip.textContent = "Destaques";
@@ -481,7 +448,8 @@
         filtrarCategoria("Destaques");
       });
       chipsContainer.appendChild(destaqueChip);
-      // Demais categorias
+
+      // Demais categorias vindas da planilha
       categoriesArray.forEach(cat => {
         const chip = document.createElement("div");
         chip.className = "category-chip";
@@ -494,6 +462,9 @@
       });
     }
 
+    /* ==============================
+       FETCH & TRANSFORM PRODUCTS
+    ============================== */
     async function fetchProdutosCache() {
       const now = Date.now();
       const cachedData = localStorage.getItem(CACHE_KEY);
@@ -518,6 +489,9 @@
       });
     }
 
+    /* ==============================
+       RENDER PRODUCTS
+    ============================== */
     function exibirProdutos(produtos) {
       const container = document.getElementById("productsContainer");
       container.innerHTML = "";
@@ -570,6 +544,9 @@
       }
     }
 
+    /* ==============================
+       ADD / REMOVE / UPDATE CART
+    ============================== */
     function adicionarAoCarrinho(productID) {
       const produto = allProducts.find(p => p.ID == productID);
       if (!produto) return;
@@ -595,10 +572,20 @@
       atualizarCartCount();
       filtrarCategoria(currentCategory);
     }
+    function atualizarCartCount() {
+      let totalItens = 0;
+      for (const pid in cart) {
+        totalItens += cart[pid].quantidade;
+      }
+      document.getElementById("cartCount").textContent = totalItens;
+    }
 
+    /* ==============================
+       FILTER BY CATEGORY
+    ============================== */
     function filtrarCategoria(cat) {
       currentCategory = cat;
-      highlightChip(cat); // <-- aqui chamamos highlightChip
+      highlightChip(cat);
       const catNormalized = cat.trim().toLowerCase();
       let filtrados = [];
       if (catNormalized === "destaques") {
@@ -613,6 +600,9 @@
       exibirProdutos(filtrados);
     }
 
+    /* ==============================
+       CARRINHO - MODAL
+    ============================== */
     function verCarrinho() {
       const cartItemsEl = document.getElementById("cartItems");
       const cartTotalEl = document.getElementById("cartTotal");
@@ -644,6 +634,9 @@
       filtrarCategoria(currentCategory);
     }
 
+    /* ==============================
+       DADOS & CUPOM
+    ============================== */
     function mostrarFormularioDados() {
       const cartModal = bootstrap.Modal.getInstance(document.getElementById("cartModal"));
       cartModal.hide();
@@ -691,6 +684,8 @@
       document.getElementById("orderSummary").dataset.total = totalGeral;
       document.getElementById("orderTotal").textContent = "";
     }
+
+    /* Exemplo de cupom geral e específico */
     function aplicarCupom() {
       const cupomDigitado = document.getElementById("cupomDados").value.trim().toUpperCase();
       const cupomFeedbackEl = document.getElementById("cupomFeedback");
@@ -699,11 +694,13 @@
       let foundCupom = allCupons.find(c => 
         c.Codigo && c.Codigo.toString().trim().toUpperCase() === cupomDigitado
       );
+
       if (cupomDigitado && !foundCupom) {
         cupomFeedbackEl.textContent = "Cupom inválido";
         cupomFeedbackEl.style.color = "#d9534f";
         cupomAplicado = null;
       } else if (foundCupom) {
+        // Se o cupom tiver um ProdutoID, aplica somente para aquele produto
         if (foundCupom.ProdutoID && foundCupom.ProdutoID.toString().trim() !== "") {
           let descontoEspecifico = 0;
           for (const pid in cart) {
@@ -723,6 +720,7 @@
             cupomAplicado = null;
           }
         } else {
+          // Cupom geral
           desconto = converterDesconto(foundCupom.Desconto, totalGeral);
           cupomFeedbackEl.textContent = `Cupom ${foundCupom.Codigo} aplicado! Desconto: R$ ${desconto.toFixed(2)}`;
           cupomFeedbackEl.style.color = "#28a745";
@@ -739,6 +737,7 @@
         document.getElementById("orderTotal").textContent = "";
       }
     }
+
     function finalizarPedidoWhatsApp() {
       userData.nome = document.getElementById("nomeDados").value;
       userData.telefone = document.getElementById("telefoneDados").value;
@@ -801,6 +800,25 @@
       window.open(url, "_blank");
     }
 
+    /* ==============================
+       HELPER FUNCTIONS
+    ============================== */
+    function converterDesconto(desc, valorTotal) {
+      const d = desc.toString().trim();
+      let num = parseFloat(d.replace("%", ""));
+      if (d.includes("%")) {
+        return valorTotal * (num / 100);
+      } else {
+        return valorTotal * num;
+      }
+    }
+    function salvarUserData() {
+      localStorage.setItem("bentoMineiroUserData", JSON.stringify(userData));
+    }
+    function carregarUserData() {
+      const data = localStorage.getItem("bentoMineiroUserData");
+      userData = data ? JSON.parse(data) : {};
+    }
     function mostrarCarregando(status) {
       document.getElementById("loadingIndicator").style.display = status ? "block" : "none";
     }
