@@ -2,7 +2,6 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <!-- Meta viewport otimizada -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Empório Bento Mineiro</title>
   
@@ -12,9 +11,10 @@
   <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
   
-  <!-- Bootstrap CSS com integridade (exemplo, ajuste conforme necessário) -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" 
-        integrity="sha384-..." crossorigin="anonymous">
+  <!-- Bootstrap CSS (ajuste ou remova integrity se necessário) -->
+  <link rel="stylesheet" 
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" 
+        crossorigin="anonymous">
   
   <style>
     :root {
@@ -33,11 +33,11 @@
       box-sizing: border-box;
     }
     
-    /* Background com imagem leve */
+    /* Background fixo em 120% */
     body {
       font-family: 'Poppins', sans-serif;
-      background: var(--light-bg) url("https://i.imgur.com/ERQOnlZ.jpg") no-repeat center bottom;
-      background-size: cover;
+      background: var(--light-bg) url("https://i.imgur.com/0fPHPGg.jpg") no-repeat center bottom fixed;
+      background-size: 120% auto;
       margin: 0;
       padding: 0;
     }
@@ -54,7 +54,7 @@
     .header-left {
       display: flex;
       align-items: center;
-      gap: 15px; /* Aumenta o espaçamento entre logo e frase */
+      gap: 15px; 
     }
     .header-left img {
       max-height: 50px;
@@ -67,12 +67,11 @@
     .cart-icon {
       position: relative;
       cursor: pointer;
-      /* Afasta um pouco do canto: */
-      margin-right: 15px;
+      margin-right: 15px; 
     }
-    /* Aumenta o ícone em 25% (ajustado via width/height) */
+    /* Ícone 25% maior */
     .cart-icon svg {
-      width: 30px; /* 25% maior que o padrão de 24px */
+      width: 30px; 
       height: 30px;
     }
     .cart-count {
@@ -135,8 +134,7 @@
       overflow: hidden;
       margin-bottom: 20px;
       background-color: #fff;
-      /* Força tamanho uniforme */
-      min-height: 250px;
+      min-height: 220px; /* Um pouco menor que 250px */
       display: flex;
       flex-direction: column;
       justify-content: space-between;
@@ -150,6 +148,15 @@
       padding: 10px;
       text-align: left;
     }
+    /* Se quiser truncar em 3 linhas, descomente as 4 linhas abaixo
+    .product-title {
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    */
     .product-title {
       font-size: 0.9rem;
       font-weight: 600;
@@ -204,7 +211,7 @@
       font-size: 0.9rem;
     }
     
-    /* ===== Botão "ADICIONAR" Customizado em Laranja ===== */
+    /* ===== Botão "ADICIONAR" em Laranja ===== */
     .btn-orange {
       background-color: var(--secondary-color);
       border: none;
@@ -256,17 +263,22 @@
     </div>
     <div class="cart-icon" onclick="verCarrinho()">
       <svg width="30" height="30" fill="#fff" viewBox="0 0 24 24">
-        <path d="M7 18c-1.105 0-2 .895-2 2s.895 2 2 2c1.105 0 2-.895 2-2s-.895-2-2-2zm10 0c-1.105 0-2 .895-2 2s.895 2 2 2c1.105 0 2-.895 2-2s-.895-2-2-2zm-13.364-16l3.364 6h10.364l3-6h-16.728zm-1.636-2h20l-4 8h-12l-4-8z"/>
+        <path d="M7 18c-1.105 0-2 .895-2 2s.895 
+                 2 2 2c1.105 0 2-.895 2-2s-.895-2-2-2zm10 
+                 0c-1.105 0-2 .895-2 2s.895 2 2 2c1.105 
+                 0 2-.895 2-2s-.895-2-2-2zm-13.364
+                 -16l3.364 6h10.364l3-6h-16.728zm-1.636
+                 -2h20l-4 8h-12l-4-8z"/>
       </svg>
       <span id="cartCount" class="cart-count">0</span>
     </div>
   </div>
 
-  <!-- Container para os Chips de Categoria (dinâmico) -->
+  <!-- Chips de Categoria Dinâmicos -->
   <div class="category-chips" id="chipsContainer"></div>
   <hr class="separator-chips" />
 
-  <!-- Loading Indicator -->
+  <!-- Indicador de Carregamento -->
   <div id="loadingIndicator">
     <div class="spinner-border" role="status">
       <span class="visually-hidden">Carregando...</span>
@@ -274,7 +286,7 @@
     <p>Carregando produtos...</p>
   </div>
 
-  <!-- Container dos Produtos -->
+  <!-- Lista de Produtos -->
   <div class="container">
     <div class="row" id="productsContainer"></div>
   </div>
@@ -326,7 +338,6 @@
           <!-- Resumo do Pedido -->
           <div id="orderSummary"></div>
           <div id="orderTotal"></div>
-          <!-- Texto informativo acima do cupom -->
           <p style="font-size: 0.75rem; font-style: italic; color: var(--text-gray); margin-top: 10px;">
             Ao finalizar, você será encaminhado ao WhatsApp para concluir seu pedido. Prazos de entrega e valores de frete serão combinados lá.
           </p>
@@ -352,9 +363,11 @@
 
   <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" 
-          integrity="sha384-..." crossorigin="anonymous"></script>
+          crossorigin="anonymous"></script>
   <script>
-    /* CONFIGURAÇÃO E VARIÁVEIS GLOBAIS */
+    /* =========================
+       CONFIG E VARS GLOBAIS
+    ========================= */
     const API_BASE_URL = "https://script.google.com/macros/s/AKfycbw8aho5WzXL8_x4ygTgu31MD9-c4xdpmfltlj61iLzHiRyxSw14GGJqWqe_Uhn9Pq7U/exec";
     const CACHE_KEY = "bentoMineiroProdutos";
     const CACHE_TIMESTAMP_KEY = "bentoMineiroProdutosTimestamp";
@@ -367,18 +380,9 @@
     let allCupons = [];
     let cupomAplicado = null;
 
-    /* Funções de carrinho e categorias */
-    function salvarCart() {
-      localStorage.setItem("bentoMineiroCart", JSON.stringify(cart));
-    }
-    function carregarCart() {
-      const data = localStorage.getItem("bentoMineiroCart");
-      cart = data ? JSON.parse(data) : {};
-      atualizarCartCount();
-    }
-    function salvarCategoria(cat) {
-      localStorage.setItem("bentoMineiroCurrentCategory", cat);
-    }
+    /* =========================
+       highlightChip
+    ========================= */
     function highlightChip(cat) {
       document.querySelectorAll(".category-chip").forEach(chip => {
         if (chip.textContent.trim().toLowerCase() === cat.toLowerCase()) {
@@ -389,7 +393,31 @@
       });
     }
 
-    /* Busca de cupons */
+    /* =========================
+       CART & CATEGORY
+    ========================= */
+    function salvarCart() {
+      localStorage.setItem("bentoMineiroCart", JSON.stringify(cart));
+    }
+    function carregarCart() {
+      const data = localStorage.getItem("bentoMineiroCart");
+      cart = data ? JSON.parse(data) : {};
+      atualizarCartCount();
+    }
+    function atualizarCartCount() {
+      let totalItens = 0;
+      for (const pid in cart) {
+        totalItens += cart[pid].quantidade;
+      }
+      document.getElementById("cartCount").textContent = totalItens;
+    }
+    function salvarCategoria(cat) {
+      localStorage.setItem("bentoMineiroCurrentCategory", cat);
+    }
+
+    /* =========================
+       CUPONS
+    ========================= */
     async function fetchCupons() {
       try {
         const response = await fetch(API_BASE_URL + "?action=cupons");
@@ -407,7 +435,9 @@
       }
     }
 
-    /* Ao carregar a página */
+    /* =========================
+       ON LOAD
+    ========================= */
     document.addEventListener("DOMContentLoaded", async () => {
       carregarUserData();
       carregarCart();
@@ -423,7 +453,7 @@
       } finally {
         mostrarCarregando(false);
       }
-      // Autocomplete CEP
+      // CEP autocomplete
       document.getElementById("cepDados").addEventListener("blur", async function() {
         const cep = this.value.replace(/\D/g, '');
         if (cep.length === 8) {
@@ -443,7 +473,9 @@
       });
     });
 
-    /* Geração dinâmica dos chips de categorias */
+    /* =========================
+       GERAÇÃO DINÂMICA DE CHIPS
+    ========================= */
     function gerarChipsDinamicos() {
       const categorySet = new Set();
       allProducts.forEach(prod => {
@@ -463,7 +495,8 @@
         filtrarCategoria("Destaques");
       });
       chipsContainer.appendChild(destaqueChip);
-      // Outras categorias
+
+      // Demais categorias
       categoriesArray.forEach(cat => {
         const chip = document.createElement("div");
         chip.className = "category-chip";
@@ -476,7 +509,9 @@
       });
     }
 
-    /* Busca e transformação dos produtos */
+    /* =========================
+       FETCH & TRANSFORM PRODUCTS
+    ========================= */
     async function fetchProdutosCache() {
       const now = Date.now();
       const cachedData = localStorage.getItem(CACHE_KEY);
@@ -496,23 +531,26 @@
       const headers = data[0];
       return data.slice(1).map(row => {
         let obj = {};
-        headers.forEach((header, index) => { obj[header] = row[index]; });
+        headers.forEach((h, i) => { obj[h] = row[i]; });
         return obj;
       });
     }
 
-    /* Renderização dos produtos */
+    /* =========================
+       RENDER PRODUCTS
+    ========================= */
     function exibirProdutos(produtos) {
       const container = document.getElementById("productsContainer");
       container.innerHTML = "";
       produtos.forEach(prod => {
-        const tipoNormalized = (prod.Tipo || "").toString().trim().toLowerCase();
+        const tipoNormalized = (prod.Tipo || "").trim().toLowerCase();
         let extraClass = "";
         if (tipoNormalized === "encomenda" || tipoNormalized === "encomendas") {
           extraClass = "encomenda";
         }
         const col = document.createElement("div");
         col.className = "col-6 col-md-4 col-lg-3";
+
         let htmlControl = "";
         if (cart[prod.ID] && cart[prod.ID].quantidade > 0) {
           htmlControl = `
@@ -531,6 +569,7 @@
             </div>
           `;
         }
+
         col.innerHTML = `
           <div class="product-card p-2">
             <img src="${prod.Imagem}" alt="${prod.Nome}">
@@ -552,7 +591,9 @@
       }
     }
 
-    /* Funções do carrinho */
+    /* =========================
+       CARRINHO
+    ========================= */
     function adicionarAoCarrinho(productID) {
       const produto = allProducts.find(p => p.ID == productID);
       if (!produto) return;
@@ -578,15 +619,7 @@
       atualizarCartCount();
       filtrarCategoria(currentCategory);
     }
-    function atualizarCartCount() {
-      let totalItens = 0;
-      for (const pid in cart) {
-        totalItens += cart[pid].quantidade;
-      }
-      document.getElementById("cartCount").textContent = totalItens;
-    }
 
-    /* Filtro por categoria */
     function filtrarCategoria(cat) {
       currentCategory = cat;
       highlightChip(cat);
@@ -604,7 +637,9 @@
       exibirProdutos(filtrados);
     }
 
-    /* Modal do Carrinho */
+    /* =========================
+       MODAL CARRINHO
+    ========================= */
     function verCarrinho() {
       const cartItemsEl = document.getElementById("cartItems");
       const cartTotalEl = document.getElementById("cartTotal");
@@ -636,7 +671,9 @@
       filtrarCategoria(currentCategory);
     }
 
-    /* Modal de Dados, Resumo e Cupom */
+    /* =========================
+       MODAL DADOS & CUPOM
+    ========================= */
     function mostrarFormularioDados() {
       const cartModal = bootstrap.Modal.getInstance(document.getElementById("cartModal"));
       cartModal.hide();
@@ -789,7 +826,7 @@
       window.open(url, "_blank");
     }
     
-    /* HELPER FUNCTIONS */
+    /* Funções auxiliares */
     function converterDesconto(desc, valorTotal) {
       const d = desc.toString().trim();
       let num = parseFloat(d.replace("%", ""));
